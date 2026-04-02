@@ -11,9 +11,12 @@
       },
       "RemoteEvents": {
         "$className": "Folder",
-        "UpdateCash": { "$className": "RemoteEvent" },
-        "BuyEgg": { "$className": "RemoteEvent" },
-        "PlaceBrainrot": { "$className": "RemoteEvent" }
+        "UpdateCash":    { "$className": "RemoteEvent" },
+        "BuyEgg":        { "$className": "RemoteEvent" },
+        "PlaceBrainrot": { "$className": "RemoteEvent" },
+        "GachaResult":   { "$className": "RemoteEvent" },
+        "Rebirth":       { "$className": "RemoteEvent" },
+        "RebornResult":  { "$className": "RemoteEvent" }
       }
     },
 
