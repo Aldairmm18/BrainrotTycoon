@@ -1,76 +1,90 @@
--- BrainrotData (ModuleScript)
+-- BrainrotData (ModuleScript-style server Script)
 -- ServerScriptService/BrainrotData
--- Central in-memory store for all player data during the session.
+-- Central in-memory data store for all player data (server only).
 
 local BrainrotData = {}
 
--- playerData[userId] = { cash = number, brainrots = {}, rebirths = number }
-local playerData = {}
+local _data = {}  -- indexed by userId
 
-local MAX_BRAINROTS = 10
+-- ─── Init ────────────────────────────────────────────────────────────────────
 
--- Initialize a player's data table
-function BrainrotData.Init(userId, savedData)
-	savedData = savedData or {}
-	playerData[userId] = {
-		cash      = savedData.cash     or 0,
-		brainrots = savedData.brainrots or {},
-		rebirths  = savedData.rebirths  or 0,
-	}
+function BrainrotData.Init(userId)
+	if not _data[userId] then
+		_data[userId] = {
+			cash      = 100,   -- starting cash so player can buy first egg
+			brainrots = {},
+			rebirths  = 0,
+		}
+	end
 end
 
--- Get a player's full data table (reference)
+-- ─── Getters ─────────────────────────────────────────────────────────────────
+
 function BrainrotData.Get(userId)
-	return playerData[userId]
+	return _data[userId]
 end
 
--- Remove a player's data from memory on leave
-function BrainrotData.Remove(userId)
-	playerData[userId] = nil
-end
+-- ─── Cash Operations ─────────────────────────────────────────────────────────
 
--- Add cash (server-authoritative)
 function BrainrotData.AddCash(userId, amount)
-	local data = playerData[userId]
-	if not data then return end
-	data.cash = data.cash + amount
+	local d = _data[userId]
+	if not d then return end
+	d.cash = d.cash + amount
 end
 
--- Deduct cash; returns true if successful, false if insufficient
+-- Returns true if spend succeeded, false if insufficient funds.
 function BrainrotData.SpendCash(userId, amount)
-	local data = playerData[userId]
-	if not data then return false end
-	if data.cash < amount then return false end
-	data.cash = data.cash - amount
+	local d = _data[userId]
+	if not d then return false end
+	if d.cash < amount then return false end
+	d.cash = d.cash - amount
 	return true
 end
 
--- Add a Brainrot to the player's inventory
--- Returns false if inventory is full
-function BrainrotData.AddBrainrot(userId, brainrotEntry)
-	local data = playerData[userId]
-	if not data then return false end
-	if #data.brainrots >= MAX_BRAINROTS then return false, "Inventory full" end
-	table.insert(data.brainrots, {
-		name   = brainrotEntry.name,
-		rarity = brainrotEntry.rarity,
-		emoji  = brainrotEntry.emoji,
-	})
-	return true
+-- ─── Brainrot Operations ─────────────────────────────────────────────────────
+
+function BrainrotData.AddBrainrot(userId, brainrotData)
+	local d = _data[userId]
+	if not d then return end
+	table.insert(d.brainrots, brainrotData)
 end
 
--- Calculate total cashPerSec for a player from their inventory
-function BrainrotData.GetTotalCashPerSec(userId, rarityConfig)
-	local data = playerData[userId]
-	if not data then return 0 end
+-- ─── Economy Helpers ─────────────────────────────────────────────────────────
+
+-- Sums cashPerSec for all brainrots the player owns using RarityConfig.
+function BrainrotData.GetTotalCashPerSec(userId, RarityConfig)
+	local d = _data[userId]
+	if not d then return 0 end
 	local total = 0
-	for _, b in ipairs(data.brainrots) do
-		local cfg = rarityConfig[b.rarity]
+	for _, b in ipairs(d.brainrots) do
+		local cfg = RarityConfig[b.rarity]
 		if cfg then
 			total = total + cfg.cashPerSec
 		end
 	end
 	return total
+end
+
+-- ─── Rebirth ─────────────────────────────────────────────────────────────────
+
+function BrainrotData.Rebirth(userId)
+	local d = _data[userId]
+	if not d then return false end
+	if #d.brainrots < 10 then return false end
+	d.cash      = 0
+	d.brainrots = {}
+	d.rebirths  = d.rebirths + 1
+	return true
+end
+
+-- ─── Raw Restore (used by DataStoreManager) ──────────────────────────────────
+
+function BrainrotData.Restore(userId, savedData)
+	_data[userId] = {
+		cash      = savedData.cash      or 100,
+		brainrots = savedData.brainrots or {},
+		rebirths  = savedData.rebirths  or 0,
+	}
 end
 
 return BrainrotData

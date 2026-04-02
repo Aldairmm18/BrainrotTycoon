@@ -1,17 +1,17 @@
 -- CashDisplay (LocalScript)
 -- StarterPlayerScripts/CashDisplay
--- Shows a floating ScreenGui HUD label with the player's formatted cash.
+-- Shows current cash in the top-left corner with K/M/B/T formatting and a subtle scale animation.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
 
-local UpdateCash = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("UpdateCash")
+local player     = Players.LocalPlayer
+local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
 
-local player = Players.LocalPlayer
+-- ─── Number Formatter ─────────────────────────────────────────────────────────
 
--- ─── Number Formatter ───────────────────────────────────────────────────────
-
-local suffixes = {
+local SUFFIXES = {
 	{ 1e12, "T" },
 	{ 1e9,  "B" },
 	{ 1e6,  "M" },
@@ -19,69 +19,96 @@ local suffixes = {
 }
 
 local function formatCash(n)
-	for _, pair in ipairs(suffixes) do
-		if n >= pair[1] then
-			local val = n / pair[1]
-			-- Show one decimal if < 10, otherwise whole number
-			if val < 10 then
-				return string.format("%.1f%s", val, pair[2])
+	n = math.floor(n)
+	for _, entry in ipairs(SUFFIXES) do
+		local threshold, suffix = entry[1], entry[2]
+		if n >= threshold then
+			local value = n / threshold
+			-- Show one decimal if not whole number
+			if value ~= math.floor(value) then
+				return ("%.1f%s"):format(value, suffix)
 			else
-				return string.format("%d%s", math.floor(val), pair[2])
+				return ("%d%s"):format(value, suffix)
 			end
 		end
 	end
-	return tostring(math.floor(n))
+	return tostring(n)
 end
 
--- ─── Build ScreenGui ────────────────────────────────────────────────────────
-
-local playerGui = player:WaitForChild("PlayerGui")
+-- ─── Build UI ─────────────────────────────────────────────────────────────────
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name            = "CashDisplay"
+screenGui.Name            = "CashDisplayGui"
 screenGui.ResetOnSpawn    = false
 screenGui.IgnoreGuiInset  = true
-screenGui.Parent          = playerGui
+screenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+screenGui.Parent          = player.PlayerGui
 
--- Background frame (top-center HUD)
+-- Background pill
 local frame = Instance.new("Frame")
 frame.Name              = "CashFrame"
-frame.Size              = UDim2.new(0, 220, 0, 54)
-frame.Position          = UDim2.new(0.5, -110, 0, 12)
-frame.BackgroundColor3  = Color3.fromRGB(20, 20, 30)
+frame.Size              = UDim2.new(0, 180, 0, 48)
+frame.Position          = UDim2.new(0, 16, 0, 16)
+frame.BackgroundColor3  = Color3.fromRGB(15, 15, 25)
 frame.BackgroundTransparency = 0.25
 frame.BorderSizePixel   = 0
 frame.Parent            = screenGui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
-corner.Parent       = frame
+corner.CornerRadius = UDim.new(0, 24)
+corner.Parent = frame
 
--- Coin icon label
-local icon = Instance.new("TextLabel")
-icon.Size                  = UDim2.new(0, 40, 1, 0)
-icon.Position              = UDim2.new(0, 0, 0, 0)
-icon.BackgroundTransparency= 1
-icon.Text                  = "💰"
-icon.TextScaled            = true
-icon.Font                  = Enum.Font.GothamBold
-icon.Parent                = frame
+local stroke = Instance.new("UIStroke")
+stroke.Color       = Color3.fromRGB(255, 215, 0)
+stroke.Thickness   = 1.5
+stroke.Transparency = 0.4
+stroke.Parent      = frame
 
--- Cash text label
 local cashLabel = Instance.new("TextLabel")
-cashLabel.Name                  = "CashLabel"
-cashLabel.Size                  = UDim2.new(1, -45, 1, 0)
-cashLabel.Position              = UDim2.new(0, 42, 0, 0)
-cashLabel.BackgroundTransparency= 1
-cashLabel.Text                  = "$0"
-cashLabel.TextColor3            = Color3.fromRGB(255, 220, 60)
-cashLabel.TextScaled            = true
-cashLabel.Font                  = Enum.Font.GothamBold
-cashLabel.TextXAlignment        = Enum.TextXAlignment.Left
-cashLabel.Parent                = frame
+cashLabel.Name               = "CashLabel"
+cashLabel.Size               = UDim2.new(1, 0, 1, 0)
+cashLabel.BackgroundTransparency = 1
+cashLabel.Text               = "💰 $0"
+cashLabel.Font               = Enum.Font.GothamBold
+cashLabel.TextSize           = 22
+cashLabel.TextColor3         = Color3.fromRGB(255, 225, 80)
+cashLabel.TextXAlignment     = Enum.TextXAlignment.Center
+cashLabel.TextYAlignment     = Enum.TextYAlignment.Center
+cashLabel.Parent             = frame
 
--- ─── Update on RemoteEvent ──────────────────────────────────────────────────
+-- ─── Update + Animation ───────────────────────────────────────────────────────
 
-UpdateCash.OnClientEvent:Connect(function(newCash)
-	cashLabel.Text = "$" .. formatCash(newCash)
-end)
+local function animatePop()
+	local tweenIn = TweenService:Create(frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 196, 0, 54)
+	})
+	local tweenOut = TweenService:Create(frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 180, 0, 48)
+	})
+	tweenIn:Play()
+	tweenIn.Completed:Connect(function()
+		tweenOut:Play()
+	end)
+end
+
+local function updateDisplay(cashAmount)
+	cashLabel.Text = "💰 $" .. formatCash(cashAmount)
+	animatePop()
+end
+
+-- ─── Events ───────────────────────────────────────────────────────────────────
+
+UpdateCash.OnClientEvent:Connect(updateDisplay)
+
+-- Also read from leaderstats immediately if available
+local function initFromLeaderstats()
+	local ls = player:WaitForChild("leaderstats", 10)
+	if ls then
+		local cashVal = ls:WaitForChild("Cash", 5)
+		if cashVal then
+			updateDisplay(cashVal.Value)
+		end
+	end
+end
+
+task.spawn(initFromLeaderstats)

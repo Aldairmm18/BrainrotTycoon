@@ -1,17 +1,17 @@
 -- EconomyServer (Script)
 -- ServerScriptService/EconomyServer
--- Distributes cashPerSec every second to all players.
+-- Distributes cashPerSec every second to all players, applying rebirth + gamepass multipliers.
 
-local Players           = game:GetService("Players")
+local Players            = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 
-local BrainrotData  = require(script.Parent.BrainrotData)
-local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
+local BrainrotData = require(script.Parent.BrainrotData)
+local RarityConfig = require(ReplicatedStorage.Modules.RarityConfig)
 
 local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
 
--- Placeholder GamePass ID for 2x multiplier
+-- Placeholder GamePass ID for 2× multiplier
 local GAMEPASS_2X_ID = 123456
 
 local function hasGamepass(player, passId)
@@ -38,19 +38,27 @@ task.spawn(function()
 		for _, player in ipairs(Players:GetPlayers()) do
 			local data = BrainrotData.Get(player.UserId)
 			if data then
-				local earned = BrainrotData.GetTotalCashPerSec(player.UserId, RarityConfig)
+				-- Base income
+				local baseCashPerSec = BrainrotData.GetTotalCashPerSec(player.UserId, RarityConfig)
 
-				-- Apply 2x gamepass multiplier
+				-- Rebirth multiplier: 1 + (rebirths * 0.5)
+				local rebirths         = data.rebirths or 0
+				local rebirthMultiplier = 1 + (rebirths * 0.5)
+
+				-- GamePass 2× multiplier
+				local gamepassMultiplier = 1
 				if hasGamepass(player, GAMEPASS_2X_ID) then
-					earned = earned * 2
+					gamepassMultiplier = 2
 				end
+
+				local earned = baseCashPerSec * rebirthMultiplier * gamepassMultiplier
 
 				BrainrotData.AddCash(player.UserId, earned)
 
 				-- Sync IntValue in leaderstats
 				syncLeaderstats(player, data.cash)
 
-				-- Notify client
+				-- Notify client with updated cash
 				UpdateCash:FireClient(player, math.floor(data.cash))
 			end
 		end

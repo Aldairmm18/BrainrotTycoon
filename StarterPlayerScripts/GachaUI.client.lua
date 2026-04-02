@@ -1,199 +1,291 @@
 -- GachaUI (LocalScript)
 -- StarterPlayerScripts/GachaUI
--- Egg buy button, opening animation, and result panel.
+-- Main gameplay UI: Buy Egg button, gacha result panel, Shop button.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService      = game:GetService("TweenService")
 
-local BuyEgg       = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyEgg")
-local RarityConfig = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityConfig"))
+local player       = Players.LocalPlayer
+local RemoteEvents = ReplicatedStorage.RemoteEvents
+local BuyEgg       = RemoteEvents.BuyEgg
+local GachaResult  = RemoteEvents.GachaResult
+local UpdateCash   = RemoteEvents.UpdateCash
 
-local player    = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+-- ─── Rarity Colors ────────────────────────────────────────────────────────────
 
--- ─── Build ScreenGui ────────────────────────────────────────────────────────
+local RARITY_COLORS = {
+	Common    = Color3.fromRGB(180, 180, 180),
+	Uncommon  = Color3.fromRGB(100, 160, 255),
+	Rare      = Color3.fromRGB(50,  200, 120),
+	Epic      = Color3.fromRGB(160, 100, 255),
+	Legendary = Color3.fromRGB(255, 180, 0),
+	Mythic    = Color3.fromRGB(255, 80,  40),
+	Secret    = Color3.fromRGB(255, 50,  50),
+}
+
+local function rarityColorHex(rarity)
+	local c = RARITY_COLORS[rarity] or Color3.fromRGB(200, 200, 200)
+	return ("#%02X%02X%02X"):format(
+		math.floor(c.R * 255),
+		math.floor(c.G * 255),
+		math.floor(c.B * 255)
+	)
+end
+
+-- ─── Build UI ─────────────────────────────────────────────────────────────────
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name           = "GachaUI"
 screenGui.ResetOnSpawn   = false
 screenGui.IgnoreGuiInset = true
-screenGui.Parent         = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = player.PlayerGui
 
--- ── Buy Button ──────────────────────────────────────────────────────────────
+-- ── Buy Egg Button (centre) ──────────────────────────────────────────────────
 
-local buyBtn = Instance.new("TextButton")
-buyBtn.Name             = "BuyEggButton"
-buyBtn.Size             = UDim2.new(0, 200, 0, 60)
-buyBtn.Position         = UDim2.new(0.5, -100, 1, -82)
-buyBtn.BackgroundColor3 = Color3.fromRGB(255, 190, 30)
-buyBtn.Text             = "🥚 Buy Egg  $500"
-buyBtn.TextColor3       = Color3.fromRGB(30, 20, 0)
-buyBtn.TextScaled       = true
-buyBtn.Font             = Enum.Font.GothamBold
-buyBtn.BorderSizePixel  = 0
-buyBtn.Parent           = screenGui
+local buyButton = Instance.new("TextButton")
+buyButton.Name              = "BuyEggButton"
+buyButton.Size              = UDim2.new(0, 240, 0, 64)
+buyButton.Position          = UDim2.new(0.5, -120, 0.78, 0)
+buyButton.BackgroundColor3  = Color3.fromRGB(255, 185, 15)
+buyButton.BorderSizePixel   = 0
+buyButton.Text              = "🥚 Buy Egg  $500"
+buyButton.Font              = Enum.Font.GothamBold
+buyButton.TextSize          = 22
+buyButton.TextColor3        = Color3.fromRGB(30, 20, 0)
+buyButton.AutoButtonColor   = false
+buyButton.Parent            = screenGui
 
 local buyCorner = Instance.new("UICorner")
-buyCorner.CornerRadius = UDim.new(0, 16)
-buyCorner.Parent       = buyBtn
+buyCorner.CornerRadius = UDim.new(0, 32)
+buyCorner.Parent = buyButton
 
--- ── Result Panel (hidden by default) ────────────────────────────────────────
+local buyGradient = Instance.new("UIGradient")
+buyGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 210, 50)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 140, 0)),
+})
+buyGradient.Rotation = 90
+buyGradient.Parent = buyButton
 
-local panel = Instance.new("Frame")
-panel.Name              = "ResultPanel"
-panel.Size              = UDim2.new(0, 320, 0, 200)
-panel.Position          = UDim2.new(0.5, -160, 0.5, -100)
-panel.BackgroundColor3  = Color3.fromRGB(18, 14, 32)
-panel.BackgroundTransparency = 0.05
-panel.BorderSizePixel   = 0
-panel.Visible           = false
-panel.ZIndex            = 10
-panel.Parent            = screenGui
-
-local panelCorner = Instance.new("UICorner")
-panelCorner.CornerRadius = UDim.new(0, 22)
-panelCorner.Parent       = panel
-
-local emojiLabel = Instance.new("TextLabel")
-emojiLabel.Name                  = "EmojiLabel"
-emojiLabel.Size                  = UDim2.new(1, 0, 0, 70)
-emojiLabel.Position              = UDim2.new(0, 0, 0, 10)
-emojiLabel.BackgroundTransparency= 1
-emojiLabel.Text                  = "🥚"
-emojiLabel.TextScaled            = true
-emojiLabel.Font                  = Enum.Font.GothamBold
-emojiLabel.ZIndex                = 11
-emojiLabel.Parent                = panel
-
-local resultTitle = Instance.new("TextLabel")
-resultTitle.Name                  = "ResultTitle"
-resultTitle.Size                  = UDim2.new(1, -20, 0, 30)
-resultTitle.Position              = UDim2.new(0, 10, 0, 85)
-resultTitle.BackgroundTransparency= 1
-resultTitle.Text                  = "¡Obtuviste ?"
-resultTitle.TextColor3            = Color3.fromRGB(255, 255, 255)
-resultTitle.TextScaled            = true
-resultTitle.Font                  = Enum.Font.GothamBold
-resultTitle.ZIndex                = 11
-resultTitle.Parent                = panel
-
-local rarityLabel = Instance.new("TextLabel")
-rarityLabel.Name                  = "RarityLabel"
-rarityLabel.Size                  = UDim2.new(1, -20, 0, 28)
-rarityLabel.Position              = UDim2.new(0, 10, 0, 118)
-rarityLabel.BackgroundTransparency= 1
-rarityLabel.Text                  = "Common"
-rarityLabel.TextColor3            = Color3.fromRGB(180, 180, 180)
-rarityLabel.TextScaled            = true
-rarityLabel.Font                  = Enum.Font.Gotham
-rarityLabel.ZIndex                = 11
-rarityLabel.Parent                = panel
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Name             = "CloseButton"
-closeBtn.Size             = UDim2.new(0, 100, 0, 34)
-closeBtn.Position         = UDim2.new(0.5, -50, 1, -46)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-closeBtn.Text             = "✕ Close"
-closeBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
-closeBtn.TextScaled       = true
-closeBtn.Font             = Enum.Font.GothamBold
-closeBtn.BorderSizePixel  = 0
-closeBtn.ZIndex           = 11
-closeBtn.Parent           = panel
-
-local closeBtnCorner = Instance.new("UICorner")
-closeBtnCorner.CornerRadius = UDim.new(0, 10)
-closeBtnCorner.Parent       = closeBtn
-
--- ─── Animation Helpers ───────────────────────────────────────────────────────
-
-local function punchButton(btn)
-	local tweenIn = TweenService:Create(btn,
-		TweenInfo.new(0.08, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Size = UDim2.new(0, 180, 0, 54) }
-	)
-	local tweenOut = TweenService:Create(btn,
-		TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Size = UDim2.new(0, 200, 0, 60) }
-	)
-	tweenIn:Play()
-	tweenIn.Completed:Wait()
-	tweenOut:Play()
+-- Hover / Press animations
+local function tweenBuy(size, color)
+	TweenService:Create(buyButton, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {
+		Size = size,
+		BackgroundColor3 = color,
+	}):Play()
 end
 
-local function showResult(brainrot)
-	local rarData = RarityConfig[brainrot.rarity] or {}
+buyButton.MouseEnter:Connect(function()
+	tweenBuy(UDim2.new(0, 252, 0, 68), Color3.fromRGB(255, 200, 30))
+end)
+buyButton.MouseLeave:Connect(function()
+	tweenBuy(UDim2.new(0, 240, 0, 64), Color3.fromRGB(255, 185, 15))
+end)
+buyButton.MouseButton1Down:Connect(function()
+	tweenBuy(UDim2.new(0, 232, 0, 60), Color3.fromRGB(220, 140, 0))
+end)
 
-	emojiLabel.Text       = brainrot.emoji or "❓"
-	resultTitle.Text      = "¡Obtuviste " .. (brainrot.name or "?") .. "!"
-	rarityLabel.Text      = "✦ " .. (brainrot.rarity or "Unknown")
-	rarityLabel.TextColor3= rarData.color or Color3.fromRGB(255,255,255)
+-- ── Shop Button (bottom-right) ───────────────────────────────────────────────
 
-	panel.Size    = UDim2.new(0, 0, 0, 0)
-	panel.Position= UDim2.new(0.5, 0, 0.5, 0)
-	panel.Visible = true
+local shopButton = Instance.new("TextButton")
+shopButton.Name             = "ShopButton"
+shopButton.Size             = UDim2.new(0, 120, 0, 50)
+shopButton.Position         = UDim2.new(1, -136, 1, -66)
+shopButton.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+shopButton.BorderSizePixel  = 0
+shopButton.Text             = "🛒 Shop"
+shopButton.Font             = Enum.Font.GothamBold
+shopButton.TextSize         = 18
+shopButton.TextColor3       = Color3.fromRGB(255, 255, 255)
+shopButton.AutoButtonColor  = false
+shopButton.Parent           = screenGui
 
-	TweenService:Create(panel,
-		TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{
-			Size     = UDim2.new(0, 320, 0, 200),
-			Position = UDim2.new(0.5, -160, 0.5, -100),
-		}
-	):Play()
+local shopCorner = Instance.new("UICorner")
+shopCorner.CornerRadius = UDim.new(0, 20)
+shopCorner.Parent = shopButton
 
-	-- Auto-close after 3 seconds
-	task.delay(3, function()
-		if panel.Visible then
-			panel.Visible = false
+local shopStroke = Instance.new("UIStroke")
+shopStroke.Color       = Color3.fromRGB(100, 100, 180)
+shopStroke.Thickness   = 1.5
+shopStroke.Parent      = shopButton
+
+shopButton.MouseEnter:Connect(function()
+	TweenService:Create(shopButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(60, 60, 100)}):Play()
+end)
+shopButton.MouseLeave:Connect(function()
+	TweenService:Create(shopButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 40, 60)}):Play()
+end)
+
+-- ─── Gacha Result Panel ───────────────────────────────────────────────────────
+
+local function createResultPanel(resultData)
+	-- Dim overlay
+	local overlay = Instance.new("Frame")
+	overlay.Name                 = "ResultOverlay"
+	overlay.Size                 = UDim2.new(1, 0, 1, 0)
+	overlay.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+	overlay.BackgroundTransparency = 0.45
+	overlay.BorderSizePixel      = 0
+	overlay.ZIndex               = 10
+	overlay.Parent               = screenGui
+
+	-- Panel card
+	local card = Instance.new("Frame")
+	card.Name               = "ResultCard"
+	card.Size               = UDim2.new(0, 340, 0, 380)
+	card.Position           = UDim2.new(0.5, -170, 0.5, -190)
+	card.BackgroundColor3   = Color3.fromRGB(18, 18, 30)
+	card.BorderSizePixel    = 0
+	card.ZIndex             = 11
+	card.Parent             = overlay
+
+	local cardCorner = Instance.new("UICorner")
+	cardCorner.CornerRadius = UDim.new(0, 20)
+	cardCorner.Parent = card
+
+	-- Rarity-coloured glow stroke
+	local rarityColor = RARITY_COLORS[resultData.rarity] or Color3.fromRGB(200, 200, 200)
+	local cardStroke  = Instance.new("UIStroke")
+	cardStroke.Color     = rarityColor
+	cardStroke.Thickness = 3
+	cardStroke.Parent    = card
+
+	-- Emoji label (big)
+	local emojiLabel = Instance.new("TextLabel")
+	emojiLabel.Size                    = UDim2.new(1, 0, 0, 120)
+	emojiLabel.Position                = UDim2.new(0, 0, 0, 24)
+	emojiLabel.BackgroundTransparency  = 1
+	emojiLabel.Text                    = resultData.emoji or "❓"
+	emojiLabel.TextSize                = 72
+	emojiLabel.Font                    = Enum.Font.GothamBold
+	emojiLabel.TextColor3              = Color3.fromRGB(255, 255, 255)
+	emojiLabel.ZIndex                  = 12
+	emojiLabel.Parent                  = card
+
+	-- Brainrot Name
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size                   = UDim2.new(1, -24, 0, 40)
+	nameLabel.Position               = UDim2.new(0, 12, 0, 150)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text                   = resultData.name
+	nameLabel.Font                   = Enum.Font.GothamBold
+	nameLabel.TextSize               = 24
+	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextXAlignment         = Enum.TextXAlignment.Center
+	nameLabel.ZIndex                  = 12
+	nameLabel.Parent                 = card
+
+	-- Rarity label
+	local rarityLabel = Instance.new("TextLabel")
+	rarityLabel.Size                  = UDim2.new(1, -24, 0, 32)
+	rarityLabel.Position              = UDim2.new(0, 12, 0, 195)
+	rarityLabel.BackgroundTransparency = 1
+	rarityLabel.Text                  = "✨ " .. (resultData.rarity or "?")
+	rarityLabel.Font                  = Enum.Font.GothamBold
+	rarityLabel.TextSize              = 20
+	rarityLabel.TextColor3            = rarityColor
+	rarityLabel.TextXAlignment        = Enum.TextXAlignment.Center
+	rarityLabel.ZIndex                 = 12
+	rarityLabel.Parent                = card
+
+	-- Cash per second label
+	local function formatNum(n)
+		if n >= 1e12 then return ("%.1fT"):format(n/1e12)
+		elseif n >= 1e9 then return ("%.1fB"):format(n/1e9)
+		elseif n >= 1e6 then return ("%.1fM"):format(n/1e6)
+		elseif n >= 1e3 then return ("%.1fK"):format(n/1e3)
+		else return tostring(math.floor(n)) end
+	end
+
+	local cpsLabel = Instance.new("TextLabel")
+	cpsLabel.Size                   = UDim2.new(1, -24, 0, 32)
+	cpsLabel.Position               = UDim2.new(0, 12, 0, 234)
+	cpsLabel.BackgroundTransparency = 1
+	cpsLabel.Text                   = "💵 $" .. formatNum(resultData.cashPerSec or 0) .. "/seg"
+	cpsLabel.Font                   = Enum.Font.Gotham
+	cpsLabel.TextSize               = 18
+	cpsLabel.TextColor3             = Color3.fromRGB(130, 230, 130)
+	cpsLabel.TextXAlignment         = Enum.TextXAlignment.Center
+	cpsLabel.ZIndex                  = 12
+	cpsLabel.Parent                 = card
+
+	-- Close button
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Name             = "CloseButton"
+	closeBtn.Size             = UDim2.new(0, 180, 0, 48)
+	closeBtn.Position         = UDim2.new(0.5, -90, 0, 306)
+	closeBtn.BackgroundColor3 = rarityColor
+	closeBtn.BorderSizePixel  = 0
+	closeBtn.Text             = "¡Genial!"
+	closeBtn.Font             = Enum.Font.GothamBold
+	closeBtn.TextSize         = 20
+	closeBtn.TextColor3       = Color3.fromRGB(10, 10, 10)
+	closeBtn.ZIndex            = 12
+	closeBtn.Parent           = card
+
+	local closeBtnCorner = Instance.new("UICorner")
+	closeBtnCorner.CornerRadius = UDim.new(0, 24)
+	closeBtnCorner.Parent = closeBtn
+
+	-- Entry animation: scale 0 → 1 → 1.1 → 1
+	card.Size = UDim2.new(0, 1, 0, 1)
+	card.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+	local tweenOpen = TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size     = UDim2.new(0, 354, 0, 394),
+		Position = UDim2.new(0.5, -177, 0.5, -197),
+	})
+	tweenOpen:Play()
+	tweenOpen.Completed:Connect(function()
+		local tweenBounce = TweenService:Create(card, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size     = UDim2.new(0, 340, 0, 380),
+			Position = UDim2.new(0.5, -170, 0.5, -190),
+		})
+		tweenBounce:Play()
+	end)
+
+	local function closePanel()
+		local tweenClose = TweenService:Create(overlay, TweenInfo.new(0.2), {BackgroundTransparency = 1})
+		local tweenCardClose = TweenService:Create(card, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Size     = UDim2.new(0, 1, 0, 1),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+		})
+		tweenClose:Play()
+		tweenCardClose:Play()
+		tweenClose.Completed:Connect(function()
+			overlay:Destroy()
+		end)
+	end
+
+	closeBtn.MouseButton1Click:Connect(closePanel)
+	overlay.MouseButton1Click:Connect(closePanel)
+
+	-- Auto-close after 4 seconds
+	task.delay(4, function()
+		if overlay and overlay.Parent then
+			closePanel()
 		end
 	end)
 end
 
-local function showError(reason)
-	local msg = reason == "not_enough_cash" and "😢 Not enough cash!" or
-	            reason == "inventory_full"   and "📦 Inventory full! (max 10)" or
-	            "Something went wrong."
+-- ─── Wire Events ──────────────────────────────────────────────────────────────
 
-	emojiLabel.Text       = "❌"
-	resultTitle.Text      = msg
-	rarityLabel.Text      = ""
-	panel.Size    = UDim2.new(0, 320, 0, 200)
-	panel.Position= UDim2.new(0.5, -160, 0.5, -100)
-	panel.Visible = true
-
-	task.delay(2.5, function()
-		if panel.Visible then panel.Visible = false end
-	end)
-end
-
--- ─── Button Logic ────────────────────────────────────────────────────────────
-
-local canBuy = true
-
-buyBtn.MouseButton1Click:Connect(function()
-	if not canBuy then return end
-	canBuy = false
-
-	task.spawn(punchButton, buyBtn)
-	BuyEgg:FireServer(false, nil)  -- gacha roll
-
-	task.delay(0.5, function()
-		canBuy = true
-	end)
+buyButton.MouseButton1Up:Connect(function()
+	tweenBuy(UDim2.new(0, 240, 0, 64), Color3.fromRGB(255, 185, 15))
+	BuyEgg:FireServer()
 end)
 
-closeBtn.MouseButton1Click:Connect(function()
-	panel.Visible = false
+GachaResult.OnClientEvent:Connect(function(resultData)
+	createResultPanel(resultData)
 end)
 
--- ─── Server Response ─────────────────────────────────────────────────────────
-
-BuyEgg.OnClientEvent:Connect(function(brainrot, status)
-	if status == "success" and brainrot then
-		showResult(brainrot)
-	else
-		showError(status)
+-- Shop button placeholder (ShopUI handles it separately)
+shopButton.MouseButton1Click:Connect(function()
+	local shopGui = player.PlayerGui:FindFirstChild("ShopUI")
+	if shopGui then
+		local frame = shopGui:FindFirstChildWhichIsA("Frame", true)
+		if frame then frame.Visible = not frame.Visible end
 	end
 end)

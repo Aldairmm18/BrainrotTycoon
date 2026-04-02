@@ -1,203 +1,242 @@
 -- GachaServer (Script)
 -- ServerScriptService/GachaServer
--- Handles egg purchases, random drop resolution, inventory management,
--- and Brainrot Part placement on the player's base.
+-- Handles egg purchases, rarity rolls, and placing Brainrot Parts in the world.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace         = game:GetService("Workspace")
+local TweenService      = game:GetService("TweenService")
 
 local BrainrotData  = require(script.Parent.BrainrotData)
 local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
 local BrainrotList  = require(ReplicatedStorage.Modules.BrainrotList)
 
-local BuyEgg       = ReplicatedStorage.RemoteEvents.BuyEgg
-local PlaceBrainrot= ReplicatedStorage.RemoteEvents.PlaceBrainrot
-local UpdateCash   = ReplicatedStorage.RemoteEvents.UpdateCash
+local RemoteEvents  = ReplicatedStorage.RemoteEvents
+local BuyEgg        = RemoteEvents.BuyEgg
+local GachaResult   = RemoteEvents.GachaResult
 
-local EGG_PRICE    = 500
-local GRID_SIZE    = 3  -- studs between brainrot parts
-local BASE_HEIGHT  = 1  -- height offset above the base
+local EGG_COST      = 500
+local MAX_BRAINROTS = 25            -- 5×5 grid cap
+local GRID_SPACING  = 6             -- studs between each Part centre
+local PLAYER_AREA_WIDTH = 50        -- studs allocated per player on the X axis
+local BASE_Y        = 1.5           -- Y so the 3-stud-tall Part sits on the baseplate
 
--- ─── Gacha Roll ─────────────────────────────────────────────────────────────
+-- ─── Rarity Roll ─────────────────────────────────────────────────────────────
+-- Cumulative thresholds: Common ≤ .60, Uncommon ≤ .85, Rare ≤ .95,
+-- Epic ≤ .99, Legendary ≤ .999, Mythic ≤ .9999, Secret ≤ 1.0
+local CUMULATIVE = {
+	{ rarity = "Common",    threshold = 0.60   },
+	{ rarity = "Uncommon",  threshold = 0.85   },
+	{ rarity = "Rare",      threshold = 0.95   },
+	{ rarity = "Epic",      threshold = 0.99   },
+	{ rarity = "Legendary", threshold = 0.999  },
+	{ rarity = "Mythic",    threshold = 0.9999 },
+	{ rarity = "Secret",    threshold = 1.0    },
+}
 
--- Build a weighted pool from BrainrotList using rarity dropChances
-local function rollBrainrot()
-	-- Build cumulative table from rarities in order
-	local cumulative = {}
-	local runningSum = 0
-	for _, rarityName in ipairs(RarityConfig.Order) do
-		runningSum = runningSum + RarityConfig[rarityName].dropChance
-		table.insert(cumulative, { rarity = rarityName, threshold = runningSum })
+local function rollRarity()
+	local roll = math.random()
+	for _, entry in ipairs(CUMULATIVE) do
+		if roll <= entry.threshold then
+			return entry.rarity
+		end
+	end
+	return "Secret"   -- fallback (should never reach)
+end
+
+-- ─── Grid Slot → World Position ──────────────────────────────────────────────
+
+local function getSlotPosition(userId, slotIndex)
+	-- Player area offset: each player owns a 50-stud column on X
+	local areaX = (userId % 20) * PLAYER_AREA_WIDTH
+
+	-- Flatten slot (0-based) into row/col inside a 5×5 grid
+	local col = slotIndex % 5
+	local row = math.floor(slotIndex / 5)
+
+	local x = areaX + (col * GRID_SPACING) - (2 * GRID_SPACING)
+	local z = row * GRID_SPACING
+	return Vector3.new(x, BASE_Y, z)
+end
+
+-- ─── Remove Oldest Brainrot Part From Workspace ──────────────────────────────
+
+local function removeOldestPart(userId)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then return end
+
+	local oldest = nil
+	local oldestTime = math.huge
+
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		local owner = part:GetAttribute("OwnerId")
+		local t     = part:GetAttribute("SpawnTime") or 0
+		if owner == userId and t < oldestTime then
+			oldest    = part
+			oldestTime = t
+		end
 	end
 
-	local roll = math.random()  -- [0, 1)
-	local chosenRarity = RarityConfig.Order[#RarityConfig.Order]  -- fallback to last
+	if oldest then
+		oldest:Destroy()
+	end
+end
 
-	for _, entry in ipairs(cumulative) do
-		if roll < entry.threshold then
-			chosenRarity = entry.rarity
+-- ─── Count Player Parts ───────────────────────────────────────────────────────
+
+local function countPlayerParts(userId)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then return 0 end
+	local count = 0
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		if part:GetAttribute("OwnerId") == userId then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+-- ─── Place Brainrot Part ─────────────────────────────────────────────────────
+
+local function placeBrainrotPart(player, brainrot)
+	-- Ensure Brainrots folder exists
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then
+		brainrotFolder = Instance.new("Folder")
+		brainrotFolder.Name = "Brainrots"
+		brainrotFolder.Parent = workspace
+	end
+
+	local userId = player.UserId
+
+	-- Enforce 5×5 = 25 max; evict oldest if at cap
+	if countPlayerParts(userId) >= MAX_BRAINROTS then
+		removeOldestPart(userId)
+	end
+
+	-- Find next free slot index (0–24)
+	local usedSlots = {}
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		if part:GetAttribute("OwnerId") == userId then
+			local slot = part:GetAttribute("SlotIndex")
+			if slot then usedSlots[slot] = true end
+		end
+	end
+
+	local slotIndex = 0
+	for i = 0, MAX_BRAINROTS - 1 do
+		if not usedSlots[i] then
+			slotIndex = i
 			break
 		end
 	end
 
-	-- Pick a random Brainrot of that rarity
-	local pool = BrainrotList.GetByRarity(chosenRarity)
-	if #pool == 0 then
-		-- Fallback: pick first of any rarity
-		return BrainrotList[1]
-	end
-	return pool[math.random(1, #pool)]
-end
+	local cfg      = RarityConfig[brainrot.rarity]
+	local position = getSlotPosition(userId, slotIndex)
 
--- ─── Part Placement ─────────────────────────────────────────────────────────
-
-local function getPlayerBase(player)
-	-- Look for a BasePart named after the player in Workspace
-	local baseFolder = Workspace:FindFirstChild("PlayerBases")
-	if not baseFolder then
-		baseFolder = Instance.new("Folder")
-		baseFolder.Name   = "PlayerBases"
-		baseFolder.Parent = Workspace
-	end
-
-	local playerFolder = baseFolder:FindFirstChild(player.Name)
-	if not playerFolder then
-		playerFolder = Instance.new("Folder")
-		playerFolder.Name   = player.Name
-		playerFolder.Parent = baseFolder
-	end
-	return playerFolder
-end
-
-local function placeBrainrotPart(player, brainrot, slotIndex)
-	local rarityData = RarityConfig[brainrot.rarity]
-	if not rarityData then return end
-
-	local playerBase = getPlayerBase(player)
-
-	-- Find character HumanoidRootPart for base position origin
-	local character = player.Character
-	local origin    = Vector3.new(0, 0, 0)
-	if character then
-		local hrp = character:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			origin = hrp.Position + Vector3.new(0, -2.5, 0)
-		end
-	end
-
-	-- Arrange in a row, offsetting by slot index
-	local cols = 5
-	local col  = (slotIndex - 1) % cols
-	local row  = math.floor((slotIndex - 1) / cols)
-
+	-- Main Part
 	local part = Instance.new("Part")
-	part.Name     = brainrot.name
-	part.Size     = Vector3.new(2, 2, 2)
-	part.Color    = rarityData.color
-	part.Material = Enum.Material.SmoothPlastic
-	part.Anchored = true
-	part.Position = origin + Vector3.new(
-		col * GRID_SIZE - (cols * GRID_SIZE / 2),
-		BASE_HEIGHT,
-		row * GRID_SIZE + 3
-	)
+	part.Size      = Vector3.new(3, 3, 3)
+	part.Anchored  = true
+	part.CastShadow = true
+	part.Color     = cfg and cfg.color or Color3.fromRGB(200, 200, 200)
+	part.Material  = Enum.Material.SmoothPlastic
+	part.Position  = position
+	part.Name      = brainrot.name
+	part:SetAttribute("OwnerId",   userId)
+	part:SetAttribute("SlotIndex", slotIndex)
+	part:SetAttribute("SpawnTime", os.time())
 
-	-- Label
-	local billboardGui = Instance.new("BillboardGui")
-	billboardGui.Size          = UDim2.new(0, 80, 0, 40)
-	billboardGui.StudsOffset   = Vector3.new(0, 2, 0)
-	billboardGui.AlwaysOnTop   = false
-	billboardGui.Parent        = part
+	-- CashPerSec NumberValue
+	local cashVal = Instance.new("NumberValue")
+	cashVal.Name  = "CashPerSec"
+	cashVal.Value = cfg and cfg.cashPerSec or 0
+	cashVal.Parent = part
 
-	local label = Instance.new("TextLabel")
-	label.Size            = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Text            = brainrot.emoji .. "\n" .. brainrot.name
-	label.TextColor3      = Color3.fromRGB(255, 255, 255)
-	label.TextScaled      = true
-	label.Font            = Enum.Font.GothamBold
-	label.Parent          = billboardGui
+	-- BillboardGui – emoji + name label
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name          = "BillboardGui"
+	billboard.Size          = UDim2.new(0, 120, 0, 60)
+	billboard.StudsOffset   = Vector3.new(0, 2.5, 0)
+	billboard.AlwaysOnTop   = false
+	billboard.ResetOnSpawn  = false
+	billboard.Parent        = part
 
-	part.Parent = playerBase
+	local emojiLabel = Instance.new("TextLabel")
+	emojiLabel.Name            = "Emoji"
+	emojiLabel.Size            = UDim2.new(1, 0, 0.55, 0)
+	emojiLabel.BackgroundTransparency = 1
+	emojiLabel.Text            = brainrot.emoji or "❓"
+	emojiLabel.TextScaled      = true
+	emojiLabel.Font            = Enum.Font.GothamBold
+	emojiLabel.TextColor3      = Color3.fromRGB(255, 255, 255)
+	emojiLabel.Parent          = billboard
 
-	return part
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Name             = "Name"
+	nameLabel.Size             = UDim2.new(1, 0, 0.45, 0)
+	nameLabel.Position         = UDim2.new(0, 0, 0.55, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text             = brainrot.name
+	nameLabel.TextScaled       = true
+	nameLabel.Font             = Enum.Font.Gotham
+	nameLabel.TextColor3       = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextStrokeTransparency = 0.5
+	nameLabel.Parent           = billboard
+
+	part.Parent = brainrotFolder
 end
 
--- ─── BuyEgg Handler ─────────────────────────────────────────────────────────
+-- ─── Main Handler ─────────────────────────────────────────────────────────────
 
-BuyEgg.OnServerEvent:Connect(function(player, isDirectBuy, directBrainrotName)
-	local data = BrainrotData.Get(player.UserId)
+BuyEgg.OnServerEvent:Connect(function(player)
+	local userId = player.UserId
+	local data   = BrainrotData.Get(userId)
 	if not data then return end
 
-	local price = EGG_PRICE
-	local brainrot
-
-	if isDirectBuy and directBrainrotName then
-		-- Direct shop purchase
-		local entry = BrainrotList.FindByName(directBrainrotName)
-		if not entry then return end
-		local directPrice = RarityConfig.DirectPrice[entry.rarity]
-		if not directPrice then
-			player:Kick("Attempted to buy non-purchasable rarity directly.")
-			return
-		end
-		price    = directPrice
-		brainrot = entry
-	else
-		-- Gacha roll
-		brainrot = rollBrainrot()
-	end
-
-	-- 1. Verify funds
-	if data.cash < price then
-		-- Not enough cash - fire back with nil to signal failure
-		BuyEgg:FireClient(player, nil, "not_enough_cash")
+	-- 1. Verify funds (server-authoritative)
+	if data.cash < EGG_COST then
+		warn(("[GachaServer] %s tried to buy egg but only has %d cash"):format(player.Name, data.cash))
 		return
 	end
 
-	-- 2. Check inventory capacity
-	if #data.brainrots >= 10 then
-		BuyEgg:FireClient(player, nil, "inventory_full")
-		return
+	-- 2. Deduct cost
+	BrainrotData.SpendCash(userId, EGG_COST)
+
+	-- 3. Roll rarity
+	local rarity = rollRarity()
+
+	-- 4. Pick a random Brainrot of that rarity
+	local pool = BrainrotList.GetByRarity(rarity)
+	if #pool == 0 then
+		-- Fallback to Common if pool is empty
+		rarity = "Common"
+		pool   = BrainrotList.GetByRarity("Common")
 	end
+	local chosen = pool[math.random(1, #pool)]
 
-	-- 3. Deduct cash (server-authoritative)
-	local spent = BrainrotData.SpendCash(player.UserId, price)
-	if not spent then return end
+	-- 5. Add to player inventory
+	BrainrotData.AddBrainrot(userId, {
+		name   = chosen.name,
+		rarity = chosen.rarity,
+		emoji  = chosen.emoji,
+	})
 
-	-- 4. Add to inventory
-	BrainrotData.AddBrainrot(player.UserId, brainrot)
+	-- 6. Place the Part in the Workspace
+	placeBrainrotPart(player, chosen)
 
-	-- 5. Place Part in Workspace
-	local slotIndex = #data.brainrots  -- already updated by AddBrainrot
-	task.spawn(function()
-		placeBrainrotPart(player, brainrot, slotIndex)
-	end)
+	-- 7. Fire result back to client
+	local cfg = RarityConfig[rarity]
+	GachaResult:FireClient(player, {
+		name       = chosen.name,
+		rarity     = chosen.rarity,
+		cashPerSec = cfg and cfg.cashPerSec or 0,
+		emoji      = chosen.emoji,
+	})
 
-	-- 6. Sync leaderstats
+	-- Sync leaderstats
 	local ls = player:FindFirstChild("leaderstats")
 	if ls then
 		local cashVal = ls:FindFirstChild("Cash")
 		if cashVal then cashVal.Value = math.floor(data.cash) end
 	end
-
-	-- 7. Notify client of new cash and obtained brainrot
-	UpdateCash:FireClient(player, math.floor(data.cash))
-	BuyEgg:FireClient(player, brainrot, "success")
-end)
-
--- ─── PlaceBrainrot Handler (manual re-place) ───────────────────────────────
-
-PlaceBrainrot.OnServerEvent:Connect(function(player, brainrotName)
-	local data = BrainrotData.Get(player.UserId)
-	if not data then return end
-
-	local entry = BrainrotList.FindByName(brainrotName)
-	if not entry then return end
-
-	local slotIndex = #data.brainrots
-	task.spawn(function()
-		placeBrainrotPart(player, entry, slotIndex)
-	end)
 end)
