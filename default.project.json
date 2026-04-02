@@ -3,6 +3,31 @@
   "tree": {
     "$className": "DataModel",
 
+    "Workspace": {
+      "$className": "Workspace",
+      "Baseplate": {
+        "$className": "Part",
+        "$properties": {
+          "Size": { "Vector3": [2048, 20, 2048] },
+          "Position": { "Vector3": [0, -10, 0] },
+          "Anchored": true,
+          "Locked": true,
+          "TopSurface": { "Enum": "Smooth" },
+          "BottomSurface": { "Enum": "Smooth" },
+          "Material": { "Enum": "SmoothPlastic" },
+          "Color": { "Color3uint8": [106, 127, 63] }
+        }
+      },
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Size": { "Vector3": [6, 1, 6] },
+          "Position": { "Vector3": [0, 1, 0] },
+          "Anchored": true
+        }
+      }
+    },
+
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "Modules": {
@@ -11,27 +36,23 @@
       },
       "RemoteEvents": {
         "$className": "Folder",
-        "UpdateCash":         { "$className": "RemoteEvent" },
-        "BuyEgg":             { "$className": "RemoteEvent" },
-        "PlaceBrainrot":      { "$className": "RemoteEvent" },
-        "GachaResult":        { "$className": "RemoteEvent" },
-        "Rebirth":            { "$className": "RemoteEvent" },
-        "RebornResult":       { "$className": "RemoteEvent" },
-        "RedeemCode":         { "$className": "RemoteEvent" },
-        "CodeResult":         { "$className": "RemoteEvent" },
-        "BuyPass":            { "$className": "RemoteEvent" },
-        "GetMissions":        { "$className": "RemoteEvent" },
-        "MissionUpdate":      { "$className": "RemoteEvent" },
-        "ClaimMission":       { "$className": "RemoteEvent" },
-        "EquipPet":           { "$className": "RemoteEvent" },
-        "UnequipPet":         { "$className": "RemoteEvent" },
-        "PetUpdate":          { "$className": "RemoteEvent" },
-        "GlobalNotification": { "$className": "RemoteEvent" },
-        "ActivityBonus":      { "$className": "RemoteEvent" },
-        "GetGlobalLB":        { "$className": "RemoteEvent" },
-        "BuyPetEgg":          { "$className": "RemoteEvent" },
-        "TutorialDone":       { "$className": "RemoteEvent" },
-        "TutorialStatus":     { "$className": "RemoteEvent" }
+        "UpdateCash":        { "$className": "RemoteEvent" },
+        "BuyEgg":            { "$className": "RemoteEvent" },
+        "PlaceBrainrot":     { "$className": "RemoteEvent" },
+        "GachaResult":       { "$className": "RemoteEvent" },
+        "Rebirth":           { "$className": "RemoteEvent" },
+        "RebornResult":      { "$className": "RemoteEvent" },
+        "RedeemCode":        { "$className": "RemoteEvent" },
+        "CodeResult":        { "$className": "RemoteEvent" },
+        "BuyPass":           { "$className": "RemoteEvent" },
+        "GetMissions":       { "$className": "RemoteEvent" },
+        "MissionUpdate":     { "$className": "RemoteEvent" },
+        "ClaimMission":      { "$className": "RemoteEvent" },
+        "EquipPet":          { "$className": "RemoteEvent" },
+        "UnequipPet":        { "$className": "RemoteEvent" },
+        "PetUpdate":         { "$className": "RemoteEvent" },
+        "GlobalNotification":{ "$className": "RemoteEvent" },
+        "ActivityBonus":     { "$className": "RemoteEvent" }
       }
     },
 
@@ -46,11 +67,6 @@
         "$className": "StarterPlayerScripts",
         "$path": "StarterPlayerScripts"
       }
-    },
-
-    "Workspace": {
-      "$className": "Workspace",
-      "$path": "Workspace"
     }
   }
 }
