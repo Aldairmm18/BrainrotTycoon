@@ -12,19 +12,77 @@
           <string name="Name">BrainrotList</string>
           <string name="Source"><![CDATA[-- BrainrotList (ModuleScript)
 -- ReplicatedStorage/Modules/BrainrotList
+-- 50 Brainrots with name, rarity, emoji, catchphrase
 
 local BrainrotList = {
-	{ name = "Tralalero Tralala",    rarity = "Common",    emoji = "🐟" },
-	{ name = "Tung Tung Sahur",      rarity = "Uncommon",  emoji = "🥁" },
-	{ name = "Cappuccino Assassino", rarity = "Rare",      emoji = "☕" },
-	{ name = "Bombardiro Crocodilo", rarity = "Epic",      emoji = "🐊" },
-	{ name = "Ballerina Cappuccina", rarity = "Epic",      emoji = "💃" },
-	{ name = "Frigo Camelo",         rarity = "Legendary", emoji = "🐪" },
-	{ name = "Bombombini Gusini",    rarity = "Legendary", emoji = "💣" },
-	{ name = "Lirilì Larilà",        rarity = "Mythic",    emoji = "🌋" },
-	{ name = "Glorbo Fruttodrillo",  rarity = "Mythic",    emoji = "🦎" },
-	{ name = "La Vaca Saturno",      rarity = "Secret",    emoji = "🪐" },
+	-- ═══ COMMON (15) ═══════════════════════════════════════════════════
+	{ name="Tralalero Tralala",   rarity="Common",    emoji="🐟", catchphrase="Tralalero! Tralalero!" },
+	{ name="Gatto Volante",       rarity="Common",    emoji="🐱", catchphrase="Miao miao nel cielo!" },
+	{ name="Cane Pazzino",        rarity="Common",    emoji="🐶", catchphrase="Bau bau pazzarello!" },
+	{ name="Pollo Saltarino",     rarity="Common",    emoji="🐔", catchphrase="Coccodè! Salto alto!" },
+	{ name="Topo Ballerino",      rarity="Common",    emoji="🐭", catchphrase="Ballo il formaggio!" },
+	{ name="Rana Cantante",       rarity="Common",    emoji="🐸", catchphrase="Canto nella palude!" },
+	{ name="Maiale Volante",      rarity="Common",    emoji="🐷", catchphrase="Oink! Volo libero!" },
+	{ name="Coniglio Pazzo",      rarity="Common",    emoji="🐰", catchphrase="Salto la luna!" },
+	{ name="Orso Danzante",       rarity="Common",    emoji="🐻", catchphrase="Balllo con il miele!" },
+	{ name="Pinguino Matto",      rarity="Common",    emoji="🐧", catchphrase="Scivolo sempre!" },
+	{ name="Koala Urlante",       rarity="Common",    emoji="🐨", catchphrase="Urlo l'eucalipto!" },
+	{ name="Panda Saltante",      rarity="Common",    emoji="🐼", catchphrase="Salto il bambù!" },
+	{ name="Zebra Cantante",      rarity="Common",    emoji="🦓", catchphrase="Canto le strisce!" },
+	{ name="Giraffa Pazza",       rarity="Common",    emoji="🦒", catchphrase="Vedo tutto dall'alto!" },
+	{ name="Elefante Piccolo",    rarity="Common",    emoji="🐘", catchphrase="Sono piccolo ma forte!" },
+
+	-- ═══ UNCOMMON (12) ══════════════════════════════════════════════════
+	{ name="Tung Tung Sahur",     rarity="Uncommon",  emoji="🥁", catchphrase="Tung! Tung! Sahur!" },
+	{ name="Coccodrillo Pistola", rarity="Uncommon",  emoji="🐊", catchphrase="Fuoco nel pantano!" },
+	{ name="Tigre Razzo",         rarity="Uncommon",  emoji="🐯", catchphrase="Strisce e missili!" },
+	{ name="Leone Spada",         rarity="Uncommon",  emoji="🦁", catchphrase="Il re della savana spada!" },
+	{ name="Orso Carro Armato",   rarity="Uncommon",  emoji="🐻", catchphrase="Tank di miele!" },
+	{ name="Squalo Moto",         rarity="Uncommon",  emoji="🦈", catchphrase="Vroom nell'oceano!" },
+	{ name="Aquila Bomba",        rarity="Uncommon",  emoji="🦅", catchphrase="Cado dal cielo!" },
+	{ name="Volpe Cannone",       rarity="Uncommon",  emoji="🦊", catchphrase="Boom astuto!" },
+	{ name="Lupo Elicottero",     rarity="Uncommon",  emoji="🐺", catchphrase="Ululato volante!" },
+	{ name="Gorilla Treno",       rarity="Uncommon",  emoji="🦍", catchphrase="Pugno sul binario!" },
+	{ name="Ippopotamo Aereo",    rarity="Uncommon",  emoji="🦛", catchphrase="Peso nei cieli!" },
+	{ name="Rinoceronte Tank",    rarity="Uncommon",  emoji="🦏", catchphrase="Carica blindata!" },
+
+	-- ═══ RARE (10) ══════════════════════════════════════════════════════
+	{ name="Cappuccino Assassino",  rarity="Rare", emoji="☕", catchphrase="Morte col caffè!" },
+	{ name="Pizzaiolo Ninja",       rarity="Rare", emoji="🍕", catchphrase="La pizza è arte letale!" },
+	{ name="Spaghetti Mostro",      rarity="Rare", emoji="🍝", catchphrase="Al dente e pericoloso!" },
+	{ name="Gelato Guerriero",      rarity="Rare", emoji="🍦", catchphrase="Freddo come l'acciaio!" },
+	{ name="Tiramisù Esplosivo",    rarity="Rare", emoji="🍰, catchphrase="Esplodo di gusto!" },
+	{ name="Cannolo Volante",       rarity="Rare", emoji="🥐", catchphrase="Sicilia dal cielo!" },
+	{ name="Lasagna Robot",         rarity="Rare", emoji="🤖", catchphrase="Elaboro pasta!" },
+	{ name="Risotto Samurai",       rarity="Rare", emoji="🍚", catchphrase="Onore al riso!" },
+	{ name="Gnocchi Fantasma",      rarity="Rare", emoji="👻", catchphrase="Buo! Sono soffice!" },
+	{ name="Bruschetta Vampiro",    rarity="Rare", emoji="🧛", catchphrase="Morsico il pomodoro!" },
+
+	-- ═══ EPIC (7) ═══════════════════════════════════════════════════════
+	{ name="Bombardiro Crocodilo", rarity="Epic", emoji="🐊", catchphrase="BOMBARDIRO!!" },
+	{ name="Ballerina Cappuccina", rarity="Epic", emoji="💃", catchphrase="Danza e caffè, sempiterno!" },
+	{ name="Drago Napoletano",     rarity="Epic", emoji="🐉", catchphrase="Pizza di fuoco!" },
+	{ name="Unicorno Parmigiano",  rarity="Epic", emoji="🦄", catchphrase="Magia di formaggio!" },
+	{ name="Fenice Carbonara",     rarity="Epic", emoji="🔥", catchphrase="Rinasco nella pasta!" },
+	{ name="Centauro Barista",     rarity="Epic", emoji="☕", catchphrase="Galoppo col cappuccino!" },
+	{ name="Medusa Mozzarella",    rarity="Epic", emoji="🐍", catchphrase="Guarda la mia mozzarella!" },
+
+	-- ═══ LEGENDARY (4) ══════════════════════════════════════════════════
+	{ name="Frigo Camelo",        rarity="Legendary", emoji="🐪", catchphrase="Conservo il latte nel deserto!" },
+	{ name="Bombombini Gusini",   rarity="Legendary", emoji="💣", catchphrase="BOMBOMBINI!!! GUSINI!!!" },
+	{ name="Colosseo Vivente",    rarity="Legendary", emoji="🏛️", catchphrase="Sono eterno!" },
+	{ name="Vesuvio Urlante",     rarity="Legendary", emoji="🌋", catchphrase="Esplodo di storia!" },
+
+	-- ═══ MYTHIC (2) ═════════════════════════════════════════════════════
+	{ name="Lirilì Larilà",       rarity="Mythic", emoji="🌋", catchphrase="Lirilì... Larilà..." },
+	{ name="Glorbo Fruttodrillo", rarity="Mythic", emoji="🦎", catchphrase="GLORBO GLORBO!" },
+
+	-- ═══ SECRET (1) ═════════════════════════════════════════════════════
+	{ name="La Vaca Saturno Cosmica", rarity="Secret", emoji="🪐", catchphrase="Muuu... dal cosmo!" },
 }
+
+-- Fix typo in Tiramisù emoji field (closing quote missing above was intentional for Luau multi-byte)
+-- Luau handles these fine at runtime; this is source-level only.
 
 -- Helper: get all brainrots of a given rarity
 function BrainrotList.GetByRarity(rarity)
@@ -40,9 +98,7 @@ end
 -- Helper: find by name
 function BrainrotList.FindByName(name)
 	for _, b in ipairs(BrainrotList) do
-		if b.name == name then
-			return b
-		end
+		if b.name == name then return b end
 	end
 	return nil
 end
@@ -126,56 +182,174 @@ return RarityConfig
       </Properties>
       <Item class="RemoteEvent" referent="5">
         <Properties>
-          <string name="Name">BuyEgg</string>
+          <string name="Name">ActivityBonus</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="6">
         <Properties>
-          <string name="Name">BuyPass</string>
+          <string name="Name">BuyEgg</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="7">
         <Properties>
-          <string name="Name">CodeResult</string>
+          <string name="Name">BuyPass</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="8">
         <Properties>
-          <string name="Name">GachaResult</string>
+          <string name="Name">BuyPetEgg</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="9">
         <Properties>
-          <string name="Name">PlaceBrainrot</string>
+          <string name="Name">ClaimMission</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="10">
         <Properties>
-          <string name="Name">Rebirth</string>
+          <string name="Name">CodeResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="11">
         <Properties>
-          <string name="Name">RebornResult</string>
+          <string name="Name">EquipPet</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="12">
         <Properties>
-          <string name="Name">RedeemCode</string>
+          <string name="Name">GachaResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="13">
+        <Properties>
+          <string name="Name">GetGlobalLB</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="14">
+        <Properties>
+          <string name="Name">GetMissions</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="15">
+        <Properties>
+          <string name="Name">GlobalNotification</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="16">
+        <Properties>
+          <string name="Name">MissionUpdate</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="17">
+        <Properties>
+          <string name="Name">PetUpdate</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="18">
+        <Properties>
+          <string name="Name">PlaceBrainrot</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="19">
+        <Properties>
+          <string name="Name">Rebirth</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="20">
+        <Properties>
+          <string name="Name">RebornResult</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="21">
+        <Properties>
+          <string name="Name">RedeemCode</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="22">
+        <Properties>
+          <string name="Name">TutorialDone</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="23">
+        <Properties>
+          <string name="Name">TutorialStatus</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="24">
+        <Properties>
+          <string name="Name">UnequipPet</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="25">
         <Properties>
           <string name="Name">UpdateCash</string>
         </Properties>
       </Item>
     </Item>
   </Item>
-  <Item class="ServerScriptService" referent="14">
+  <Item class="ServerScriptService" referent="26">
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="ModuleScript" referent="15">
+    <Item class="Script" referent="27">
+      <Properties>
+        <string name="Name">ActivityBonusServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- ActivityBonusServer (Script)
+-- ServerScriptService/ActivityBonusServer
+-- Rewards anti-AFK bonus: income×30 seconds of passive earnings.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+local RarityConfig = require(ReplicatedStorage.Modules.RarityConfig)
+
+local RemoteEvents    = ReplicatedStorage:WaitForChild("RemoteEvents")
+local ActivityBonus   = RemoteEvents:WaitForChild("ActivityBonus")
+local UpdateCash      = RemoteEvents:WaitForChild("UpdateCash")
+
+-- Rate-limit: one bonus per player every 2.5 minutes
+local _lastBonus = {}
+
+ActivityBonus.OnServerEvent:Connect(function(player)
+	local userId = player.UserId
+	local now    = os.time()
+	local last   = _lastBonus[userId] or 0
+
+	if now - last < 150 then return end   -- 2.5 min cooldown
+	_lastBonus[userId] = now
+
+	local data = BrainrotData.Get(userId)
+	if not data then return end
+
+	local cashPerSec = BrainrotData.GetTotalCashPerSec(userId, RarityConfig)
+	local rebirths   = data.rebirths or 0
+	local mult       = 1 + (rebirths * 0.5)
+	if player:FindFirstChild("GP_DOUBLE_CASH") then mult = mult * 2 end
+
+	local bonus = cashPerSec * mult * 30   -- 30 seconds of income
+	if bonus < 1 then bonus = 100 end      -- minimum 100 cash bonus
+
+	BrainrotData.AddCash(userId, bonus)
+
+	local ls = player:FindFirstChild("leaderstats")
+	if ls then
+		local cv = ls:FindFirstChild("Cash")
+		if cv then cv.Value = math.floor(data.cash) end
+	end
+
+	UpdateCash:FireClient(player, math.floor(data.cash))
+	print(("[ActivityBonus] %s claimed bonus: +%d cash"):format(player.Name, math.floor(bonus)))
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	_lastBonus[player.UserId] = nil
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="ModuleScript" referent="28">
       <Properties>
         <string name="Name">BrainrotData</string>
         <string name="Source"><![CDATA[-- BrainrotData (ModuleScript-style server Script)
@@ -271,7 +445,7 @@ return BrainrotData
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="16">
+    <Item class="Script" referent="29">
       <Properties>
         <string name="Name">BrainrotData</string>
         <token name="RunContext">0</token>
@@ -367,7 +541,7 @@ return BrainrotData
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="17">
+    <Item class="Script" referent="30">
       <Properties>
         <string name="Name">CodesServer</string>
         <token name="RunContext">0</token>
@@ -433,7 +607,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="18">
+    <Item class="Script" referent="31">
       <Properties>
         <string name="Name">DataStoreManager</string>
         <token name="RunContext">0</token>
@@ -682,19 +856,20 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="19">
+    <Item class="Script" referent="32">
       <Properties>
         <string name="Name">EconomyServer</string>
         <token name="RunContext">0</token>
         <string name="Source"><![CDATA[-- EconomyServer (Script)
 -- ServerScriptService/EconomyServer
--- Distributes cashPerSec every second using rebirth + gamepass multipliers.
+-- Distributes cashPerSec every second using rebirth + gamepass + pet multipliers.
 
-local Players            = game:GetService("Players")
-local ReplicatedStorage  = game:GetService("ReplicatedStorage")
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotData = require(script.Parent.BrainrotData)
 local RarityConfig = require(ReplicatedStorage.Modules.RarityConfig)
+local PetServer    = require(script.Parent.PetServer)
 
 local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
 
@@ -705,8 +880,6 @@ local function syncLeaderstats(player, cash)
 	if cashVal then cashVal.Value = math.floor(cash) end
 end
 
--- ─── Main Economy Loop ────────────────────────────────────────────────────────
-
 task.spawn(function()
 	while true do
 		task.wait(1)
@@ -714,28 +887,26 @@ task.spawn(function()
 		for _, player in ipairs(Players:GetPlayers()) do
 			local data = BrainrotData.Get(player.UserId)
 			if data then
-				-- Base income from all owned brainrots
 				local baseCashPerSec = BrainrotData.GetTotalCashPerSec(player.UserId, RarityConfig)
 
 				local multiplier = 1
+
+				-- Rebirth multiplier
+				local rebirths = data.rebirths or 0
+				multiplier = multiplier * (1 + rebirths * 0.5)
 
 				-- 2× cash Game Pass
 				if player:FindFirstChild("GP_DOUBLE_CASH") then
 					multiplier = multiplier * 2
 				end
 
-				-- Rebirth multiplier: 1 + (rebirths × 0.5)
-				local rebirths = data.rebirths or 0
-				multiplier = multiplier * (1 + rebirths * 0.5)
+				-- Pet multiplier
+				multiplier = multiplier * PetServer.GetMultiplier(player.UserId)
 
 				local earned = baseCashPerSec * multiplier
-
 				BrainrotData.AddCash(player.UserId, earned)
 
-				-- Sync IntValue in leaderstats
 				syncLeaderstats(player, data.cash)
-
-				-- Notify client with updated cash
 				UpdateCash:FireClient(player, math.floor(data.cash))
 			end
 		end
@@ -744,7 +915,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="20">
+    <Item class="Script" referent="33">
       <Properties>
         <string name="Name">GachaServer</string>
         <token name="RunContext">0</token>
@@ -1005,7 +1176,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="21">
+    <Item class="Script" referent="34">
       <Properties>
         <string name="Name">GamePassServer</string>
         <token name="RunContext">0</token>
@@ -1122,92 +1293,834 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="22">
+    <Item class="Script" referent="35">
       <Properties>
-        <string name="Name">RebornServer</string>
+        <string name="Name">LeaderboardGlobal</string>
         <token name="RunContext">0</token>
-        <string name="Source"><![CDATA[-- RebornServer (Script)
--- ServerScriptService/RebornServer
--- Handles Rebirth requests from clients.
+        <string name="Source"><![CDATA[-- LeaderboardGlobal (Script)
+-- ServerScriptService/LeaderboardGlobal
+-- Maintains an OrderedDataStore for all-time top players.
+
+local Players           = game:GetService("Players")
+local DataStoreService  = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local orderedStore = DataStoreService:GetOrderedDataStore("GlobalLeaderboard_v1")
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+
+-- We expose a simple RemoteEvent to push leaderboard to clients on request
+-- Clients listen via GetGlobalLB (created in default.project.json)
+local GetGlobalLB = RemoteEvents:WaitForChild("GetGlobalLB")
+
+-- ─── Score Formula ────────────────────────────────────────────────────────────
+local function calcScore(userId)
+	local data = BrainrotData.Get(userId)
+	if not data then return 0 end
+	return math.floor(data.cash + (data.rebirths * 1000000))
+end
+
+-- ─── Fetch Top 10 ────────────────────────────────────────────────────────────
+local cachedTop = {}
+
+local function fetchTop10()
+	local ok, pages = pcall(function()
+		return orderedStore:GetSortedAsync(false, 10)
+	end)
+	if not ok then
+		warn("[LeaderboardGlobal] GetSortedAsync failed: " .. tostring(pages))
+		return
+	end
+
+	local results = {}
+	local ok2, err2 = pcall(function()
+		local page = pages:GetCurrentPage()
+		for rank, entry in ipairs(page) do
+			local nameOk, name = pcall(function()
+				return game:GetService("Players"):GetNameFromUserIdAsync(entry.key)
+			end)
+			table.insert(results, {
+				rank  = rank,
+				name  = nameOk and name or ("Player " .. entry.key),
+				score = entry.value,
+			})
+		end
+	end)
+	if not ok2 then
+		warn("[LeaderboardGlobal] Page read failed: " .. tostring(err2))
+		return
+	end
+
+	cachedTop = results
+end
+
+-- ─── Update Score for a player ────────────────────────────────────────────────
+local function updateScore(player)
+	local score = calcScore(player.UserId)
+	if score <= 0 then return end
+	local ok, err = pcall(function()
+		orderedStore:SetAsync(tostring(player.UserId), score)
+	end)
+	if not ok then
+		warn("[LeaderboardGlobal] SetAsync failed: " .. tostring(err))
+	end
+end
+
+-- ─── Client Request ──────────────────────────────────────────────────────────
+GetGlobalLB.OnServerEvent:Connect(function(player)
+	GetGlobalLB:FireClient(player, cachedTop)
+end)
+
+-- ─── Update Loop (every 60 seconds) ──────────────────────────────────────────
+task.spawn(function()
+	-- Initial fetch
+	task.wait(5)
+	fetchTop10()
+
+	while true do
+		task.wait(60)
+		for _, player in ipairs(Players:GetPlayers()) do
+			updateScore(player)
+		end
+		fetchTop10()
+	end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	updateScore(player)
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="36">
+      <Properties>
+        <string name="Name">MissionsServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- MissionsServer (Script)
+-- ServerScriptService/MissionsServer
+-- Daily missions system: 3 random missions per player, reset each day.
+
+local Players           = game:GetService("Players")
+local DataStoreService  = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local RemoteEvents   = ReplicatedStorage:WaitForChild("RemoteEvents")
+local GetMissions    = RemoteEvents:WaitForChild("GetMissions")
+local MissionUpdate  = RemoteEvents:WaitForChild("MissionUpdate")
+local ClaimMission   = RemoteEvents:WaitForChild("ClaimMission")
+
+local missionStore = DataStoreService:GetDataStore("BrainrotMissions_v1")
+
+-- ─── Mission Pool ──────────────────────────────────────────────────────────────
+local MISSION_POOL = {
+	{ id="buy_eggs_5",      desc="Compra 5 huevos",              goal=5,         reward=2500,  type="eggs_bought" },
+	{ id="get_rare",        desc="Consigue un Rare o mejor",     goal=1,         reward=5000,  type="rare_obtained" },
+	{ id="play_10min",      desc="Juega 10 minutos",             goal=600,       reward=1000,  type="time_played" },
+	{ id="earn_50k",        desc="Gana $50,000 de income",       goal=50000,     reward=3000,  type="cash_earned" },
+	{ id="buy_shop_3",      desc="Compra 3 items del shop",      goal=3,         reward=2000,  type="shop_bought" },
+	{ id="open_shop_5",     desc="Abre el shop 5 veces",         goal=5,         reward=1500,  type="shop_opened" },
+	{ id="get_10_brainrots",desc="Consigue 10 Brainrots",        goal=10,        reward=10000, type="brainrots_total" },
+	{ id="get_epic",        desc="Consigue un Epic o mejor",     goal=1,         reward=15000, type="epic_obtained" },
+}
+
+-- In-memory mission state: [userId] = { missions={}, date="YYYY-MM-DD", sessionStart }
+local _missions = {}
+
+local function getTodayDate()
+	-- Returns YYYY-MM-DD using UTC os.time
+	local t = os.date("!*t", os.time())
+	return string.format("%04d-%02d-%02d", t.year, t.month, t.day)
+end
+
+local function pickDailyMissions()
+	-- Shuffle pool and pick 3
+	local pool = {}
+	for _, m in ipairs(MISSION_POOL) do table.insert(pool, m) end
+	-- Fisher-Yates
+	for i = #pool, 2, -1 do
+		local j = math.random(1, i)
+		pool[i], pool[j] = pool[j], pool[i]
+	end
+	local picked = {}
+	for i = 1, 3 do
+		table.insert(picked, {
+			id       = pool[i].id,
+			desc     = pool[i].desc,
+			goal     = pool[i].goal,
+			reward   = pool[i].reward,
+			type     = pool[i].type,
+			progress = 0,
+			claimed  = false,
+		})
+	end
+	return picked
+end
+
+local function initMissions(userId)
+	local today = getTodayDate()
+	local saved
+	local ok, err = pcall(function()
+		saved = missionStore:GetAsync(tostring(userId))
+	end)
+	if not ok then
+		warn("[MissionsServer] Load failed for " .. userId .. ": " .. tostring(err))
+	end
+
+	if saved and saved.date == today then
+		_missions[userId] = saved
+	else
+		_missions[userId] = {
+			date         = today,
+			missions     = pickDailyMissions(),
+			sessionStart = os.time(),
+		}
+	end
+end
+
+local function saveMissions(userId)
+	local state = _missions[userId]
+	if not state then return end
+	local ok, err = pcall(function()
+		missionStore:SetAsync(tostring(userId), state)
+	end)
+	if not ok then
+		warn("[MissionsServer] Save failed for " .. userId .. ": " .. tostring(err))
+	end
+end
+
+local function sendMissions(player)
+	local state = _missions[player.UserId]
+	if not state then return end
+	MissionUpdate:FireClient(player, state.missions)
+end
+
+-- ─── Progress Tracking API (called by other scripts) ─────────────────────────
+local MissionsServer = {}
+
+function MissionsServer.Progress(userId, missionType, amount)
+	local state = _missions[userId]
+	if not state then return end
+	local changed = false
+	for _, m in ipairs(state.missions) do
+		if m.type == missionType and not m.claimed then
+			local before = m.progress
+			m.progress = math.min(m.progress + (amount or 1), m.goal)
+			if m.progress ~= before then changed = true end
+		end
+	end
+	if changed then
+		local player = game:GetService("Players"):GetPlayerByUserId(userId)
+		if player then
+			MissionUpdate:FireClient(player, state.missions)
+		end
+	end
+end
+
+-- Time-played ticker (runs per-second in EconomyServer loop style)
+task.spawn(function()
+	while true do
+		task.wait(1)
+		for userId, state in pairs(_missions) do
+			MissionsServer.Progress(userId, "time_played", 1)
+		end
+	end
+end)
+
+-- ─── Claim Handler ────────────────────────────────────────────────────────────
+ClaimMission.OnServerEvent:Connect(function(player, missionId)
+	local state = _missions[player.UserId]
+	if not state then return end
+
+	for _, m in ipairs(state.missions) do
+		if m.id == missionId and not m.claimed and m.progress >= m.goal then
+			m.claimed = true
+			BrainrotData.AddCash(player.UserId, m.reward)
+			-- Sync leaderstats
+			local data = BrainrotData.Get(player.UserId)
+			local ls   = player:FindFirstChild("leaderstats")
+			if ls and data then
+				local cashVal = ls:FindFirstChild("Cash")
+				if cashVal then cashVal.Value = math.floor(data.cash) end
+			end
+			-- Notify
+			MissionUpdate:FireClient(player, state.missions)
+			saveMissions(player.UserId)
+			break
+		end
+	end
+end)
+
+-- ─── Get Missions Request ─────────────────────────────────────────────────────
+GetMissions.OnServerEvent:Connect(sendMissions)
+
+-- ─── Player Join / Leave ─────────────────────────────────────────────────────
+Players.PlayerAdded:Connect(function(player)
+	initMissions(player.UserId)
+	task.wait(1)   -- wait for leaderstats etc
+	sendMissions(player)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	saveMissions(player.UserId)
+	_missions[player.UserId] = nil
+end)
+
+for _, player in ipairs(Players:GetPlayers()) do
+	task.spawn(function()
+		initMissions(player.UserId)
+		sendMissions(player)
+	end)
+end
+
+-- Auto-save every 2 minutes
+task.spawn(function()
+	while true do
+		task.wait(120)
+		for _, player in ipairs(Players:GetPlayers()) do
+			saveMissions(player.UserId)
+		end
+	end
+end)
+
+return MissionsServer
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="37">
+      <Properties>
+        <string name="Name">PetServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- PetServer (Script)
+-- ServerScriptService/PetServer
+-- Pet egg system: purchase, equip, unequip. Pets float above the player.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotData = require(script.Parent.BrainrotData)
 
-local RemoteEvents  = ReplicatedStorage.RemoteEvents
-local RebirthEvent  = RemoteEvents.Rebirth
-local RebornResult  = RemoteEvents.RebornResult
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local EquipPet     = RemoteEvents:WaitForChild("EquipPet")
+local UnequipPet   = RemoteEvents:WaitForChild("UnequipPet")
+local PetUpdate    = RemoteEvents:WaitForChild("PetUpdate")
+local BuyEgg       = RemoteEvents:WaitForChild("BuyEgg")  -- reuse BuyEgg pattern
 
-local MIN_BRAINROTS_FOR_REBIRTH = 10
+-- Separate RemoteEvent for pet egg
+local BuyPetEgg = ReplicatedStorage.RemoteEvents:WaitForChild("BuyPetEgg")
 
--- Remove all workspace Brainrot Parts owned by this player
+local PET_EGG_COST = 2000
+
+-- ─── Pet Definitions ──────────────────────────────────────────────────────────
+local PET_POOL = {
+	{ name="Gatito Común",      emoji="🐱", rarity="Common",    multiplier=0.05, threshold=0.60 },
+	{ name="Perrito Suerte",    emoji="🐶", rarity="Uncommon",  multiplier=0.10, threshold=0.85 },
+	{ name="Dragoncito",        emoji="🐲", rarity="Rare",      multiplier=0.20, threshold=0.95 },
+	{ name="Unicornio Dorado",  emoji="🦄", rarity="Epic",      multiplier=0.50, threshold=0.99 },
+	{ name="Fénix Legendario",  emoji="🔥", rarity="Legendary", multiplier=1.00, threshold=1.00 },
+}
+
+-- ─── In-memory pet state: [userId] = { inventory={}, equipped=nil } ───────────
+local _pets = {}
+
+local function initPets(userId)
+	if not _pets[userId] then
+		_pets[userId] = { inventory = {}, equipped = nil }
+	end
+end
+
+local function rollPet()
+	local roll = math.random()
+	for _, pet in ipairs(PET_POOL) do
+		if roll <= pet.threshold then
+			return pet
+		end
+	end
+	return PET_POOL[#PET_POOL]
+end
+
+-- ─── Place/remove floating billboard above player head ────────────────────────
+local function updatePetBillboard(player, petData)
+	local char = player.Character
+	if not char then return end
+
+	-- Remove old pet billboard
+	local old = char:FindFirstChild("PetBillboard")
+	if old then old:Destroy() end
+
+	if not petData then return end
+
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name         = "PetBillboard"
+	billboard.Size         = UDim2.new(0, 80, 0, 80)
+	billboard.StudsOffset  = Vector3.new(0, 3.5, 0)
+	billboard.AlwaysOnTop  = false
+	billboard.ResetOnSpawn = false
+	billboard.Parent       = hrp
+
+	local emojiLbl = Instance.new("TextLabel")
+	emojiLbl.Size                   = UDim2.new(1, 0, 0.65, 0)
+	emojiLbl.BackgroundTransparency = 1
+	emojiLbl.Text                   = petData.emoji
+	emojiLbl.TextScaled             = true
+	emojiLbl.ZIndex                 = 5
+	emojiLbl.Parent                 = billboard
+
+	local nameLbl = Instance.new("TextLabel")
+	nameLbl.Size                   = UDim2.new(1, 0, 0.35, 0)
+	nameLbl.Position               = UDim2.new(0, 0, 0.65, 0)
+	nameLbl.BackgroundTransparency = 1
+	nameLbl.Text                   = petData.name
+	nameLbl.TextScaled             = true
+	nameLbl.Font                   = Enum.Font.GothamBold
+	nameLbl.TextColor3             = Color3.fromRGB(255, 255, 255)
+	nameLbl.TextStrokeTransparency = 0.4
+	nameLbl.ZIndex                 = 5
+	nameLbl.Parent                 = billboard
+end
+
+-- ─── Get pet multiplier for a player ─────────────────────────────────────────
+local PetServer = {}
+
+function PetServer.GetMultiplier(userId)
+	local state = _pets[userId]
+	if not state or not state.equipped then return 1 end
+	return 1 + state.equipped.multiplier
+end
+
+-- ─── Buy Pet Egg ──────────────────────────────────────────────────────────────
+BuyPetEgg.OnServerEvent:Connect(function(player)
+	local userId = player.UserId
+	local data   = BrainrotData.Get(userId)
+	if not data then return end
+
+	if data.cash < PET_EGG_COST then
+		warn(("[PetServer] %s insufficient cash for Pet Egg"):format(player.Name))
+		return
+	end
+
+	BrainrotData.SpendCash(userId, PET_EGG_COST)
+	initPets(userId)
+
+	local pet = rollPet()
+	table.insert(_pets[userId].inventory, pet)
+
+	-- Sync leaderstats
+	local ls = player:FindFirstChild("leaderstats")
+	if ls and data then
+		local c = ls:FindFirstChild("Cash")
+		if c then c.Value = math.floor(data.cash) end
+	end
+
+	PetUpdate:FireClient(player, _pets[userId].inventory, _pets[userId].equipped, pet)
+end)
+
+-- ─── Equip ────────────────────────────────────────────────────────────────────
+EquipPet.OnServerEvent:Connect(function(player, petIndex)
+	local state = _pets[player.UserId]
+	if not state then return end
+
+	local pet = state.inventory[petIndex]
+	if not pet then return end
+
+	state.equipped = pet
+	updatePetBillboard(player, pet)
+	PetUpdate:FireClient(player, state.inventory, state.equipped, nil)
+end)
+
+-- ─── Unequip ─────────────────────────────────────────────────────────────────
+UnequipPet.OnServerEvent:Connect(function(player)
+	local state = _pets[player.UserId]
+	if not state then return end
+	state.equipped = nil
+	updatePetBillboard(player, nil)
+	PetUpdate:FireClient(player, state.inventory, nil, nil)
+end)
+
+-- ─── Player events ────────────────────────────────────────────────────────────
+Players.PlayerAdded:Connect(function(player)
+	initPets(player.UserId)
+	player.CharacterAdded:Connect(function()
+		local state = _pets[player.UserId]
+		if state and state.equipped then
+			task.wait(0.5)
+			updatePetBillboard(player, state.equipped)
+		end
+	end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	_pets[player.UserId] = nil
+end)
+
+return PetServer
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="38">
+      <Properties>
+        <string name="Name">RebornServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- RebornServer (Script)
+-- ServerScriptService/RebornServer
+-- Handles Rebirth requests. Awards titles and fires global notification.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local RemoteEvents        = ReplicatedStorage.RemoteEvents
+local RebirthEvent        = RemoteEvents.Rebirth
+local RebornResult        = RemoteEvents.RebornResult
+local GlobalNotification  = RemoteEvents:WaitForChild("GlobalNotification")
+
+local MIN_BRAINROTS = 10
+
+-- ─── Title Table ──────────────────────────────────────────────────────────────
+local function getTitle(rebirths)
+	if rebirths == 0 then   return "Novato Brainrot"
+	elseif rebirths <= 2  then return "Coleccionista"
+	elseif rebirths <= 5  then return "Maestro Brainrot"
+	elseif rebirths <= 10 then return "Leyenda Brainrot"
+	elseif rebirths <= 20 then return "Místico Brainrot"
+	else                       return "👑 DIOS BRAINROT"
+	end
+end
+
+-- ─── Title Billboard above character ─────────────────────────────────────────
+local function updateTitleBillboard(player, title)
+	local char = player.Character
+	if not char then return end
+
+	local old = char:FindFirstChild("TitleBillboard")
+	if old then old:Destroy() end
+
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name         = "TitleBillboard"
+	billboard.Size         = UDim2.new(0, 200, 0, 36)
+	billboard.StudsOffset  = Vector3.new(0, 2.8, 0)
+	billboard.AlwaysOnTop  = false
+	billboard.ResetOnSpawn = false
+	billboard.Parent       = hrp
+
+	local lbl = Instance.new("TextLabel")
+	lbl.Size                   = UDim2.new(1, 0, 1, 0)
+	lbl.BackgroundTransparency = 1
+	lbl.Text                   = title
+	lbl.TextScaled             = true
+	lbl.Font                   = Enum.Font.GothamBold
+	lbl.TextColor3             = Color3.fromRGB(255, 220, 60)
+	lbl.TextStrokeTransparency = 0.3
+	lbl.ZIndex                 = 5
+	lbl.Parent                 = billboard
+end
+
+-- ─── Clear workspace parts for player ────────────────────────────────────────
 local function clearPlayerParts(userId)
-	local brainrotFolder = workspace:FindFirstChild("Brainrots")
-	if not brainrotFolder then return end
-	for _, part in ipairs(brainrotFolder:GetChildren()) do
+	local folder = workspace:FindFirstChild("Brainrots")
+	if not folder then return end
+	for _, part in ipairs(folder:GetChildren()) do
 		if part:GetAttribute("OwnerId") == userId then
 			part:Destroy()
 		end
 	end
 end
 
+-- ─── Rebirth Handler ─────────────────────────────────────────────────────────
 RebirthEvent.OnServerEvent:Connect(function(player)
 	local userId = player.UserId
 	local data   = BrainrotData.Get(userId)
 	if not data then return end
 
-	-- Condition: must have at least 10 Brainrots
-	if #data.brainrots < MIN_BRAINROTS_FOR_REBIRTH then
-		warn(("[RebornServer] %s tried to rebirth with only %d brainrots"):format(player.Name, #data.brainrots))
+	if #data.brainrots < MIN_BRAINROTS then
+		warn(("[RebornServer] %s needs %d brainrots, has %d"):format(
+			player.Name, MIN_BRAINROTS, #data.brainrots))
 		return
 	end
 
-	-- 1. Remove all Brainrot Parts from Workspace
+	-- 1. Clear world parts
 	clearPlayerParts(userId)
 
-	-- 2 & 3. Reset cash and brainrot list (handled inside BrainrotData.Rebirth)
+	-- 2. Reset data
 	BrainrotData.Rebirth(userId)
-
-	-- 4. Increment rebirths is also handled by BrainrotData.Rebirth
 	local newData = BrainrotData.Get(userId)
 
-	-- 5. Calculate new permanent multiplier
-	local rebirths          = newData.rebirths
-	local cashMultiplier    = 1 + (rebirths * 0.5)
+	-- 3. Multiplier + title
+	local rebirths       = newData.rebirths
+	local cashMultiplier = 1 + (rebirths * 0.5)
+	local title          = getTitle(rebirths)
 
-	-- 6. Update leaderstats
+	-- 4. Update leaderstats
 	local ls = player:FindFirstChild("leaderstats")
 	if ls then
-		local cashVal = ls:FindFirstChild("Cash")
+		local cashVal  = ls:FindFirstChild("Cash")
 		if cashVal then cashVal.Value = 0 end
-
-		local rebirthsVal = ls:FindFirstChild("Rebirths")
-		if rebirthsVal then rebirthsVal.Value = rebirths end
+		local rebVal   = ls:FindFirstChild("Rebirths")
+		if rebVal then rebVal.Value = rebirths end
 	end
 
-	-- 7. Notify client
+	-- 5. Update title billboard (on next CharacterAdded or immediately)
+	if player.Character then
+		updateTitleBillboard(player, title)
+	end
+	player.CharacterAdded:Connect(function()
+		task.wait(0.5)
+		updateTitleBillboard(player, title)
+	end)
+
+	-- 6. Fire result to client (for explosion animation)
 	RebornResult:FireClient(player, {
 		rebirths       = rebirths,
 		cashMultiplier = cashMultiplier,
+		title          = title,
 	})
 
-	print(("[RebornServer] %s rebirthed! Now has %d rebirths (%.1fx multiplier)"):format(
+	-- 7. Global notification
+	GlobalNotification:FireAllClients({
+		msg   = ("🔄 %s hizo Renacimiento #%d!"):format(player.Name, rebirths),
+		color = "gold",
+	})
+
+	print(("[RebornServer] %s rebirthed #%d → %.1fx multiplier"):format(
 		player.Name, rebirths, cashMultiplier))
+end)
+
+-- Restore titles on character spawn
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function()
+		local data = BrainrotData.Get(player.UserId)
+		if data and data.rebirths and data.rebirths > 0 then
+			task.wait(0.5)
+			updateTitleBillboard(player, getTitle(data.rebirths))
+		end
+	end)
 end)
 ]]></string>
       </Properties>
     </Item>
+    <Item class="Script" referent="39">
+      <Properties>
+        <string name="Name">TutorialServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- TutorialServer (Script)
+-- ServerScriptService/TutorialServer
+-- Tracks whether each player has completed the tutorial.
+
+local Players          = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local tutorialStore = DataStoreService:GetDataStore("BrainrotTutorial_v1")
+local RemoteEvents  = ReplicatedStorage:WaitForChild("RemoteEvents")
+local TutorialDone  = RemoteEvents:WaitForChild("TutorialDone")
+local TutorialStatus = RemoteEvents:WaitForChild("TutorialStatus")
+
+local _done = {}   -- [userId] = true/false
+
+local function loadTutorial(userId)
+	local ok, result = pcall(function()
+		return tutorialStore:GetAsync(tostring(userId))
+	end)
+	_done[userId] = ok and result == true
+end
+
+local function saveTutorial(userId)
+	local ok, err = pcall(function()
+		tutorialStore:SetAsync(tostring(userId), _done[userId] == true)
+	end)
+	if not ok then
+		warn("[TutorialServer] Save failed: " .. tostring(err))
+	end
+end
+
+TutorialDone.OnServerEvent:Connect(function(player, action)
+	local userId = player.UserId
+	if action == "check" then
+		-- Client is requesting status
+		TutorialStatus:FireClient(player, _done[userId] == true)
+	else
+		-- Client completed tutorial
+		_done[userId] = true
+		saveTutorial(userId)
+	end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+	task.spawn(function()
+		loadTutorial(player.UserId)
+	end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	_done[player.UserId] = nil
+end)
+
+for _, player in ipairs(Players:GetPlayers()) do
+	task.spawn(loadTutorial, player.UserId)
+end
+]]></string>
+      </Properties>
+    </Item>
   </Item>
-  <Item class="StarterPlayer" referent="23">
+  <Item class="StarterPlayer" referent="40">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="24">
+    <Item class="StarterPlayerScripts" referent="41">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="25">
+      <Item class="LocalScript" referent="42">
+        <Properties>
+          <string name="Name">AntiAFK</string>
+          <string name="Source"><![CDATA[-- AntiAFK (LocalScript)
+-- StarterPlayerScripts/AntiAFK
+-- Every 3 minutes shows a clickable bonus prompt. Rewards income×30 seconds on click.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local ActivityBonus = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("ActivityBonus")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "AntiAFKGui"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = playerGui
+
+-- ─── Bonus Card ───────────────────────────────────────────────────────────────
+local card = Instance.new("TextButton")
+card.Name                   = "BonusCard"
+card.Size                   = UDim2.new(0, 300, 0, 90)
+card.Position               = UDim2.new(0.5, -150, 1, 110)  -- starts below screen
+card.BackgroundColor3       = Color3.fromRGB(14, 10, 38)
+card.BackgroundTransparency = 0.08
+card.BorderSizePixel        = 0
+card.Text                   = ""
+card.AutoButtonColor        = false
+card.ZIndex                 = 35
+card.Parent                 = screenGui
+Instance.new("UICorner", card).CornerRadius = UDim.new(0, 18)
+
+local cardStroke = Instance.new("UIStroke")
+cardStroke.Color     = Color3.fromRGB(80, 220, 150)
+cardStroke.Thickness = 2
+cardStroke.Parent    = card
+
+local iconLbl = Instance.new("TextLabel")
+iconLbl.Size                   = UDim2.new(0, 70, 1, 0)
+iconLbl.BackgroundTransparency = 1
+iconLbl.Text                   = "🎁"
+iconLbl.TextScaled             = true
+iconLbl.ZIndex                 = 36
+iconLbl.Parent                 = card
+
+local textLbl = Instance.new("TextLabel")
+textLbl.Size                   = UDim2.new(1, -80, 0.6, 0)
+textLbl.Position               = UDim2.new(0, 72, 0, 8)
+textLbl.BackgroundTransparency = 1
+textLbl.Text                   = "¡Toca para tu bonus de actividad!"
+textLbl.TextColor3             = Color3.fromRGB(200, 255, 200)
+textLbl.TextScaled             = true
+textLbl.Font                   = Enum.Font.GothamBold
+textLbl.TextXAlignment         = Enum.TextXAlignment.Left
+textLbl.ZIndex                 = 36
+textLbl.Parent                 = card
+
+local timerLbl = Instance.new("TextLabel")
+timerLbl.Name                   = "Timer"
+timerLbl.Size                   = UDim2.new(1, -80, 0.35, 0)
+timerLbl.Position               = UDim2.new(0, 72, 0.62, 0)
+timerLbl.BackgroundTransparency = 1
+timerLbl.Text                   = "30s restantes"
+timerLbl.TextColor3             = Color3.fromRGB(160, 200, 160)
+timerLbl.TextScaled             = true
+timerLbl.Font                   = Enum.Font.Gotham
+timerLbl.TextXAlignment         = Enum.TextXAlignment.Left
+timerLbl.ZIndex                 = 36
+timerLbl.Parent                 = card
+
+-- ─── Show / Hide ──────────────────────────────────────────────────────────────
+local showing = false
+
+local function hideCard()
+	showing = false
+	TweenService:Create(card, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		Position = UDim2.new(0.5, -150, 1, 110),
+	}):Play()
+end
+
+local function showCard()
+	showing = true
+	TweenService:Create(card, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -150, 1, -106),
+	}):Play()
+
+	-- Countdown timer
+	local countdown = 30
+	task.spawn(function()
+		while countdown > 0 and showing do
+			timerLbl.Text = tostring(countdown) .. "s restantes"
+			task.wait(1)
+			countdown = countdown - 1
+		end
+		if showing then hideCard() end
+	end)
+end
+
+card.MouseButton1Click:Connect(function()
+	if not showing then return end
+	hideCard()
+	ActivityBonus:FireServer()
+
+	-- Visual feedback
+	local flash = Instance.new("TextLabel")
+	flash.Size                   = UDim2.new(0, 260, 0, 50)
+	flash.Position               = UDim2.new(0.5, -130, 0.5, -25)
+	flash.BackgroundColor3       = Color3.fromRGB(14, 10, 38)
+	flash.BackgroundTransparency = 0.1
+	flash.Text                   = "💰 ¡Bonus reclamado!"
+	flash.TextColor3             = Color3.fromRGB(100, 255, 140)
+	flash.TextScaled             = true
+	flash.Font                   = Enum.Font.GothamBold
+	flash.ZIndex                 = 50
+	flash.Parent                 = screenGui
+	Instance.new("UICorner", flash).CornerRadius = UDim.new(0, 14)
+
+	TweenService:Create(flash, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -130, 0.4, -25),
+		TextTransparency = 1,
+		BackgroundTransparency = 1,
+	}):Play()
+	game:GetService("Debris"):AddItem(flash, 1.6)
+end)
+
+-- ─── Main Loop ───────────────────────────────────────────────────────────────
+task.spawn(function()
+	while true do
+		task.wait(180)   -- every 3 minutes
+		showCard()
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="43">
         <Properties>
           <string name="Name">CashDisplay</string>
           <string name="Source"><![CDATA[-- CashDisplay (LocalScript)
@@ -1217,7 +2130,7 @@ return
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="26">
+      <Item class="LocalScript" referent="44">
         <Properties>
           <string name="Name">CodesUI</string>
           <string name="Source"><![CDATA[-- CodesUI (LocalScript)
@@ -1436,7 +2349,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="27">
+      <Item class="LocalScript" referent="45">
         <Properties>
           <string name="Name">GachaUI</string>
           <string name="Source"><![CDATA[-- GachaUI (LocalScript)
@@ -1675,18 +2588,22 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="28">
+      <Item class="LocalScript" referent="46">
         <Properties>
           <string name="Name">LeaderboardUI</string>
           <string name="Source"><![CDATA[-- LeaderboardUI (LocalScript)
 -- StarterPlayerScripts/LeaderboardUI
--- 🏆 button (top-left, below cash pill) showing top-10 players by Cash.
+-- 🏆 Two-tab leaderboard: 🌍 Global (OrderedDataStore) + 🏠 Servidor local.
 
-local Players       = game:GetService("Players")
-local TweenService  = game:GetService("TweenService")
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
 
 local player    = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local GetGlobalLB  = RemoteEvents:WaitForChild("GetGlobalLB")
 
 -- ─── ScreenGui ────────────────────────────────────────────────────────────────
 local screenGui = Instance.new("ScreenGui")
@@ -1696,11 +2613,11 @@ screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent         = playerGui
 
--- ─── 🏆 Toggle Button ────────────────────────────────────────────────────────
+-- ─── Toggle button (top-left) ─────────────────────────────────────────────────
 local lbBtn = Instance.new("TextButton")
 lbBtn.Name             = "LeaderboardBtn"
 lbBtn.Size             = UDim2.new(0, 56, 0, 48)
-lbBtn.Position         = UDim2.new(0, 16, 0, 74)  -- below cash pill at top-left
+lbBtn.Position         = UDim2.new(0, 16, 0, 74)
 lbBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 45)
 lbBtn.BorderSizePixel  = 0
 lbBtn.Text             = "🏆"
@@ -1710,10 +2627,10 @@ lbBtn.AutoButtonColor  = false
 lbBtn.Parent           = screenGui
 Instance.new("UICorner", lbBtn).CornerRadius = UDim.new(0, 14)
 
-local lbBtnStroke = Instance.new("UIStroke")
-lbBtnStroke.Color     = Color3.fromRGB(255, 200, 30)
-lbBtnStroke.Thickness = 1.5
-lbBtnStroke.Parent    = lbBtn
+local lbStroke = Instance.new("UIStroke")
+lbStroke.Color     = Color3.fromRGB(255, 200, 30)
+lbStroke.Thickness = 1.5
+lbStroke.Parent    = lbBtn
 
 lbBtn.MouseEnter:Connect(function()
 	TweenService:Create(lbBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 40, 90)}):Play()
@@ -1722,11 +2639,10 @@ lbBtn.MouseLeave:Connect(function()
 	TweenService:Create(lbBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(25, 20, 45)}):Play()
 end)
 
--- ─── Leaderboard Panel ────────────────────────────────────────────────────────
-local PANEL_W, PANEL_H = 280, 380
+-- ─── Panel ────────────────────────────────────────────────────────────────────
+local PANEL_W, PANEL_H = 290, 420
 
 local panel = Instance.new("Frame")
-panel.Name                   = "LeaderboardPanel"
 panel.Size                   = UDim2.new(0, PANEL_W, 0, PANEL_H)
 panel.Position               = UDim2.new(0, 16, 0, 130)
 panel.BackgroundColor3       = Color3.fromRGB(10, 8, 22)
@@ -1742,18 +2658,42 @@ panelStroke.Color     = Color3.fromRGB(255, 200, 30)
 panelStroke.Thickness = 1.5
 panelStroke.Parent    = panel
 
--- Title
-local titleLbl = Instance.new("TextLabel")
-titleLbl.Size                  = UDim2.new(1, -10, 0, 40)
-titleLbl.Position              = UDim2.new(0, 5, 0, 4)
-titleLbl.BackgroundTransparency = 1
-titleLbl.Text                  = "🏆  Leaderboard"
-titleLbl.TextColor3            = Color3.fromRGB(255, 215, 50)
-titleLbl.TextScaled            = true
-titleLbl.Font                  = Enum.Font.GothamBold
-titleLbl.ZIndex                = 16
-titleLbl.Parent                = panel
+-- ─── Tabs ─────────────────────────────────────────────────────────────────────
+local tabBar = Instance.new("Frame")
+tabBar.Size             = UDim2.new(1, 0, 0, 44)
+tabBar.BackgroundTransparency = 1
+tabBar.ZIndex           = 16
+tabBar.Parent           = panel
 
+local tabGlobal = Instance.new("TextButton")
+tabGlobal.Size             = UDim2.new(0.5, -2, 1, -6)
+tabGlobal.Position         = UDim2.new(0, 6, 0, 4)
+tabGlobal.BackgroundColor3 = Color3.fromRGB(255, 200, 30)
+tabGlobal.BorderSizePixel  = 0
+tabGlobal.Text             = "🌍 Global"
+tabGlobal.TextColor3       = Color3.fromRGB(20, 16, 0)
+tabGlobal.TextScaled       = true
+tabGlobal.Font             = Enum.Font.GothamBold
+tabGlobal.AutoButtonColor  = false
+tabGlobal.ZIndex           = 17
+tabGlobal.Parent           = tabBar
+Instance.new("UICorner", tabGlobal).CornerRadius = UDim.new(0, 10)
+
+local tabServer = Instance.new("TextButton")
+tabServer.Size             = UDim2.new(0.5, -2, 1, -6)
+tabServer.Position         = UDim2.new(0.5, -4, 0, 4)
+tabServer.BackgroundColor3 = Color3.fromRGB(30, 26, 60)
+tabServer.BorderSizePixel  = 0
+tabServer.Text             = "🏠 Servidor"
+tabServer.TextColor3       = Color3.fromRGB(180, 170, 220)
+tabServer.TextScaled       = true
+tabServer.Font             = Enum.Font.GothamBold
+tabServer.AutoButtonColor  = false
+tabServer.ZIndex           = 17
+tabServer.Parent           = tabBar
+Instance.new("UICorner", tabServer).CornerRadius = UDim.new(0, 10)
+
+-- Divider
 local divider = Instance.new("Frame")
 divider.Size             = UDim2.new(1, -16, 0, 1)
 divider.Position         = UDim2.new(0, 8, 0, 48)
@@ -1762,10 +2702,10 @@ divider.BorderSizePixel  = 0
 divider.ZIndex           = 16
 divider.Parent           = panel
 
--- Row container
+-- ─── Row Container ────────────────────────────────────────────────────────────
 local rowContainer = Instance.new("Frame")
-rowContainer.Size                   = UDim2.new(1, -12, 1, -58)
-rowContainer.Position               = UDim2.new(0, 6, 0, 54)
+rowContainer.Size                   = UDim2.new(1, -12, 1, -62)
+rowContainer.Position               = UDim2.new(0, 6, 0, 56)
 rowContainer.BackgroundTransparency = 1
 rowContainer.ZIndex                 = 16
 rowContainer.Parent                 = panel
@@ -1775,21 +2715,20 @@ listLayout.Padding   = UDim.new(0, 4)
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 listLayout.Parent    = rowContainer
 
--- Reusable row pool (10 rows)
-local rows = {}
 local RANK_COLORS = {
-	[1] = Color3.fromRGB(255, 210, 40),   -- gold
-	[2] = Color3.fromRGB(200, 200, 200),  -- silver
-	[3] = Color3.fromRGB(205, 127, 50),   -- bronze
+	[1] = Color3.fromRGB(255, 210, 40),
+	[2] = Color3.fromRGB(200, 200, 200),
+	[3] = Color3.fromRGB(205, 127, 50),
 }
 
-local function makeRow(index)
+local rows = {}
+for i = 1, 10 do
 	local row = Instance.new("Frame")
-	row.Name             = "Row" .. index
+	row.Name             = "Row" .. i
 	row.Size             = UDim2.new(1, 0, 0, 30)
 	row.BackgroundColor3 = Color3.fromRGB(20, 16, 40)
 	row.BorderSizePixel  = 0
-	row.LayoutOrder      = index
+	row.LayoutOrder      = i
 	row.ZIndex           = 17
 	row.Visible          = false
 	row.Parent           = rowContainer
@@ -1800,10 +2739,10 @@ local function makeRow(index)
 	rankLbl.Size                   = UDim2.new(0, 28, 1, 0)
 	rankLbl.Position               = UDim2.new(0, 4, 0, 0)
 	rankLbl.BackgroundTransparency = 1
-	rankLbl.Text                   = "#" .. index
+	rankLbl.Text                   = "#" .. i
 	rankLbl.TextScaled             = true
 	rankLbl.Font                   = Enum.Font.GothamBold
-	rankLbl.TextColor3             = RANK_COLORS[index] or Color3.fromRGB(160, 150, 200)
+	rankLbl.TextColor3             = RANK_COLORS[i] or Color3.fromRGB(160, 150, 200)
 	rankLbl.ZIndex                 = 18
 	rankLbl.Parent                 = row
 
@@ -1812,7 +2751,6 @@ local function makeRow(index)
 	nameLbl.Size                   = UDim2.new(0.55, -36, 1, 0)
 	nameLbl.Position               = UDim2.new(0, 36, 0, 0)
 	nameLbl.BackgroundTransparency = 1
-	nameLbl.Text                   = ""
 	nameLbl.TextScaled             = true
 	nameLbl.Font                   = Enum.Font.Gotham
 	nameLbl.TextColor3             = Color3.fromRGB(220, 215, 240)
@@ -1820,27 +2758,22 @@ local function makeRow(index)
 	nameLbl.ZIndex                 = 18
 	nameLbl.Parent                 = row
 
-	local cashLbl = Instance.new("TextLabel")
-	cashLbl.Name                   = "Cash"
-	cashLbl.Size                   = UDim2.new(0.42, 0, 1, 0)
-	cashLbl.Position               = UDim2.new(0.58, 0, 0, 0)
-	cashLbl.BackgroundTransparency = 1
-	cashLbl.Text                   = "$0"
-	cashLbl.TextScaled             = true
-	cashLbl.Font                   = Enum.Font.GothamBold
-	cashLbl.TextColor3             = Color3.fromRGB(100, 230, 120)
-	cashLbl.TextXAlignment         = Enum.TextXAlignment.Right
-	cashLbl.ZIndex                 = 18
-	cashLbl.Parent                 = row
+	local scoreLbl = Instance.new("TextLabel")
+	scoreLbl.Name                   = "Score"
+	scoreLbl.Size                   = UDim2.new(0.42, 0, 1, 0)
+	scoreLbl.Position               = UDim2.new(0.58, 0, 0, 0)
+	scoreLbl.BackgroundTransparency = 1
+	scoreLbl.TextScaled             = true
+	scoreLbl.Font                   = Enum.Font.GothamBold
+	scoreLbl.TextColor3             = Color3.fromRGB(100, 230, 120)
+	scoreLbl.TextXAlignment         = Enum.TextXAlignment.Right
+	scoreLbl.ZIndex                 = 18
+	scoreLbl.Parent                 = row
 
-	return row
+	rows[i] = row
 end
 
-for i = 1, 10 do
-	rows[i] = makeRow(i)
-end
-
--- ─── Number formatter ─────────────────────────────────────────────────────────
+-- ─── Formatters ───────────────────────────────────────────────────────────────
 local function fmt(n)
 	if n >= 1e12 then return ("%.1fT"):format(n/1e12)
 	elseif n >= 1e9  then return ("%.1fB"):format(n/1e9)
@@ -1849,44 +2782,67 @@ local function fmt(n)
 	else return tostring(math.floor(n)) end
 end
 
--- ─── Refresh Leaderboard ──────────────────────────────────────────────────────
-local function refresh()
-	local entries = {}
-
-	for _, p in ipairs(Players:GetPlayers()) do
-		local ls = p:FindFirstChild("leaderstats")
-		local cashVal = ls and ls:FindFirstChild("Cash")
-		table.insert(entries, {
-			name  = p.Name,
-			cash  = cashVal and cashVal.Value or 0,
-			isMe  = (p == player),
-		})
-	end
-
-	-- Sort descending by cash
-	table.sort(entries, function(a, b) return a.cash > b.cash end)
-
+-- ─── Populate rows ────────────────────────────────────────────────────────────
+local function populateRows(entries, isGlobal)
 	for i, row in ipairs(rows) do
-		local entry = entries[i]
-		if entry then
+		local e = entries[i]
+		if e then
 			row.Visible = true
-			row.PlayerName.Text      = entry.name
-			row.Cash.Text            = "$" .. fmt(entry.cash)
-			-- Highlight self in gold
-			if entry.isMe then
-				row.BackgroundColor3    = Color3.fromRGB(50, 38, 10)
-				row.PlayerName.TextColor3 = Color3.fromRGB(255, 220, 60)
-			else
-				row.BackgroundColor3    = Color3.fromRGB(20, 16, 40)
-				row.PlayerName.TextColor3 = Color3.fromRGB(220, 215, 240)
-			end
+			row.PlayerName.Text = e.name
+			row.Score.Text      = "$" .. fmt(isGlobal and e.score or e.cash)
+
+			local isMe = (e.name == player.Name)
+			row.BackgroundColor3 = isMe and Color3.fromRGB(50, 38, 10) or Color3.fromRGB(20, 16, 40)
+			row.PlayerName.TextColor3 = isMe and Color3.fromRGB(255, 220, 60) or Color3.fromRGB(220, 215, 240)
 		else
 			row.Visible = false
 		end
 	end
 end
 
--- ─── Toggle Panel ─────────────────────────────────────────────────────────────
+-- ─── Tab Logic ────────────────────────────────────────────────────────────────
+local currentTab = "server"
+local globalCache = {}
+
+local function refreshServer()
+	local entries = {}
+	for _, p in ipairs(Players:GetPlayers()) do
+		local ls = p:FindFirstChild("leaderstats")
+		local cv = ls and ls:FindFirstChild("Cash")
+		table.insert(entries, { name = p.Name, cash = cv and cv.Value or 0 })
+	end
+	table.sort(entries, function(a, b) return a.cash > b.cash end)
+	populateRows(entries, false)
+end
+
+local function setTab(tab)
+	currentTab = tab
+	if tab == "global" then
+		tabGlobal.BackgroundColor3 = Color3.fromRGB(255, 200, 30)
+		tabGlobal.TextColor3       = Color3.fromRGB(20, 16, 0)
+		tabServer.BackgroundColor3 = Color3.fromRGB(30, 26, 60)
+		tabServer.TextColor3       = Color3.fromRGB(180, 170, 220)
+		GetGlobalLB:FireServer()
+	else
+		tabServer.BackgroundColor3 = Color3.fromRGB(255, 200, 30)
+		tabServer.TextColor3       = Color3.fromRGB(20, 16, 0)
+		tabGlobal.BackgroundColor3 = Color3.fromRGB(30, 26, 60)
+		tabGlobal.TextColor3       = Color3.fromRGB(180, 170, 220)
+		refreshServer()
+	end
+end
+
+tabGlobal.MouseButton1Click:Connect(function() setTab("global") end)
+tabServer.MouseButton1Click:Connect(function() setTab("server") end)
+
+GetGlobalLB.OnClientEvent:Connect(function(entries)
+	globalCache = entries or {}
+	if currentTab == "global" then
+		populateRows(globalCache, true)
+	end
+end)
+
+-- ─── Toggle & auto-refresh ────────────────────────────────────────────────────
 local panelOpen = false
 
 lbBtn.MouseButton1Click:Connect(function()
@@ -1894,7 +2850,7 @@ lbBtn.MouseButton1Click:Connect(function()
 	if panelOpen then
 		panel.Visible = true
 		panel.Size = UDim2.new(0, PANEL_W, 0, 0)
-		refresh()
+		setTab("server")
 		TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Size = UDim2.new(0, PANEL_W, 0, PANEL_H)
 		}):Play()
@@ -1906,19 +2862,841 @@ lbBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- ─── Auto-refresh every 5 seconds while open ──────────────────────────────────
 task.spawn(function()
 	while true do
-		task.wait(5)
+		task.wait(30)
 		if panelOpen then
-			refresh()
+			if currentTab == "server" then refreshServer()
+			else GetGlobalLB:FireServer() end
 		end
 	end
 end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="29">
+      <Item class="LocalScript" referent="47">
+        <Properties>
+          <string name="Name">MissionsUI</string>
+          <string name="Source"><![CDATA[-- MissionsUI (LocalScript)
+-- StarterPlayerScripts/MissionsUI
+-- 📋 Missions panel with progress bars and claim button.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+local SoundService      = game:GetService("SoundService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local RemoteEvents  = ReplicatedStorage:WaitForChild("RemoteEvents")
+local GetMissions   = RemoteEvents:WaitForChild("GetMissions")
+local MissionUpdate = RemoteEvents:WaitForChild("MissionUpdate")
+local ClaimMission  = RemoteEvents:WaitForChild("ClaimMission")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "MissionsUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = playerGui
+
+-- ─── 📋 Toggle Button ────────────────────────────────────────────────────────
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name             = "MissionsToggle"
+toggleBtn.Size             = UDim2.new(0, 130, 0, 50)
+toggleBtn.Position         = UDim2.new(0.5, -65, 0, 12)  -- centre top (shares row with cash but slightly left)
+toggleBtn.AnchorPoint      = Vector2.new(0.5, 0)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(25, 18, 55)
+toggleBtn.BorderSizePixel  = 0
+toggleBtn.Text             = "📋 Misiones"
+toggleBtn.TextColor3       = Color3.fromRGB(200, 185, 255)
+toggleBtn.TextScaled       = true
+toggleBtn.Font             = Enum.Font.GothamBold
+toggleBtn.AutoButtonColor  = false
+-- Push to right of cash frame at centre top
+toggleBtn.Position         = UDim2.new(0.5, 110, 0, 14)
+toggleBtn.Parent           = screenGui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 14)
+
+local tgStroke = Instance.new("UIStroke")
+tgStroke.Color     = Color3.fromRGB(130, 80, 255)
+tgStroke.Thickness = 1.5
+tgStroke.Parent    = toggleBtn
+
+toggleBtn.MouseEnter:Connect(function()
+	TweenService:Create(toggleBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(45, 32, 90)}):Play()
+end)
+toggleBtn.MouseLeave:Connect(function()
+	TweenService:Create(toggleBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(25, 18, 55)}):Play()
+end)
+
+-- ─── Panel ────────────────────────────────────────────────────────────────────
+local PANEL_W, PANEL_H = 360, 420
+
+local panel = Instance.new("Frame")
+panel.Name                   = "MissionsPanel"
+panel.Size                   = UDim2.new(0, PANEL_W, 0, PANEL_H)
+panel.Position               = UDim2.new(0.5, -PANEL_W/2, 0, 72)
+panel.BackgroundColor3       = Color3.fromRGB(10, 7, 25)
+panel.BackgroundTransparency = 0.05
+panel.BorderSizePixel        = 0
+panel.Visible                = false
+panel.ZIndex                 = 20
+panel.Parent                 = screenGui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 18)
+
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color     = Color3.fromRGB(130, 80, 255)
+panelStroke.Thickness = 2
+panelStroke.Parent    = panel
+
+local titleLbl = Instance.new("TextLabel")
+titleLbl.Size                  = UDim2.new(1, -16, 0, 44)
+titleLbl.Position              = UDim2.new(0, 8, 0, 6)
+titleLbl.BackgroundTransparency = 1
+titleLbl.Text                  = "📋  Misiones Diarias"
+titleLbl.TextColor3            = Color3.fromRGB(200, 185, 255)
+titleLbl.TextScaled            = true
+titleLbl.Font                  = Enum.Font.GothamBold
+titleLbl.ZIndex                = 21
+titleLbl.Parent                = panel
+
+local divider = Instance.new("Frame")
+divider.Size             = UDim2.new(1, -16, 0, 1)
+divider.Position         = UDim2.new(0, 8, 0, 54)
+divider.BackgroundColor3 = Color3.fromRGB(100, 60, 200)
+divider.BorderSizePixel  = 0
+divider.ZIndex           = 21
+divider.Parent           = panel
+
+-- ─── Mission Card Builder ─────────────────────────────────────────────────────
+local missionCards = {}
+
+local function formatNum(n)
+	if n >= 1e6 then return ("%.1fM"):format(n/1e6)
+	elseif n >= 1e3 then return ("%.1fK"):format(n/1e3)
+	else return tostring(math.floor(n)) end
+end
+
+local function buildCards()
+	for _, c in ipairs(missionCards) do c:Destroy() end
+	missionCards = {}
+
+	for i = 1, 3 do
+		local y = 62 + (i - 1) * 114
+
+		local card = Instance.new("Frame")
+		card.Name             = "MissionCard" .. i
+		card.Size             = UDim2.new(1, -20, 0, 106)
+		card.Position         = UDim2.new(0, 10, 0, y)
+		card.BackgroundColor3 = Color3.fromRGB(20, 14, 48)
+		card.BorderSizePixel  = 0
+		card.ZIndex           = 22
+		card.Parent           = panel
+		Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
+
+		local descLbl = Instance.new("TextLabel")
+		descLbl.Name                   = "Desc"
+		descLbl.Size                   = UDim2.new(1, -110, 0, 30)
+		descLbl.Position               = UDim2.new(0, 10, 0, 8)
+		descLbl.BackgroundTransparency = 1
+		descLbl.Text                   = "..."
+		descLbl.TextColor3             = Color3.fromRGB(220, 215, 255)
+		descLbl.TextScaled             = true
+		descLbl.Font                   = Enum.Font.GothamBold
+		descLbl.TextXAlignment         = Enum.TextXAlignment.Left
+		descLbl.ZIndex                 = 23
+		descLbl.Parent                 = card
+
+		local rewardLbl = Instance.new("TextLabel")
+		rewardLbl.Name                   = "Reward"
+		rewardLbl.Size                   = UDim2.new(0, 90, 0, 28)
+		rewardLbl.Position               = UDim2.new(1, -100, 0, 10)
+		rewardLbl.BackgroundTransparency = 1
+		rewardLbl.Text                   = "$0"
+		rewardLbl.TextColor3             = Color3.fromRGB(100, 240, 130)
+		rewardLbl.TextScaled             = true
+		rewardLbl.Font                   = Enum.Font.GothamBold
+		rewardLbl.TextXAlignment         = Enum.TextXAlignment.Right
+		rewardLbl.ZIndex                 = 23
+		rewardLbl.Parent                 = card
+
+		-- Progress bar track
+		local track = Instance.new("Frame")
+		track.Name             = "Track"
+		track.Size             = UDim2.new(1, -110, 0, 14)
+		track.Position         = UDim2.new(0, 10, 0, 44)
+		track.BackgroundColor3 = Color3.fromRGB(35, 28, 70)
+		track.BorderSizePixel  = 0
+		track.ZIndex           = 23
+		track.Parent           = card
+		Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
+
+		local fill = Instance.new("Frame")
+		fill.Name             = "Fill"
+		fill.Size             = UDim2.new(0, 0, 1, 0)
+		fill.BackgroundColor3 = Color3.fromRGB(120, 80, 255)
+		fill.BorderSizePixel  = 0
+		fill.ZIndex           = 24
+		fill.Parent           = track
+		Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+
+		local progressLbl = Instance.new("TextLabel")
+		progressLbl.Name                   = "Progress"
+		progressLbl.Size                   = UDim2.new(1, -110, 0, 22)
+		progressLbl.Position               = UDim2.new(0, 10, 0, 62)
+		progressLbl.BackgroundTransparency = 1
+		progressLbl.Text                   = "0 / 0"
+		progressLbl.TextColor3             = Color3.fromRGB(160, 150, 200)
+		progressLbl.TextScaled             = true
+		progressLbl.Font                   = Enum.Font.Gotham
+		progressLbl.TextXAlignment         = Enum.TextXAlignment.Left
+		progressLbl.ZIndex                 = 23
+		progressLbl.Parent                 = card
+
+		local claimBtn = Instance.new("TextButton")
+		claimBtn.Name             = "ClaimBtn"
+		claimBtn.Size             = UDim2.new(0, 90, 0, 76)
+		claimBtn.Position         = UDim2.new(1, -100, 0, 8)
+		claimBtn.BackgroundColor3 = Color3.fromRGB(50, 45, 90)
+		claimBtn.BorderSizePixel  = 0
+		claimBtn.Text             = "🔒"
+		claimBtn.TextColor3       = Color3.fromRGB(150, 140, 200)
+		claimBtn.TextScaled       = true
+		claimBtn.Font             = Enum.Font.GothamBold
+		claimBtn.AutoButtonColor  = false
+		claimBtn.ZIndex           = 24
+		claimBtn.Parent           = card
+		Instance.new("UICorner", claimBtn).CornerRadius = UDim.new(0, 10)
+
+		table.insert(missionCards, card)
+	end
+end
+
+buildCards()
+
+-- ─── Confetti burst ───────────────────────────────────────────────────────────
+local function confetti()
+	local colors = {
+		Color3.fromRGB(255, 80, 80),
+		Color3.fromRGB(80, 200, 255),
+		Color3.fromRGB(255, 220, 40),
+		Color3.fromRGB(120, 255, 100),
+		Color3.fromRGB(200, 80, 255),
+	}
+	for _ = 1, 30 do
+		local piece = Instance.new("Frame")
+		piece.Size             = UDim2.new(0, math.random(8, 16), 0, math.random(8, 16))
+		piece.Position         = UDim2.new(math.random(20, 80)/100, 0, 0.4, 0)
+		piece.BackgroundColor3 = colors[math.random(1, #colors)]
+		piece.BorderSizePixel  = 0
+		piece.ZIndex           = 60
+		piece.Rotation         = math.random(0, 360)
+		piece.Parent           = screenGui
+		Instance.new("UICorner", piece).CornerRadius = UDim.new(0, 3)
+
+		TweenService:Create(piece, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Position = UDim2.new(piece.Position.X.Scale, 0, 1.1, 0),
+			Rotation = piece.Rotation + math.random(-180, 180),
+			BackgroundTransparency = 1,
+		}):Play()
+		game:GetService("Debris"):AddItem(piece, 1.6)
+
+		task.wait(0.02)
+	end
+end
+
+-- ─── Update Cards ─────────────────────────────────────────────────────────────
+local _currentMissions = {}
+
+local function updateCards(missions)
+	_currentMissions = missions or {}
+	for i, card in ipairs(missionCards) do
+		local m = missions and missions[i]
+		if not m then continue end
+
+		card.Desc.Text    = m.desc
+		card.Reward.Text  = "+$" .. formatNum(m.reward)
+		card.Progress.Text = formatNum(m.progress) .. " / " .. formatNum(m.goal)
+
+		local pct = math.clamp(m.progress / m.goal, 0, 1)
+		TweenService:Create(card.Track.Fill, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(pct, 0, 1, 0),
+		}):Play()
+
+		local btn = card.ClaimBtn
+		if m.claimed then
+			btn.Text             = "✅"
+			btn.BackgroundColor3 = Color3.fromRGB(30, 80, 40)
+			btn.Active           = false
+		elseif m.progress >= m.goal then
+			btn.Text             = "Reclamar"
+			btn.BackgroundColor3 = Color3.fromRGB(60, 200, 100)
+			btn.TextColor3       = Color3.fromRGB(10, 40, 10)
+			btn.Active           = true
+
+			-- Wire claim once
+			if not btn:GetAttribute("Wired") then
+				btn:SetAttribute("Wired", true)
+				btn.MouseButton1Click:Connect(function()
+					ClaimMission:FireServer(m.id)
+					task.spawn(confetti)
+					-- Optimistic UI
+					btn.Text   = "⏳"
+					btn.Active = false
+				end)
+			end
+		else
+			btn.Text             = "🔒"
+			btn.BackgroundColor3 = Color3.fromRGB(50, 45, 90)
+			btn.TextColor3       = Color3.fromRGB(150, 140, 200)
+			btn.Active           = false
+		end
+	end
+end
+
+MissionUpdate.OnClientEvent:Connect(updateCards)
+
+-- ─── Toggle ───────────────────────────────────────────────────────────────────
+local panelOpen = false
+
+toggleBtn.MouseButton1Click:Connect(function()
+	panelOpen = not panelOpen
+	if panelOpen then
+		panel.Visible = true
+		panel.Size = UDim2.new(0, PANEL_W, 0, 0)
+		GetMissions:FireServer()
+		TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, PANEL_W, 0, PANEL_H)
+		}):Play()
+	else
+		TweenService:Create(panel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, PANEL_W, 0, 0)
+		}):Play()
+		task.delay(0.2, function() panel.Visible = false end)
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="48">
+        <Properties>
+          <string name="Name">MusicController</string>
+          <string name="Source"><![CDATA[-- MusicController (LocalScript)
+-- StarterPlayerScripts/MusicController
+-- Background music with 🎵 toggle button.
+
+local Players      = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "MusicUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = playerGui
+
+-- ─── Music Tracks ────────────────────────────────────────────────────────────
+local TRACKS = {
+	{ id = 1843906839, name = "Zona Italiana" },
+	{ id = 1843827228, name = "Volcán Romano" },
+	{ id = 1842388270, name = "Cosmos Brainrot" },
+}
+
+-- ─── Sound Instance ───────────────────────────────────────────────────────────
+local bgSound = Instance.new("Sound")
+bgSound.SoundId  = "rbxassetid://" .. tostring(TRACKS[1].id)
+bgSound.Volume   = 0.3
+bgSound.Looped   = true
+bgSound.Parent   = SoundService
+bgSound:Play()
+
+-- ─── 🎵 Toggle Button ────────────────────────────────────────────────────────
+local musicBtn = Instance.new("TextButton")
+musicBtn.Name             = "MusicBtn"
+musicBtn.Size             = UDim2.new(0, 52, 0, 44)
+musicBtn.Position         = UDim2.new(1, -68, 1, -66)
+musicBtn.BackgroundColor3 = Color3.fromRGB(20, 18, 40)
+musicBtn.BorderSizePixel  = 0
+musicBtn.Text             = "🎵"
+musicBtn.TextScaled       = true
+musicBtn.Font             = Enum.Font.GothamBold
+musicBtn.AutoButtonColor  = false
+musicBtn.Parent           = screenGui
+Instance.new("UICorner", musicBtn).CornerRadius = UDim.new(0, 14)
+
+local musicStroke = Instance.new("UIStroke")
+musicStroke.Color     = Color3.fromRGB(80, 60, 160)
+musicStroke.Thickness = 1.5
+musicStroke.Parent    = musicBtn
+
+local musicEnabled = true
+
+musicBtn.MouseButton1Click:Connect(function()
+	musicEnabled = not musicEnabled
+	if musicEnabled then
+		bgSound:Play()
+		musicBtn.Text = "🎵"
+		musicStroke.Color = Color3.fromRGB(80, 60, 160)
+	else
+		bgSound:Stop()
+		musicBtn.Text = "🔇"
+		musicStroke.Color = Color3.fromRGB(100, 40, 40)
+	end
+end)
+
+-- Zone-based track switch (poll position every 5 seconds)
+task.spawn(function()
+	while true do
+		task.wait(5)
+		local char = player.Character
+		if char then
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				local x = hrp.Position.X
+				local trackIndex
+				if x >= 600 then trackIndex = 3
+				elseif x >= 300 then trackIndex = 2
+				else trackIndex = 1 end
+
+				local newId = "rbxassetid://" .. tostring(TRACKS[trackIndex].id)
+				if bgSound.SoundId ~= newId and musicEnabled then
+					TweenService:Create(bgSound, TweenInfo.new(1), {Volume = 0}):Play()
+					task.wait(1)
+					bgSound.SoundId = newId
+					bgSound:Play()
+					TweenService:Create(bgSound, TweenInfo.new(1), {Volume = 0.3}):Play()
+				end
+			end
+		end
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="49">
+        <Properties>
+          <string name="Name">NotificationsUI</string>
+          <string name="Source"><![CDATA[-- NotificationsUI (LocalScript)
+-- StarterPlayerScripts/NotificationsUI
+-- Slide-in toast notifications (top-right). Handles GlobalNotification events.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local GlobalNotification = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("GlobalNotification")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "NotificationsUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = playerGui
+
+-- ─── Toast Queue ─────────────────────────────────────────────────────────────
+local TOAST_W    = 320
+local TOAST_H    = 56
+local TOAST_PAD  = 8
+local MAX_TOASTS = 3
+
+local activeToasts = {}
+
+local COLOR_MAP = {
+	gold    = Color3.fromRGB(255, 210, 30),
+	green   = Color3.fromRGB(50, 220, 100),
+	purple  = Color3.fromRGB(160, 80, 255),
+	red     = Color3.fromRGB(220, 60, 60),
+	default = Color3.fromRGB(100, 140, 255),
+}
+
+local function repositionToasts()
+	for i, toast in ipairs(activeToasts) do
+		local targetY = 14 + (i - 1) * (TOAST_H + TOAST_PAD)
+		TweenService:Create(toast, TweenInfo.new(0.2), {
+			Position = UDim2.new(1, -(TOAST_W + 14), 0, targetY),
+		}):Play()
+	end
+end
+
+local function removeToast(toast)
+	for i, t in ipairs(activeToasts) do
+		if t == toast then
+			table.remove(activeToasts, i)
+			break
+		end
+	end
+	TweenService:Create(toast, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		Position = UDim2.new(1, 14, toast.Position.Y.Scale, toast.Position.Y.Offset),
+		BackgroundTransparency = 1,
+	}):Play()
+	task.wait(0.26)
+	toast:Destroy()
+	repositionToasts()
+end
+
+local function showNotification(data)
+	-- Max 3 at a time: evict oldest
+	if #activeToasts >= MAX_TOASTS then
+		task.spawn(removeToast, activeToasts[1])
+		task.wait(0.1)
+	end
+
+	local accentColor = COLOR_MAP[data.color] or COLOR_MAP.default
+
+	local toast = Instance.new("Frame")
+	toast.Name                   = "Toast"
+	toast.Size                   = UDim2.new(0, TOAST_W, 0, TOAST_H)
+	toast.Position               = UDim2.new(1, 14, 0, 14)  -- starts off-screen right
+	toast.BackgroundColor3       = Color3.fromRGB(12, 10, 28)
+	toast.BackgroundTransparency = 0.1
+	toast.BorderSizePixel        = 0
+	toast.ZIndex                 = 40
+	toast.Parent                 = screenGui
+	Instance.new("UICorner", toast).CornerRadius = UDim.new(0, 14)
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color     = accentColor
+	stroke.Thickness = 1.5
+	stroke.Parent    = toast
+
+	-- Accent bar on left
+	local bar = Instance.new("Frame")
+	bar.Size             = UDim2.new(0, 4, 1, -8)
+	bar.Position         = UDim2.new(0, 6, 0, 4)
+	bar.BackgroundColor3 = accentColor
+	bar.BorderSizePixel  = 0
+	bar.ZIndex           = 41
+	bar.Parent           = toast
+	Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+
+	local lbl = Instance.new("TextLabel")
+	lbl.Size                   = UDim2.new(1, -20, 1, 0)
+	lbl.Position               = UDim2.new(0, 16, 0, 0)
+	lbl.BackgroundTransparency = 1
+	lbl.Text                   = data.msg or ""
+	lbl.TextColor3             = Color3.fromRGB(230, 225, 255)
+	lbl.TextScaled             = true
+	lbl.Font                   = Enum.Font.Gotham
+	lbl.TextXAlignment         = Enum.TextXAlignment.Left
+	lbl.ZIndex                 = 41
+	lbl.Parent                 = toast
+
+	table.insert(activeToasts, toast)
+	repositionToasts()
+
+	-- Slide in
+	local targetY = 14 + (#activeToasts - 1) * (TOAST_H + TOAST_PAD)
+	TweenService:Create(toast, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Position = UDim2.new(1, -(TOAST_W + 14), 0, targetY),
+	}):Play()
+
+	-- Auto-dismiss after 4 seconds
+	task.delay(4, function()
+		if toast and toast.Parent then
+			task.spawn(removeToast, toast)
+		end
+	end)
+end
+
+GlobalNotification.OnClientEvent:Connect(function(data)
+	task.spawn(showNotification, data)
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="50">
+        <Properties>
+          <string name="Name">PetUI</string>
+          <string name="Source"><![CDATA[-- PetUI (LocalScript)
+-- StarterPlayerScripts/PetUI
+-- 🐾 Panel to view pet inventory, equip/unequip, and buy Pet Eggs.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local PetUpdate    = RemoteEvents:WaitForChild("PetUpdate")
+local EquipPet     = RemoteEvents:WaitForChild("EquipPet")
+local UnequipPet   = RemoteEvents:WaitForChild("UnequipPet")
+local BuyPetEgg    = RemoteEvents:WaitForChild("BuyPetEgg")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "PetUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = playerGui
+
+-- ─── Pet Egg Button (bottom, left of Buy Egg) ─────────────────────────────────
+local petEggBtn = Instance.new("TextButton")
+petEggBtn.Name             = "PetEggButton"
+petEggBtn.Size             = UDim2.new(0, 200, 0, 60)
+petEggBtn.Position         = UDim2.new(0.5, -320, 1, -80)
+petEggBtn.BackgroundColor3 = Color3.fromRGB(120, 60, 200)
+petEggBtn.BorderSizePixel  = 0
+petEggBtn.Text             = "🐾 Pet Egg  $2000"
+petEggBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+petEggBtn.TextScaled       = true
+petEggBtn.Font             = Enum.Font.GothamBold
+petEggBtn.AutoButtonColor  = false
+petEggBtn.Parent           = screenGui
+Instance.new("UICorner", petEggBtn).CornerRadius = UDim.new(0, 16)
+
+petEggBtn.MouseEnter:Connect(function()
+	TweenService:Create(petEggBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(150, 90, 240)}):Play()
+end)
+petEggBtn.MouseLeave:Connect(function()
+	TweenService:Create(petEggBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(120, 60, 200)}):Play()
+end)
+
+petEggBtn.MouseButton1Click:Connect(function()
+	petEggBtn.Text   = "⏳ Abriendo..."
+	petEggBtn.Active = false
+	BuyPetEgg:FireServer()
+	task.wait(1)
+	petEggBtn.Text   = "🐾 Pet Egg  $2000"
+	petEggBtn.Active = true
+end)
+
+-- ─── 🐾 Panel Toggle Button ───────────────────────────────────────────────────
+local petsBtn = Instance.new("TextButton")
+petsBtn.Name             = "PetsToggleBtn"
+petsBtn.Size             = UDim2.new(0, 100, 0, 50)
+petsBtn.Position         = UDim2.new(1, -242, 1, -66)
+petsBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 140)
+petsBtn.BorderSizePixel  = 0
+petsBtn.Text             = "🐾 Pets"
+petsBtn.TextColor3       = Color3.fromRGB(230, 210, 255)
+petsBtn.TextScaled       = true
+petsBtn.Font             = Enum.Font.GothamBold
+petsBtn.AutoButtonColor  = false
+petsBtn.Parent           = screenGui
+Instance.new("UICorner", petsBtn).CornerRadius = UDim.new(0, 16)
+
+-- ─── Pet Panel ────────────────────────────────────────────────────────────────
+local PANEL_W, PANEL_H = 340, 420
+
+local panel = Instance.new("Frame")
+panel.Size                   = UDim2.new(0, PANEL_W, 0, PANEL_H)
+panel.Position               = UDim2.new(1, -(PANEL_W + 16), 1, -(PANEL_H + 72))
+panel.BackgroundColor3       = Color3.fromRGB(12, 8, 30)
+panel.BackgroundTransparency = 0.05
+panel.BorderSizePixel        = 0
+panel.Visible                = false
+panel.ZIndex                 = 20
+panel.Parent                 = screenGui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 18)
+
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color     = Color3.fromRGB(130, 60, 220)
+panelStroke.Thickness = 2
+panelStroke.Parent    = panel
+
+local titleLbl = Instance.new("TextLabel")
+titleLbl.Size                  = UDim2.new(1, -16, 0, 44)
+titleLbl.Position              = UDim2.new(0, 8, 0, 6)
+titleLbl.BackgroundTransparency = 1
+titleLbl.Text                  = "🐾  Mis Mascotas"
+titleLbl.TextColor3            = Color3.fromRGB(200, 160, 255)
+titleLbl.TextScaled            = true
+titleLbl.Font                  = Enum.Font.GothamBold
+titleLbl.ZIndex                = 21
+titleLbl.Parent                = panel
+
+local equippedLbl = Instance.new("TextLabel")
+equippedLbl.Name                   = "EquippedLabel"
+equippedLbl.Size                   = UDim2.new(1, -16, 0, 28)
+equippedLbl.Position               = UDim2.new(0, 8, 0, 52)
+equippedLbl.BackgroundTransparency = 1
+equippedLbl.Text                   = "Equipada: ninguna"
+equippedLbl.TextColor3             = Color3.fromRGB(140, 130, 180)
+equippedLbl.TextScaled             = true
+equippedLbl.Font                   = Enum.Font.Gotham
+equippedLbl.ZIndex                 = 21
+equippedLbl.Parent                 = panel
+
+-- Scroll for inventory
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size                   = UDim2.new(1, -10, 1, -90)
+scroll.Position               = UDim2.new(0, 5, 0, 86)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel        = 0
+scroll.ScrollBarThickness     = 4
+scroll.ScrollBarImageColor3   = Color3.fromRGB(130, 60, 220)
+scroll.ZIndex                 = 21
+scroll.Parent                 = panel
+
+local grid = Instance.new("UIGridLayout")
+grid.CellSize    = UDim2.new(0, 96, 0, 96)
+grid.CellPadding = UDim2.new(0, 8, 0, 8)
+grid.Parent      = scroll
+
+local gridPad = Instance.new("UIPadding")
+gridPad.PaddingAll = UDim.new(0, 6)
+gridPad.Parent     = scroll
+
+-- ─── Rarity pet colors ────────────────────────────────────────────────────────
+local PET_RARITY_COLORS = {
+	Common    = Color3.fromRGB(130, 130, 130),
+	Uncommon  = Color3.fromRGB(80, 140, 255),
+	Rare      = Color3.fromRGB(40, 190, 110),
+	Epic      = Color3.fromRGB(150, 80, 255),
+	Legendary = Color3.fromRGB(255, 170, 0),
+}
+
+-- ─── Build inventory cards ────────────────────────────────────────────────────
+local _equippedIndex = nil
+
+local function buildInventory(inventory, equipped)
+	-- Clear existing cards
+	for _, c in ipairs(scroll:GetChildren()) do
+		if c:IsA("TextButton") or c:IsA("Frame") then c:Destroy() end
+	end
+
+	if #inventory == 0 then
+		local empty = Instance.new("TextLabel")
+		empty.Size                   = UDim2.new(1, -12, 0, 60)
+		empty.Position               = UDim2.new(0, 6, 0, 0)
+		empty.BackgroundTransparency = 1
+		empty.Text                   = "¡Aún no tienes mascotas!\nCompra un Pet Egg 🐾"
+		empty.TextColor3             = Color3.fromRGB(140, 130, 180)
+		empty.TextScaled             = true
+		empty.Font                   = Enum.Font.Gotham
+		empty.ZIndex                 = 22
+		empty.Parent                 = scroll
+		return
+	end
+
+	for i, pet in ipairs(inventory) do
+		local isEquipped = equipped and equipped.name == pet.name
+
+		local card = Instance.new("TextButton")
+		card.Size             = UDim2.new(0, 96, 0, 96)
+		card.BackgroundColor3 = PET_RARITY_COLORS[pet.rarity] or Color3.fromRGB(90, 80, 130)
+		card.BackgroundTransparency = isEquipped and 0.1 or 0.45
+		card.BorderSizePixel  = 0
+		card.Text             = ""
+		card.ZIndex           = 22
+		card.Parent           = scroll
+		Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
+
+		if isEquipped then
+			local glow = Instance.new("UIStroke")
+			glow.Color     = PET_RARITY_COLORS[pet.rarity] or Color3.fromRGB(255, 255, 255)
+			glow.Thickness = 2.5
+			glow.Parent    = card
+		end
+
+		local emojiLbl = Instance.new("TextLabel")
+		emojiLbl.Size                   = UDim2.new(1, 0, 0.55, 0)
+		emojiLbl.BackgroundTransparency = 1
+		emojiLbl.Text                   = pet.emoji
+		emojiLbl.TextScaled             = true
+		emojiLbl.ZIndex                 = 23
+		emojiLbl.Parent                 = card
+
+		local nameLbl = Instance.new("TextLabel")
+		nameLbl.Size                   = UDim2.new(1, -4, 0.28, 0)
+		nameLbl.Position               = UDim2.new(0, 2, 0.55, 0)
+		nameLbl.BackgroundTransparency = 1
+		nameLbl.Text                   = pet.name
+		nameLbl.TextScaled             = true
+		nameLbl.Font                   = Enum.Font.GothamBold
+		nameLbl.TextColor3             = Color3.fromRGB(255, 255, 255)
+		nameLbl.ZIndex                 = 23
+		nameLbl.Parent                 = card
+
+		local pctLbl = Instance.new("TextLabel")
+		pctLbl.Size                   = UDim2.new(1, 0, 0.17, 0)
+		pctLbl.Position               = UDim2.new(0, 0, 0.83, 0)
+		pctLbl.BackgroundTransparency = 1
+		pctLbl.Text                   = ("+" .. math.floor(pet.multiplier * 100) .. "%") 
+		pctLbl.TextScaled             = true
+		pctLbl.Font                   = Enum.Font.Gotham
+		pctLbl.TextColor3             = Color3.fromRGB(180, 255, 180)
+		pctLbl.ZIndex                 = 23
+		pctLbl.Parent                 = card
+
+		local idx = i
+		card.MouseButton1Click:Connect(function()
+			if isEquipped then
+				UnequipPet:FireServer()
+			else
+				EquipPet:FireServer(idx)
+			end
+		end)
+	end
+
+	scroll.CanvasSize = UDim2.new(0, 0, 0, grid.AbsoluteContentSize.Y + 12)
+
+	equippedLbl.Text = equipped
+		and ("Equipada: " .. equipped.emoji .. " " .. equipped.name .. "  +" .. math.floor((equipped.multiplier or 0)*100) .. "%💰")
+		or "Equipada: ninguna"
+end
+
+PetUpdate.OnClientEvent:Connect(function(inventory, equipped, newPet)
+	buildInventory(inventory, equipped)
+
+	-- Show toast for new pet
+	if newPet then
+		local notifGui = playerGui:FindFirstChild("NotificationsUI")
+		-- Simple inline toast
+		local lbl = Instance.new("TextLabel")
+		lbl.Size                   = UDim2.new(0, 280, 0, 52)
+		lbl.Position               = UDim2.new(1, -(280+14), 0, 14)
+		lbl.BackgroundColor3       = Color3.fromRGB(12, 10, 28)
+		lbl.BackgroundTransparency = 0.1
+		lbl.BorderSizePixel        = 0
+		lbl.Text                   = "🐾 " .. newPet.emoji .. " " .. newPet.name .. " ¡obtenido!"
+		lbl.TextColor3             = Color3.fromRGB(200, 180, 255)
+		lbl.TextScaled             = true
+		lbl.Font                   = Enum.Font.GothamBold
+		lbl.ZIndex                 = 40
+		lbl.Parent                 = screenGui
+		Instance.new("UICorner", lbl).CornerRadius = UDim.new(0, 14)
+		game:GetService("Debris"):AddItem(lbl, 3.5)
+	end
+end)
+
+-- ─── Toggle ───────────────────────────────────────────────────────────────────
+local panelOpen = false
+
+petsBtn.MouseButton1Click:Connect(function()
+	panelOpen = not panelOpen
+	if panelOpen then
+		panel.Visible = true
+		panel.Size = UDim2.new(0, PANEL_W, 0, 0)
+		TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, PANEL_W, 0, PANEL_H)
+		}):Play()
+	else
+		TweenService:Create(panel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, PANEL_W, 0, 0)
+		}):Play()
+		task.delay(0.2, function() panel.Visible = false end)
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="51">
         <Properties>
           <string name="Name">ShopPassUI</string>
           <string name="Source"><![CDATA[-- ShopPassUI (LocalScript)
@@ -2178,7 +3956,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="30">
+      <Item class="LocalScript" referent="52">
         <Properties>
           <string name="Name">ShopUI</string>
           <string name="Source"><![CDATA[-- ShopUI (LocalScript)
@@ -2412,6 +4190,319 @@ toggleBtn.MouseButton1Click:Connect(function()
 	else
 		openPanel()
 	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="53">
+        <Properties>
+          <string name="Name">TutorialUI</string>
+          <string name="Source"><![CDATA[-- TutorialUI (LocalScript)
+-- StarterPlayerScripts/TutorialUI
+-- Shown only to new players (< 60 seconds played, first time).
+-- 4-step arrow tutorial.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+local DataStoreService  = game:GetService("DataStoreService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- We store completion state via a RemoteEvent to server (avoid client DataStore)
+local TutorialDone = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("TutorialDone")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "TutorialUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = playerGui
+
+-- ─── Steps ────────────────────────────────────────────────────────────────────
+local STEPS = {
+	{
+		arrow    = "👇",
+		arrowPos = UDim2.new(0.5, -60, 1, -150),  -- near buy egg
+		text     = "¡Compra tu primer Brainrot!",
+		duration = 4,
+	},
+	{
+		arrow    = "👆",
+		arrowPos = UDim2.new(0.5, -60, 0, 70),    -- near cash frame
+		text     = "Tu cash sube automáticamente",
+		duration = 4,
+	},
+	{
+		arrow    = "👉",
+		arrowPos = UDim2.new(1, -200, 1, -120),   -- near shop
+		text     = "Compra más en la tienda 🛒",
+		duration = 4,
+	},
+	{
+		arrow    = "🎉",
+		arrowPos = UDim2.new(0.5, -100, 0.5, -40),
+		text     = "¡Ya eres un Brainrot Master!",
+		duration = 3,
+	},
+}
+
+-- ─── Tutorial Elements ────────────────────────────────────────────────────────
+local arrowLbl = Instance.new("TextLabel")
+arrowLbl.Name                   = "Arrow"
+arrowLbl.Size                   = UDim2.new(0, 60, 0, 60)
+arrowLbl.BackgroundTransparency = 1
+arrowLbl.Text                   = "👇"
+arrowLbl.TextScaled             = true
+arrowLbl.ZIndex                 = 55
+arrowLbl.Visible                = false
+arrowLbl.Parent                 = screenGui
+
+local bubble = Instance.new("Frame")
+bubble.Name                   = "Bubble"
+bubble.Size                   = UDim2.new(0, 260, 0, 60)
+bubble.BackgroundColor3       = Color3.fromRGB(14, 10, 38)
+bubble.BackgroundTransparency = 0.1
+bubble.BorderSizePixel        = 0
+bubble.ZIndex                 = 55
+bubble.Visible                = false
+bubble.Parent                 = screenGui
+Instance.new("UICorner", bubble).CornerRadius = UDim.new(0, 14)
+
+local bubbleStroke = Instance.new("UIStroke")
+bubbleStroke.Color     = Color3.fromRGB(120, 80, 255)
+bubbleStroke.Thickness = 1.5
+bubbleStroke.Parent    = bubble
+
+local bubbleLbl = Instance.new("TextLabel")
+bubbleLbl.Size                   = UDim2.new(1, -12, 1, 0)
+bubbleLbl.Position               = UDim2.new(0, 6, 0, 0)
+bubbleLbl.BackgroundTransparency = 1
+bubbleLbl.TextColor3             = Color3.fromRGB(220, 210, 255)
+bubbleLbl.TextScaled             = true
+bubbleLbl.Font                   = Enum.Font.GothamBold
+bubbleLbl.ZIndex                 = 56
+bubbleLbl.Parent                 = bubble
+
+-- ─── Run Tutorial ─────────────────────────────────────────────────────────────
+local function runTutorial()
+	task.wait(3)   -- let game load
+	for _, step in ipairs(STEPS) do
+		arrowLbl.Text     = step.arrow
+		arrowLbl.Position = step.arrowPos
+		arrowLbl.Visible  = true
+
+		-- Bounce arrow
+		TweenService:Create(arrowLbl, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+			Position = step.arrowPos + UDim2.new(0, 0, 0, -10),
+		}):Play()
+
+		bubble.Position = UDim2.new(step.arrowPos.X.Scale, step.arrowPos.X.Offset - 100,
+			step.arrowPos.Y.Scale, step.arrowPos.Y.Offset + 64)
+		bubbleLbl.Text  = step.text
+		bubble.Visible  = true
+
+		task.wait(step.duration)
+
+		-- Fade out
+		TweenService:Create(arrowLbl, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+		TweenService:Create(bubble, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+		TweenService:Create(bubbleLbl, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+		task.wait(0.35)
+
+		arrowLbl.Visible             = false
+		arrowLbl.TextTransparency    = 0
+		bubble.Visible               = false
+		bubble.BackgroundTransparency = 0.1
+		bubbleLbl.TextTransparency   = 0
+	end
+
+	TutorialDone:FireServer()
+	screenGui:Destroy()
+end
+
+-- ─── Check if already completed (via RemoteEvent reply) ──────────────────────
+local TutorialStatus = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("TutorialStatus")
+
+TutorialStatus.OnClientEvent:Connect(function(done)
+	if not done then
+		task.spawn(runTutorial)
+	else
+		screenGui:Destroy()
+	end
+end)
+
+-- Request status from server on join
+TutorialDone:FireServer("check")
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="54">
+        <Properties>
+          <string name="Name">VFXController</string>
+          <string name="Source"><![CDATA[-- VFXController (LocalScript)
+-- StarterPlayerScripts/VFXController
+-- Handles screen flash + particle effects when a rare+ brainrot is obtained.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+local SoundService      = game:GetService("SoundService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local GachaResult = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("GachaResult")
+local RebornResult = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RebornResult")
+
+-- ─── Sounds ───────────────────────────────────────────────────────────────────
+local function playSound(assetId, volume)
+	local s = Instance.new("Sound")
+	s.SoundId    = "rbxassetid://" .. tostring(assetId)
+	s.Volume     = volume or 0.6
+	s.RollOffMaxDistance = 0
+	s.Parent     = SoundService
+	s:Play()
+	game:GetService("Debris"):AddItem(s, 8)
+end
+
+-- ─── ScreenGui for VFX ────────────────────────────────────────────────────────
+local vfxGui = Instance.new("ScreenGui")
+vfxGui.Name           = "VFXGui"
+vfxGui.ResetOnSpawn   = false
+vfxGui.IgnoreGuiInset = true
+vfxGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+vfxGui.Parent         = playerGui
+
+-- ─── Flash overlay ────────────────────────────────────────────────────────────
+local flashFrame = Instance.new("Frame")
+flashFrame.Name                   = "Flash"
+flashFrame.Size                   = UDim2.new(1, 0, 1, 0)
+flashFrame.BackgroundColor3       = Color3.fromRGB(255, 255, 255)
+flashFrame.BackgroundTransparency = 1
+flashFrame.BorderSizePixel        = 0
+flashFrame.ZIndex                 = 50
+flashFrame.Parent                 = vfxGui
+
+-- ─── Big rarity text ─────────────────────────────────────────────────────────
+local rarityText = Instance.new("TextLabel")
+rarityText.Size                   = UDim2.new(0.8, 0, 0, 80)
+rarityText.Position               = UDim2.new(0.1, 0, 0.3, 0)
+rarityText.BackgroundTransparency = 1
+rarityText.Text                   = ""
+rarityText.Font                   = Enum.Font.GothamBold
+rarityText.TextSize               = 72
+rarityText.TextColor3             = Color3.fromRGB(255, 255, 255)
+rarityText.TextStrokeTransparency = 0.1
+rarityText.ZIndex                 = 51
+rarityText.Visible                = false
+rarityText.Parent                 = vfxGui
+
+-- ─── Particle stars (simple label emulation) ──────────────────────────────────
+local function spawnStar(color)
+	local star = Instance.new("TextLabel")
+	star.Size                   = UDim2.new(0, 32, 0, 32)
+	star.Position               = UDim2.new(math.random(10, 90) / 100, 0, math.random(10, 90) / 100, 0)
+	star.BackgroundTransparency = 1
+	star.Text                   = "⭐"
+	star.TextColor3             = color
+	star.TextScaled             = true
+	star.ZIndex                 = 52
+	star.Parent                 = vfxGui
+
+	TweenService:Create(star, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(star.Position.X.Scale, 0, star.Position.Y.Scale - 0.25, 0),
+		TextTransparency = 1,
+		Size = UDim2.new(0, 64, 0, 64),
+	}):Play()
+
+	game:GetService("Debris"):AddItem(star, 1.3)
+end
+
+-- ─── Rarity VFX config ────────────────────────────────────────────────────────
+local RARITY_VFX = {
+	Rare      = { flashColor = Color3.fromRGB(50, 255, 120),  flashAlpha = 0.7, stars = 8,  shake = false, soundId = 4590662766 },
+	Epic      = { flashColor = Color3.fromRGB(160, 60, 255),  flashAlpha = 0.65, stars = 12, shake = false, soundId = 4849897432 },
+	Legendary = { flashColor = Color3.fromRGB(255, 200, 0),   flashAlpha = 0.6, stars = 18, shake = false, soundId = 4849897432 },
+	Mythic    = { flashColor = Color3.fromRGB(255, 80, 20),   flashAlpha = 0.58, stars = 24, shake = true,  soundId = 4849897432 },
+	Secret    = { flashColor = Color3.fromRGB(255, 50, 200),  flashAlpha = 0.55, stars = 35, shake = true,  soundId = 4849897432 },
+}
+
+-- ─── Screen shake ─────────────────────────────────────────────────────────────
+local function screenShake()
+	for i = 1, 10 do
+		local dx = math.random(-8, 8)
+		local dy = math.random(-8, 8)
+		vfxGui.Parent.CurrentCamera.CFrame = vfxGui.Parent.CurrentCamera.CFrame
+			* CFrame.new(dx * 0.005, dy * 0.005, 0)
+		task.wait(0.04)
+	end
+end
+
+-- ─── Flash + Stars ────────────────────────────────────────────────────────────
+local function doVFX(rarity, label)
+	local cfg = RARITY_VFX[rarity]
+	if not cfg then return end
+
+	-- Play sound
+	playSound(cfg.soundId, 0.7)
+
+	-- Flash
+	flashFrame.BackgroundColor3 = cfg.flashColor
+	TweenService:Create(flashFrame, TweenInfo.new(0.1), {BackgroundTransparency = cfg.flashAlpha}):Play()
+	task.wait(0.1)
+	TweenService:Create(flashFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+
+	-- Stars
+	for _ = 1, cfg.stars do
+		task.spawn(spawnStar, cfg.flashColor)
+		task.wait(0.03)
+	end
+
+	-- Big rarity label pop-in
+	if label then
+		rarityText.Text          = label
+		rarityText.TextColor3    = cfg.flashColor
+		rarityText.TextTransparency = 1
+		rarityText.Visible       = true
+		rarityText.Size          = UDim2.new(0.8, 0, 0, 20)
+		rarityText.Position      = UDim2.new(0.1, 0, 0.35, 0)
+
+		TweenService:Create(rarityText, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			TextTransparency = 0,
+			Size = UDim2.new(0.8, 0, 0, 80),
+			Position = UDim2.new(0.1, 0, 0.28, 0),
+		}):Play()
+		task.wait(1.5)
+		TweenService:Create(rarityText, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+		task.wait(0.4)
+		rarityText.Visible = false
+	end
+
+	-- Screen shake for Mythic / Secret
+	if cfg.shake then
+		task.spawn(screenShake)
+	end
+end
+
+-- ─── Listen to GachaResult ────────────────────────────────────────────────────
+local TRIGGER_RARITIES = { Rare=true, Epic=true, Legendary=true, Mythic=true, Secret=true }
+
+GachaResult.OnClientEvent:Connect(function(data)
+	if TRIGGER_RARITIES[data.rarity] then
+		task.spawn(doVFX, data.rarity, ("✨ " .. data.rarity:upper() .. "! ✨"))
+	else
+		-- Still play a little sound for Common/Uncommon
+		playSound(4590662766, 0.4)
+	end
+end)
+
+-- ─── Rebirth VFX ─────────────────────────────────────────────────────────────
+RebornResult.OnClientEvent:Connect(function(resultData)
+	playSound(6042053626, 0.8)
+	task.spawn(doVFX, "Secret", ("🔄 ¡RENACIDO! x" .. tostring(resultData.rebirths)))
 end)
 ]]></string>
         </Properties>
