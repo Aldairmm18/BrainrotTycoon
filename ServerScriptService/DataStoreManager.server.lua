@@ -8,12 +8,56 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotData  = require(script.Parent.BrainrotData)
 local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
-local BrainrotList  = require(ReplicatedStorage.Modules.BrainrotList)
 
-local DATASTORE_NAME  = "BrainrotTycoon_v1"
+local DATASTORE_NAME    = "BrainrotTycoon_v1"
 local AUTOSAVE_INTERVAL = 60
 
 local playerStore = DataStoreService:GetDataStore(DATASTORE_NAME)
+
+-- ─── Player Base Platform ─────────────────────────────────────────────────────
+
+local function createPlayerBase(player)
+	local userId  = player.UserId
+	local baseX   = (userId % 20) * 60
+
+	-- Platform Part
+	local base = Instance.new("Part")
+	base.Name        = "Base_" .. player.Name
+	base.Size        = Vector3.new(30, 1, 30)
+	base.Position    = Vector3.new(baseX, 0, 0)
+	base.Anchored    = true
+	base.Color       = Color3.fromRGB(210, 210, 220)
+	base.Material    = Enum.Material.SmoothPlastic
+	base.TopSurface  = Enum.SurfaceType.Smooth
+	base:SetAttribute("OwnerId", userId)
+	base.Parent      = workspace
+
+	-- BillboardGui with player name above base
+	local billboard = Instance.new("BillboardGui")
+	billboard.Size        = UDim2.new(0, 200, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 18, 0)
+	billboard.AlwaysOnTop = false
+	billboard.ResetOnSpawn = false
+	billboard.Parent      = base
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size                   = UDim2.new(1, 0, 1, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text                   = "🏠 " .. player.Name
+	nameLabel.TextScaled             = true
+	nameLabel.Font                   = Enum.Font.GothamBold
+	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextStrokeTransparency = 0.4
+	nameLabel.Parent                 = billboard
+end
+
+local function removePlayerBase(player)
+	for _, obj in ipairs(workspace:GetChildren()) do
+		if obj.Name == "Base_" .. player.Name then
+			obj:Destroy()
+		end
+	end
+end
 
 -- ─── Re-place saved Brainrot parts in the workspace ──────────────────────────
 
@@ -159,7 +203,10 @@ local function onPlayerAdded(player)
 	rebirthsValue.Value  = data.rebirths
 	rebirthsValue.Parent = leaderstats
 
-	-- 5. Restore brainrot Parts if any saved
+	-- 5. Create visual base platform for this player
+	createPlayerBase(player)
+
+	-- 6. Restore brainrot Parts if any saved
 	if savedData and savedData.brainrots and #savedData.brainrots > 0 then
 		restoreBrainrotParts(player, data.brainrots)
 	end
@@ -170,6 +217,7 @@ end
 local function onPlayerRemoving(player)
 	savePlayer(player)
 	clearPlayerParts(player.UserId)
+	removePlayerBase(player)
 end
 
 -- ─── Bind Events ─────────────────────────────────────────────────────────────
