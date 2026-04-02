@@ -1,0 +1,28 @@
+{
+  "name": "BrainrotTycoon",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Modules": {
+        "$className": "Folder",
+        "$path": "ReplicatedStorage/Modules"
+      },
+      "RemoteEvents": {
+        "$className": "Folder",
+        "$path": "ReplicatedStorage/RemoteEvents"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "ServerScriptService"
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "StarterPlayerScripts"
+      }
+    }
+  }
+}
