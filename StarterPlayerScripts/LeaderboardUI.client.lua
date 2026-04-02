@@ -1,12 +1,16 @@
 -- LeaderboardUI (LocalScript)
 -- StarterPlayerScripts/LeaderboardUI
--- 🏆 button (top-left, below cash pill) showing top-10 players by Cash.
+-- 🏆 Two-tab leaderboard: 🌍 Global (OrderedDataStore) + 🏠 Servidor local.
 
-local Players       = game:GetService("Players")
-local TweenService  = game:GetService("TweenService")
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
 
 local player    = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local GetGlobalLB  = RemoteEvents:WaitForChild("GetGlobalLB")
 
 -- ─── ScreenGui ────────────────────────────────────────────────────────────────
 local screenGui = Instance.new("ScreenGui")
@@ -16,11 +20,11 @@ screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent         = playerGui
 
--- ─── 🏆 Toggle Button ────────────────────────────────────────────────────────
+-- ─── Toggle button (top-left) ─────────────────────────────────────────────────
 local lbBtn = Instance.new("TextButton")
 lbBtn.Name             = "LeaderboardBtn"
 lbBtn.Size             = UDim2.new(0, 56, 0, 48)
-lbBtn.Position         = UDim2.new(0, 16, 0, 74)  -- below cash pill at top-left
+lbBtn.Position         = UDim2.new(0, 16, 0, 74)
 lbBtn.BackgroundColor3 = Color3.fromRGB(25, 20, 45)
 lbBtn.BorderSizePixel  = 0
 lbBtn.Text             = "🏆"
@@ -30,10 +34,10 @@ lbBtn.AutoButtonColor  = false
 lbBtn.Parent           = screenGui
 Instance.new("UICorner", lbBtn).CornerRadius = UDim.new(0, 14)
 
-local lbBtnStroke = Instance.new("UIStroke")
-lbBtnStroke.Color     = Color3.fromRGB(255, 200, 30)
-lbBtnStroke.Thickness = 1.5
-lbBtnStroke.Parent    = lbBtn
+local lbStroke = Instance.new("UIStroke")
+lbStroke.Color     = Color3.fromRGB(255, 200, 30)
+lbStroke.Thickness = 1.5
+lbStroke.Parent    = lbBtn
 
 lbBtn.MouseEnter:Connect(function()
 	TweenService:Create(lbBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 40, 90)}):Play()
@@ -42,11 +46,10 @@ lbBtn.MouseLeave:Connect(function()
 	TweenService:Create(lbBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(25, 20, 45)}):Play()
 end)
 
--- ─── Leaderboard Panel ────────────────────────────────────────────────────────
-local PANEL_W, PANEL_H = 280, 380
+-- ─── Panel ────────────────────────────────────────────────────────────────────
+local PANEL_W, PANEL_H = 290, 420
 
 local panel = Instance.new("Frame")
-panel.Name                   = "LeaderboardPanel"
 panel.Size                   = UDim2.new(0, PANEL_W, 0, PANEL_H)
 panel.Position               = UDim2.new(0, 16, 0, 130)
 panel.BackgroundColor3       = Color3.fromRGB(10, 8, 22)
@@ -62,18 +65,42 @@ panelStroke.Color     = Color3.fromRGB(255, 200, 30)
 panelStroke.Thickness = 1.5
 panelStroke.Parent    = panel
 
--- Title
-local titleLbl = Instance.new("TextLabel")
-titleLbl.Size                  = UDim2.new(1, -10, 0, 40)
-titleLbl.Position              = UDim2.new(0, 5, 0, 4)
-titleLbl.BackgroundTransparency = 1
-titleLbl.Text                  = "🏆  Leaderboard"
-titleLbl.TextColor3            = Color3.fromRGB(255, 215, 50)
-titleLbl.TextScaled            = true
-titleLbl.Font                  = Enum.Font.GothamBold
-titleLbl.ZIndex                = 16
-titleLbl.Parent                = panel
+-- ─── Tabs ─────────────────────────────────────────────────────────────────────
+local tabBar = Instance.new("Frame")
+tabBar.Size             = UDim2.new(1, 0, 0, 44)
+tabBar.BackgroundTransparency = 1
+tabBar.ZIndex           = 16
+tabBar.Parent           = panel
 
+local tabGlobal = Instance.new("TextButton")
+tabGlobal.Size             = UDim2.new(0.5, -2, 1, -6)
+tabGlobal.Position         = UDim2.new(0, 6, 0, 4)
+tabGlobal.BackgroundColor3 = Color3.fromRGB(255, 200, 30)
+tabGlobal.BorderSizePixel  = 0
+tabGlobal.Text             = "🌍 Global"
+tabGlobal.TextColor3       = Color3.fromRGB(20, 16, 0)
+tabGlobal.TextScaled       = true
+tabGlobal.Font             = Enum.Font.GothamBold
+tabGlobal.AutoButtonColor  = false
+tabGlobal.ZIndex           = 17
+tabGlobal.Parent           = tabBar
+Instance.new("UICorner", tabGlobal).CornerRadius = UDim.new(0, 10)
+
+local tabServer = Instance.new("TextButton")
+tabServer.Size             = UDim2.new(0.5, -2, 1, -6)
+tabServer.Position         = UDim2.new(0.5, -4, 0, 4)
+tabServer.BackgroundColor3 = Color3.fromRGB(30, 26, 60)
+tabServer.BorderSizePixel  = 0
+tabServer.Text             = "🏠 Servidor"
+tabServer.TextColor3       = Color3.fromRGB(180, 170, 220)
+tabServer.TextScaled       = true
+tabServer.Font             = Enum.Font.GothamBold
+tabServer.AutoButtonColor  = false
+tabServer.ZIndex           = 17
+tabServer.Parent           = tabBar
+Instance.new("UICorner", tabServer).CornerRadius = UDim.new(0, 10)
+
+-- Divider
 local divider = Instance.new("Frame")
 divider.Size             = UDim2.new(1, -16, 0, 1)
 divider.Position         = UDim2.new(0, 8, 0, 48)
@@ -82,10 +109,10 @@ divider.BorderSizePixel  = 0
 divider.ZIndex           = 16
 divider.Parent           = panel
 
--- Row container
+-- ─── Row Container ────────────────────────────────────────────────────────────
 local rowContainer = Instance.new("Frame")
-rowContainer.Size                   = UDim2.new(1, -12, 1, -58)
-rowContainer.Position               = UDim2.new(0, 6, 0, 54)
+rowContainer.Size                   = UDim2.new(1, -12, 1, -62)
+rowContainer.Position               = UDim2.new(0, 6, 0, 56)
 rowContainer.BackgroundTransparency = 1
 rowContainer.ZIndex                 = 16
 rowContainer.Parent                 = panel
@@ -95,21 +122,20 @@ listLayout.Padding   = UDim.new(0, 4)
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 listLayout.Parent    = rowContainer
 
--- Reusable row pool (10 rows)
-local rows = {}
 local RANK_COLORS = {
-	[1] = Color3.fromRGB(255, 210, 40),   -- gold
-	[2] = Color3.fromRGB(200, 200, 200),  -- silver
-	[3] = Color3.fromRGB(205, 127, 50),   -- bronze
+	[1] = Color3.fromRGB(255, 210, 40),
+	[2] = Color3.fromRGB(200, 200, 200),
+	[3] = Color3.fromRGB(205, 127, 50),
 }
 
-local function makeRow(index)
+local rows = {}
+for i = 1, 10 do
 	local row = Instance.new("Frame")
-	row.Name             = "Row" .. index
+	row.Name             = "Row" .. i
 	row.Size             = UDim2.new(1, 0, 0, 30)
 	row.BackgroundColor3 = Color3.fromRGB(20, 16, 40)
 	row.BorderSizePixel  = 0
-	row.LayoutOrder      = index
+	row.LayoutOrder      = i
 	row.ZIndex           = 17
 	row.Visible          = false
 	row.Parent           = rowContainer
@@ -120,10 +146,10 @@ local function makeRow(index)
 	rankLbl.Size                   = UDim2.new(0, 28, 1, 0)
 	rankLbl.Position               = UDim2.new(0, 4, 0, 0)
 	rankLbl.BackgroundTransparency = 1
-	rankLbl.Text                   = "#" .. index
+	rankLbl.Text                   = "#" .. i
 	rankLbl.TextScaled             = true
 	rankLbl.Font                   = Enum.Font.GothamBold
-	rankLbl.TextColor3             = RANK_COLORS[index] or Color3.fromRGB(160, 150, 200)
+	rankLbl.TextColor3             = RANK_COLORS[i] or Color3.fromRGB(160, 150, 200)
 	rankLbl.ZIndex                 = 18
 	rankLbl.Parent                 = row
 
@@ -132,7 +158,6 @@ local function makeRow(index)
 	nameLbl.Size                   = UDim2.new(0.55, -36, 1, 0)
 	nameLbl.Position               = UDim2.new(0, 36, 0, 0)
 	nameLbl.BackgroundTransparency = 1
-	nameLbl.Text                   = ""
 	nameLbl.TextScaled             = true
 	nameLbl.Font                   = Enum.Font.Gotham
 	nameLbl.TextColor3             = Color3.fromRGB(220, 215, 240)
@@ -140,27 +165,22 @@ local function makeRow(index)
 	nameLbl.ZIndex                 = 18
 	nameLbl.Parent                 = row
 
-	local cashLbl = Instance.new("TextLabel")
-	cashLbl.Name                   = "Cash"
-	cashLbl.Size                   = UDim2.new(0.42, 0, 1, 0)
-	cashLbl.Position               = UDim2.new(0.58, 0, 0, 0)
-	cashLbl.BackgroundTransparency = 1
-	cashLbl.Text                   = "$0"
-	cashLbl.TextScaled             = true
-	cashLbl.Font                   = Enum.Font.GothamBold
-	cashLbl.TextColor3             = Color3.fromRGB(100, 230, 120)
-	cashLbl.TextXAlignment         = Enum.TextXAlignment.Right
-	cashLbl.ZIndex                 = 18
-	cashLbl.Parent                 = row
+	local scoreLbl = Instance.new("TextLabel")
+	scoreLbl.Name                   = "Score"
+	scoreLbl.Size                   = UDim2.new(0.42, 0, 1, 0)
+	scoreLbl.Position               = UDim2.new(0.58, 0, 0, 0)
+	scoreLbl.BackgroundTransparency = 1
+	scoreLbl.TextScaled             = true
+	scoreLbl.Font                   = Enum.Font.GothamBold
+	scoreLbl.TextColor3             = Color3.fromRGB(100, 230, 120)
+	scoreLbl.TextXAlignment         = Enum.TextXAlignment.Right
+	scoreLbl.ZIndex                 = 18
+	scoreLbl.Parent                 = row
 
-	return row
+	rows[i] = row
 end
 
-for i = 1, 10 do
-	rows[i] = makeRow(i)
-end
-
--- ─── Number formatter ─────────────────────────────────────────────────────────
+-- ─── Formatters ───────────────────────────────────────────────────────────────
 local function fmt(n)
 	if n >= 1e12 then return ("%.1fT"):format(n/1e12)
 	elseif n >= 1e9  then return ("%.1fB"):format(n/1e9)
@@ -169,44 +189,67 @@ local function fmt(n)
 	else return tostring(math.floor(n)) end
 end
 
--- ─── Refresh Leaderboard ──────────────────────────────────────────────────────
-local function refresh()
-	local entries = {}
-
-	for _, p in ipairs(Players:GetPlayers()) do
-		local ls = p:FindFirstChild("leaderstats")
-		local cashVal = ls and ls:FindFirstChild("Cash")
-		table.insert(entries, {
-			name  = p.Name,
-			cash  = cashVal and cashVal.Value or 0,
-			isMe  = (p == player),
-		})
-	end
-
-	-- Sort descending by cash
-	table.sort(entries, function(a, b) return a.cash > b.cash end)
-
+-- ─── Populate rows ────────────────────────────────────────────────────────────
+local function populateRows(entries, isGlobal)
 	for i, row in ipairs(rows) do
-		local entry = entries[i]
-		if entry then
+		local e = entries[i]
+		if e then
 			row.Visible = true
-			row.PlayerName.Text      = entry.name
-			row.Cash.Text            = "$" .. fmt(entry.cash)
-			-- Highlight self in gold
-			if entry.isMe then
-				row.BackgroundColor3    = Color3.fromRGB(50, 38, 10)
-				row.PlayerName.TextColor3 = Color3.fromRGB(255, 220, 60)
-			else
-				row.BackgroundColor3    = Color3.fromRGB(20, 16, 40)
-				row.PlayerName.TextColor3 = Color3.fromRGB(220, 215, 240)
-			end
+			row.PlayerName.Text = e.name
+			row.Score.Text      = "$" .. fmt(isGlobal and e.score or e.cash)
+
+			local isMe = (e.name == player.Name)
+			row.BackgroundColor3 = isMe and Color3.fromRGB(50, 38, 10) or Color3.fromRGB(20, 16, 40)
+			row.PlayerName.TextColor3 = isMe and Color3.fromRGB(255, 220, 60) or Color3.fromRGB(220, 215, 240)
 		else
 			row.Visible = false
 		end
 	end
 end
 
--- ─── Toggle Panel ─────────────────────────────────────────────────────────────
+-- ─── Tab Logic ────────────────────────────────────────────────────────────────
+local currentTab = "server"
+local globalCache = {}
+
+local function refreshServer()
+	local entries = {}
+	for _, p in ipairs(Players:GetPlayers()) do
+		local ls = p:FindFirstChild("leaderstats")
+		local cv = ls and ls:FindFirstChild("Cash")
+		table.insert(entries, { name = p.Name, cash = cv and cv.Value or 0 })
+	end
+	table.sort(entries, function(a, b) return a.cash > b.cash end)
+	populateRows(entries, false)
+end
+
+local function setTab(tab)
+	currentTab = tab
+	if tab == "global" then
+		tabGlobal.BackgroundColor3 = Color3.fromRGB(255, 200, 30)
+		tabGlobal.TextColor3       = Color3.fromRGB(20, 16, 0)
+		tabServer.BackgroundColor3 = Color3.fromRGB(30, 26, 60)
+		tabServer.TextColor3       = Color3.fromRGB(180, 170, 220)
+		GetGlobalLB:FireServer()
+	else
+		tabServer.BackgroundColor3 = Color3.fromRGB(255, 200, 30)
+		tabServer.TextColor3       = Color3.fromRGB(20, 16, 0)
+		tabGlobal.BackgroundColor3 = Color3.fromRGB(30, 26, 60)
+		tabGlobal.TextColor3       = Color3.fromRGB(180, 170, 220)
+		refreshServer()
+	end
+end
+
+tabGlobal.MouseButton1Click:Connect(function() setTab("global") end)
+tabServer.MouseButton1Click:Connect(function() setTab("server") end)
+
+GetGlobalLB.OnClientEvent:Connect(function(entries)
+	globalCache = entries or {}
+	if currentTab == "global" then
+		populateRows(globalCache, true)
+	end
+end)
+
+-- ─── Toggle & auto-refresh ────────────────────────────────────────────────────
 local panelOpen = false
 
 lbBtn.MouseButton1Click:Connect(function()
@@ -214,7 +257,7 @@ lbBtn.MouseButton1Click:Connect(function()
 	if panelOpen then
 		panel.Visible = true
 		panel.Size = UDim2.new(0, PANEL_W, 0, 0)
-		refresh()
+		setTab("server")
 		TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Size = UDim2.new(0, PANEL_W, 0, PANEL_H)
 		}):Play()
@@ -226,12 +269,12 @@ lbBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- ─── Auto-refresh every 5 seconds while open ──────────────────────────────────
 task.spawn(function()
 	while true do
-		task.wait(5)
+		task.wait(30)
 		if panelOpen then
-			refresh()
+			if currentTab == "server" then refreshServer()
+			else GetGlobalLB:FireServer() end
 		end
 	end
 end)
