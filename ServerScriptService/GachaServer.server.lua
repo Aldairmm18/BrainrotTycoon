@@ -326,6 +326,12 @@ local function spawnBrainrotInWorld(player, brainrot, index)
 		or model
 	if primaryPart then
 		attachBillboard(primaryPart, brainrot)
+		
+		local light = Instance.new("PointLight")
+		light.Brightness = 3
+		light.Range = 12
+		light.Color = RARITY_COLORS[brainrot.rarity] or Color3.fromRGB(255, 255, 255)
+		light.Parent = primaryPart
 	end
 
 	-- ─ Ownership attributes ───────────────────────────────────────────
@@ -349,7 +355,7 @@ local function spawnBrainrotInWorld(player, brainrot, index)
 		TweenService:Create(
 			model,
 			TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-			{ Size = Vector3.new(4, 4, 4) }
+			{ Size = Vector3.new(6, 6, 6) }
 		):Play()
 	end
 

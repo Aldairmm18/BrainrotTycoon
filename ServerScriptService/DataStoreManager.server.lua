@@ -51,6 +51,66 @@ for _, tname in ipairs(TEMPLATE_NAMES) do
 end
 
 
+-- ─── Decorate Map With Showcase Brainrots ──────────────────────────────
+local showcaseBrainrots = {
+    { name="Tung Tung Sahur",      emoji="🥁", pos=Vector3.new(-20, 3, 0),  color=Color3.fromRGB(100,160,255) },
+    { name="Cappuccino Assassino", emoji="☕", pos=Vector3.new(-10, 3, 0),  color=Color3.fromRGB(160,100,255) },
+    { name="Ballerina Cappuccina", emoji="💃", pos=Vector3.new(0,   3, 0),  color=Color3.fromRGB(50,200,120)  },
+    { name="Mythic Lucky Block",   emoji="🍀", pos=Vector3.new(10,  3, 0),  color=Color3.fromRGB(255,180,0)   },
+    { name="La Vaca Saturno",      emoji="🪐", pos=Vector3.new(20,  3, 0),  color=Color3.fromRGB(255,50,50)   },
+}
+
+for _, data in ipairs(showcaseBrainrots) do
+    local part = Instance.new("Part")
+    part.Name = "Showcase_" .. data.name
+    part.Size = Vector3.new(8, 8, 8)
+    part.Position = data.pos
+    part.Anchored = true
+    part.Shape = Enum.PartType.Ball
+    part.Material = Enum.Material.Neon
+    part.Color = data.color
+    part.CanCollide = false
+    part.Parent = workspace
+
+    -- Luz
+    local light = Instance.new("PointLight")
+    light.Brightness = 5
+    light.Range = 20
+    light.Color = data.color
+    light.Parent = part
+
+    -- BillboardGui
+    local bb = Instance.new("BillboardGui")
+    bb.Size = UDim2.new(0, 100, 0, 60)
+    bb.StudsOffset = Vector3.new(0, 5, 0)
+    bb.Parent = part
+
+    local emoji = Instance.new("TextLabel")
+    emoji.Size = UDim2.new(1, 0, 0.6, 0)
+    emoji.BackgroundTransparency = 1
+    emoji.Text = data.emoji
+    emoji.TextScaled = true
+    emoji.Parent = bb
+
+    local name = Instance.new("TextLabel")
+    name.Size = UDim2.new(1, 0, 0.4, 0)
+    name.Position = UDim2.new(0, 0, 0.6, 0)
+    name.BackgroundTransparency = 1
+    name.Text = data.name
+    name.TextColor3 = Color3.fromRGB(255,255,255)
+    name.TextStrokeTransparency = 0
+    name.TextScaled = true
+    name.Font = Enum.Font.GothamBold
+    name.Parent = bb
+
+    -- Rotación continua
+    game:GetService("RunService").Heartbeat:Connect(function(dt)
+        if part.Parent then
+            part.CFrame = part.CFrame * CFrame.Angles(0, dt * 0.5, 0)
+        end
+    end)
+end
+
 -- ─── World Setup (Baseplate + SpawnLocation) ─────────────────────────────────
 -- Runs once at server startup to ensure characters don't fall into the void.
 
