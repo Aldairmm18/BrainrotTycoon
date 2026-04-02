@@ -1,31 +1,34 @@
 -- CodesServer (Script)
 -- ServerScriptService/CodesServer
 -- Handles promo code redemption. Each code can only be used once per player.
+-- FIX 8: Updated codes list.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players           = game:GetService("Players")
 
 local BrainrotData = require(script.Parent.BrainrotData)
 
-local RemoteEvents  = ReplicatedStorage:WaitForChild("RemoteEvents")
-local RedeemCode    = RemoteEvents:WaitForChild("RedeemCode")
-local CodeResult    = RemoteEvents:WaitForChild("CodeResult")
-local UpdateCash    = RemoteEvents:WaitForChild("UpdateCash")
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RedeemCode   = RemoteEvents:WaitForChild("RedeemCode")
+local CodeResult   = RemoteEvents:WaitForChild("CodeResult")
+local UpdateCash   = RemoteEvents:WaitForChild("UpdateCash")
 
 -- ─── Code Database ────────────────────────────────────────────────────────────
--- "used" table maps UserId → true to track redemptions per player.
 local CODES = {
 	["BRAINROT2025"] = { cash = 1000, used = {} },
 	["TRALALA"]      = { cash = 500,  used = {} },
 	["TUNGKUNG"]     = { cash = 500,  used = {} },
 	["LAUNCH"]       = { cash = 2000, used = {} },
+	["ITALIANO"]     = { cash = 1500, used = {} },
+	["VACA"]         = { cash = 750,  used = {} },
+	["CAPPUCCINO"]   = { cash = 750,  used = {} },
+	["WELCOME"]      = { cash = 3000, used = {} },
 }
 
 -- ─── Handler ──────────────────────────────────────────────────────────────────
 RedeemCode.OnServerEvent:Connect(function(player, code)
-	-- Basic sanity check on input from client
 	if typeof(code) ~= "string" then return end
-	code = string.upper(string.gsub(code, "%s+", ""))  -- trim & uppercase
+	code = string.upper(string.gsub(code, "%s+", ""))
 
 	local codeData = CODES[code]
 	if not codeData then
@@ -38,11 +41,9 @@ RedeemCode.OnServerEvent:Connect(function(player, code)
 		return
 	end
 
-	-- Mark used and award cash
 	codeData.used[player.UserId] = true
 	BrainrotData.AddCash(player.UserId, codeData.cash)
 
-	-- Sync leaderstats
 	local data = BrainrotData.Get(player.UserId)
 	if data then
 		local ls = player:FindFirstChild("leaderstats")
@@ -50,7 +51,6 @@ RedeemCode.OnServerEvent:Connect(function(player, code)
 			local cashVal = ls:FindFirstChild("Cash")
 			if cashVal then cashVal.Value = math.floor(data.cash) end
 		end
-		-- Notify client of new balance
 		UpdateCash:FireClient(player, math.floor(data.cash))
 	end
 

@@ -265,17 +265,17 @@ local function spawnBrainrotInWorld(player, brainrot, index)
 		playerFolder.Parent = workspace
 	end
 
-	-- 5×5 grid position inside the player’s personal plot
-	local safeIndex = math.max(1, index)
-	local row   = math.floor((safeIndex - 1) / 5)
-	local col   = (safeIndex - 1) % 5
-	local playerList = Players:GetPlayers()
-	local playerSlot = 0
-	for i, p in ipairs(playerList) do
-		if p == player then playerSlot = i - 1 break end
-	end
-	local baseX = playerSlot * 60
-	local pos   = Vector3.new(baseX + col * 10, 2, row * 10 - 40)
+	-- FIX 4: Place Brainrots inside the player's physical base
+	local safeIndex  = math.max(1, index)
+	local row        = math.floor((safeIndex - 1) / 5)
+	local col        = (safeIndex - 1) % 5
+	local playerBase = workspace:FindFirstChild("PlayerBase_" .. player.Name)
+	local basePos    = playerBase and playerBase.Position or Vector3.new(0, -1, 0)
+	local pos = Vector3.new(
+		basePos.X - 20 + col * 10,
+		basePos.Y + 5,
+		basePos.Z - 20 + row * 10
+	)
 
 	-- ─ Try to clone 3D model from ServerStorage ─────────────────────────────
 	local model = nil
