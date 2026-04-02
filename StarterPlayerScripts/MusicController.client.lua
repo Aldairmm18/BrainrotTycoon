@@ -19,8 +19,8 @@ screenGui.Parent         = playerGui
 
 -- ─── Music Tracks ────────────────────────────────────────────────────────────
 local TRACKS = {
-	{ id = 1843906839, name = "Zona Italiana" },
-	{ id = 1843827228, name = "Volcán Romano" },
+	{ id = 142376088,  name = "Zona Italiana" },      -- Roblox: Regroup (free-to-use)
+	{ id = 1843827228, name = "Volcan Romano" },
 	{ id = 1842388270, name = "Cosmos Brainrot" },
 }
 

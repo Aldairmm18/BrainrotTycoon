@@ -14,10 +14,10 @@ local BrainrotList = {
 	{ name="Coniglio Pazzo",      rarity="Common",    emoji="🐰", catchphrase="Salto la luna!" },
 	{ name="Orso Danzante",       rarity="Common",    emoji="🐻", catchphrase="Balllo con il miele!" },
 	{ name="Pinguino Matto",      rarity="Common",    emoji="🐧", catchphrase="Scivolo sempre!" },
-	{ name="Koala Urlante",       rarity="Common",    emoji="🐨", catchphrase="Urlo l'eucalipto!" },
+	{ name="Koala Urlante",       rarity="Common",    emoji="🐨", catchphrase="Urlo lo eucalipto!" },
 	{ name="Panda Saltante",      rarity="Common",    emoji="🐼", catchphrase="Salto il bambù!" },
 	{ name="Zebra Cantante",      rarity="Common",    emoji="🦓", catchphrase="Canto le strisce!" },
-	{ name="Giraffa Pazza",       rarity="Common",    emoji="🦒", catchphrase="Vedo tutto dall'alto!" },
+	{ name="Giraffa Pazza",       rarity="Common",    emoji="🦒", catchphrase="Vedo tutto dallalto!" },
 	{ name="Elefante Piccolo",    rarity="Common",    emoji="🐘", catchphrase="Sono piccolo ma forte!" },
 
 	-- ═══ UNCOMMON (12) ══════════════════════════════════════════════════
@@ -26,7 +26,7 @@ local BrainrotList = {
 	{ name="Tigre Razzo",         rarity="Uncommon",  emoji="🐯", catchphrase="Strisce e missili!" },
 	{ name="Leone Spada",         rarity="Uncommon",  emoji="🦁", catchphrase="Il re della savana spada!" },
 	{ name="Orso Carro Armato",   rarity="Uncommon",  emoji="🐻", catchphrase="Tank di miele!" },
-	{ name="Squalo Moto",         rarity="Uncommon",  emoji="🦈", catchphrase="Vroom nell'oceano!" },
+	{ name="Squalo Moto",         rarity="Uncommon",  emoji="🦈", catchphrase="Vroom nellocean!" },
 	{ name="Aquila Bomba",        rarity="Uncommon",  emoji="🦅", catchphrase="Cado dal cielo!" },
 	{ name="Volpe Cannone",       rarity="Uncommon",  emoji="🦊", catchphrase="Boom astuto!" },
 	{ name="Lupo Elicottero",     rarity="Uncommon",  emoji="🐺", catchphrase="Ululato volante!" },
@@ -38,8 +38,8 @@ local BrainrotList = {
 	{ name="Cappuccino Assassino",  rarity="Rare", emoji="☕", catchphrase="Morte col caffè!" },
 	{ name="Pizzaiolo Ninja",       rarity="Rare", emoji="🍕", catchphrase="La pizza è arte letale!" },
 	{ name="Spaghetti Mostro",      rarity="Rare", emoji="🍝", catchphrase="Al dente e pericoloso!" },
-	{ name="Gelato Guerriero",      rarity="Rare", emoji="🍦", catchphrase="Freddo come l'acciaio!" },
-	{ name="Tiramisù Esplosivo",    rarity="Rare", emoji="🍰, catchphrase="Esplodo di gusto!" },
+	{ name="Gelato Guerriero",      rarity="Rare", emoji="🍦", catchphrase="Freddo come lacciaio!" },
+	{ name="Tiramisu Esplosivo",    rarity="Rare", emoji="🍰", catchphrase="Esplodo di gusto!" },
 	{ name="Cannolo Volante",       rarity="Rare", emoji="🥐", catchphrase="Sicilia dal cielo!" },
 	{ name="Lasagna Robot",         rarity="Rare", emoji="🤖", catchphrase="Elaboro pasta!" },
 	{ name="Risotto Samurai",       rarity="Rare", emoji="🍚", catchphrase="Onore al riso!" },
@@ -69,8 +69,6 @@ local BrainrotList = {
 	{ name="La Vaca Saturno Cosmica", rarity="Secret", emoji="🪐", catchphrase="Muuu... dal cosmo!" },
 }
 
--- Fix typo in Tiramisù emoji field (closing quote missing above was intentional for Luau multi-byte)
--- Luau handles these fine at runtime; this is source-level only.
 
 -- Helper: get all brainrots of a given rarity
 function BrainrotList.GetByRarity(rarity)

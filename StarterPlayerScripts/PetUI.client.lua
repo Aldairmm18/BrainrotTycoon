@@ -128,7 +128,10 @@ grid.CellPadding = UDim2.new(0, 8, 0, 8)
 grid.Parent      = scroll
 
 local gridPad = Instance.new("UIPadding")
-gridPad.PaddingAll = UDim.new(0, 6)
+gridPad.PaddingTop    = UDim.new(0, 8)
+gridPad.PaddingBottom = UDim.new(0, 8)
+gridPad.PaddingLeft   = UDim.new(0, 8)
+gridPad.PaddingRight  = UDim.new(0, 8)
 gridPad.Parent     = scroll
 
 -- ─── Rarity pet colors ────────────────────────────────────────────────────────
