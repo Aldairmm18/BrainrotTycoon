@@ -1,0 +1,14 @@
+{
+  "Name": "Baseplate",
+  "ClassName": "Part",
+  "Properties": {
+    "Size": { "Type": "Vector3", "Value": [2048, 1, 2048] },
+    "Position": { "Type": "Vector3", "Value": [0, -5, 0] },
+    "Anchored": { "Type": "Bool", "Value": true },
+    "Locked": { "Type": "Bool", "Value": true },
+    "Material": { "Type": "Enum", "Value": "SmoothPlastic" },
+    "Color": { "Type": "Color3", "Value": [0.416, 0.498, 0.247] },
+    "TopSurface": { "Type": "Enum", "Value": "Smooth" },
+    "BottomSurface": { "Type": "Enum", "Value": "Smooth" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "Name": "SpawnLocation",
+  "ClassName": "SpawnLocation",
+  "Properties": {
+    "Size": { "Type": "Vector3", "Value": [6, 1, 6] },
+    "Position": { "Type": "Vector3", "Value": [0, -4, 0] },
+    "Anchored": { "Type": "Bool", "Value": true },
+    "Color": { "Type": "Color3", "Value": [0.388, 0.714, 0.388] }
+  }
+}

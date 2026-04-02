@@ -46,6 +46,11 @@
         "$className": "StarterPlayerScripts",
         "$path": "StarterPlayerScripts"
       }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$path": "Workspace"
     }
   }
 }
