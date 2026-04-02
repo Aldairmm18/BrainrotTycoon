@@ -29,8 +29,11 @@
         "GlobalNotification": { "$className": "RemoteEvent" },
         "ActivityBonus": { "$className": "RemoteEvent" },
         "GetGlobalLB": { "$className": "RemoteEvent" },
-        "TutorialDone": { "$className": "RemoteEvent" },
-        "TutorialStatus": { "$className": "RemoteEvent" }
+        "TutorialDone":       { "$className": "RemoteEvent" },
+        "TutorialStatus":     { "$className": "RemoteEvent" },
+        "StealAttempt":       { "$className": "RemoteEvent" },
+        "StealResult":        { "$className": "RemoteEvent" },
+        "BuyGuardian":        { "$className": "RemoteEvent" }
       }
     },
     "ServerScriptService": {

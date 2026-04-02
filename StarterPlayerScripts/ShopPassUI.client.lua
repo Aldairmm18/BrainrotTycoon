@@ -9,7 +9,9 @@ local Players           = game:GetService("Players")
 local player    = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-local BuyPass = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyPass")
+local BuyPass     = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyPass")
+local BuyGuardian = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyGuardian")
+local CodeResult  = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("CodeResult")
 
 -- ─── Pass Definitions (IDs updated after publishing) ─────────────────────────
 local PASSES = {
@@ -230,6 +232,136 @@ end
 -- Update canvas size
 listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 	scroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 12)
+end)
+
+-- ─── Guardian Card (in-game cash purchase) ────────────────────────────────────────
+
+local guardianSep = Instance.new("Frame")
+guardianSep.Name             = "GuardianSeparator"
+guardianSep.Size             = UDim2.new(1, 0, 0, 1)
+guardianSep.BackgroundColor3 = Color3.fromRGB(100, 80, 160)
+guardianSep.BorderSizePixel  = 0
+guardianSep.LayoutOrder      = 10
+guardianSep.ZIndex           = 17
+guardianSep.Parent           = scroll
+
+local guardianHeader = Instance.new("TextLabel")
+guardianHeader.Name                   = "GuardianHeader"
+guardianHeader.Size                   = UDim2.new(1, 0, 0, 28)
+guardianHeader.BackgroundTransparency = 1
+guardianHeader.Text                   = "🛡️  Tienda en Juego"
+guardianHeader.TextColor3             = Color3.fromRGB(180, 160, 255)
+guardianHeader.TextScaled             = true
+guardianHeader.Font                   = Enum.Font.GothamBold
+guardianHeader.TextXAlignment         = Enum.TextXAlignment.Left
+guardianHeader.LayoutOrder            = 11
+guardianHeader.ZIndex                 = 17
+guardianHeader.Parent                 = scroll
+
+local guardianCard = Instance.new("Frame")
+guardianCard.Name             = "GuardianCard"
+guardianCard.Size             = UDim2.new(1, 0, 0, CARD_H)
+guardianCard.BackgroundColor3 = Color3.fromRGB(18, 14, 40)
+guardianCard.BorderSizePixel  = 0
+guardianCard.LayoutOrder      = 12
+guardianCard.ZIndex           = 17
+guardianCard.Parent           = scroll
+Instance.new("UICorner", guardianCard).CornerRadius = UDim.new(0, 12)
+
+local gcStroke = Instance.new("UIStroke")
+gcStroke.Color     = Color3.fromRGB(100, 80, 200)
+gcStroke.Thickness = 1
+gcStroke.Parent    = guardianCard
+
+local gcEmoji = Instance.new("TextLabel")
+gcEmoji.Size                   = UDim2.new(0, 56, 1, 0)
+gcEmoji.Position               = UDim2.new(0, 6, 0, 0)
+gcEmoji.BackgroundTransparency = 1
+gcEmoji.Text                   = "🛡️"
+gcEmoji.TextScaled             = true
+gcEmoji.ZIndex                 = 18
+gcEmoji.Parent                 = guardianCard
+
+local gcName = Instance.new("TextLabel")
+gcName.Size                   = UDim2.new(0.5, -60, 0, 28)
+gcName.Position               = UDim2.new(0, 66, 0, 10)
+gcName.BackgroundTransparency = 1
+gcName.Text                   = "Guardián"
+gcName.TextColor3             = Color3.fromRGB(200, 180, 255)
+gcName.TextScaled             = true
+gcName.Font                   = Enum.Font.GothamBold
+gcName.TextXAlignment         = Enum.TextXAlignment.Left
+gcName.ZIndex                 = 18
+gcName.Parent                 = guardianCard
+
+local gcDesc = Instance.new("TextLabel")
+gcDesc.Size                   = UDim2.new(0.6, -60, 0, 22)
+gcDesc.Position               = UDim2.new(0, 66, 0, 40)
+gcDesc.BackgroundTransparency = 1
+gcDesc.Text                   = "-10% chance de robo (máx 3)"
+gcDesc.TextColor3             = Color3.fromRGB(160, 150, 200)
+gcDesc.TextScaled             = true
+gcDesc.Font                   = Enum.Font.Gotham
+gcDesc.TextXAlignment         = Enum.TextXAlignment.Left
+gcDesc.ZIndex                 = 18
+gcDesc.Parent                 = guardianCard
+
+local gcBuyBtn = Instance.new("TextButton")
+gcBuyBtn.Name             = "BuyGuardianBtn"
+gcBuyBtn.Size             = UDim2.new(0, 110, 0, 38)
+gcBuyBtn.Position         = UDim2.new(1, -118, 0.5, -19)
+gcBuyBtn.BackgroundColor3 = Color3.fromRGB(90, 60, 200)
+gcBuyBtn.BorderSizePixel  = 0
+gcBuyBtn.Text             = "🛡️ $5,000"
+gcBuyBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+gcBuyBtn.TextScaled       = true
+gcBuyBtn.Font             = Enum.Font.GothamBold
+gcBuyBtn.AutoButtonColor  = false
+gcBuyBtn.ZIndex           = 19
+gcBuyBtn.Parent           = guardianCard
+Instance.new("UICorner", gcBuyBtn).CornerRadius = UDim.new(0, 10)
+
+gcBuyBtn.MouseEnter:Connect(function()
+	TweenService:Create(gcBuyBtn, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(120, 90, 240)
+	}):Play()
+end)
+gcBuyBtn.MouseLeave:Connect(function()
+	TweenService:Create(gcBuyBtn, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(90, 60, 200)
+	}):Play()
+end)
+
+gcBuyBtn.MouseButton1Click:Connect(function()
+	BuyGuardian:FireServer()
+end)
+
+-- CodeResult feedback for guardian (and codes)
+CodeResult.OnClientEvent:Connect(function(success, message)
+	-- Reuse a simple toast effect on the panel title area
+	local toastColor = success
+		and Color3.fromRGB(100, 255, 130)
+		or  Color3.fromRGB(255, 100, 100)
+	local icon = success and "✅ " or "❌ "
+
+	local flash = Instance.new("TextLabel")
+	flash.Size                   = UDim2.new(0, 320, 0, 60)
+	flash.Position               = UDim2.new(0.5, -160, 1, -80)
+	flash.BackgroundColor3       = Color3.fromRGB(16, 8, 28)
+	flash.BackgroundTransparency = 0.1
+	flash.BorderSizePixel        = 0
+	flash.Text                   = icon .. (message or "")
+	flash.TextColor3             = toastColor
+	flash.TextScaled             = true
+	flash.Font                   = Enum.Font.GothamBold
+	flash.TextWrapped            = true
+	flash.ZIndex                 = 50
+	flash.Parent                 = screenGui
+	Instance.new("UICorner", flash).CornerRadius = UDim.new(0, 14)
+
+	task.delay(3, function()
+		flash:Destroy()
+	end)
 end)
 
 -- ─── Toggle Panel ─────────────────────────────────────────────────────────────

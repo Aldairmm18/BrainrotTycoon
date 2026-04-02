@@ -14,6 +14,7 @@ function BrainrotData.Init(userId)
 			cash      = 100,   -- starting cash so player can buy first egg
 			brainrots = {},
 			rebirths  = 0,
+			guardians = 0,     -- 🛡️ purchased guardians (reduce steal %%)
 		}
 	end
 end
@@ -84,6 +85,7 @@ function BrainrotData.Restore(userId, savedData)
 		cash      = savedData.cash      or 100,
 		brainrots = savedData.brainrots or {},
 		rebirths  = savedData.rebirths  or 0,
+		guardians = savedData.guardians or 0,
 	}
 end
 

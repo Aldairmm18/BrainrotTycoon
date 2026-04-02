@@ -183,6 +183,7 @@ local function savePlayer(player)
 			cash      = data.cash,
 			brainrots = data.brainrots,
 			rebirths  = data.rebirths,
+			guardians = data.guardians or 0,
 		})
 	end)
 
