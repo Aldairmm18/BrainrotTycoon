@@ -131,36 +131,46 @@ return RarityConfig
       </Item>
       <Item class="RemoteEvent" referent="6">
         <Properties>
-          <string name="Name">GachaResult</string>
+          <string name="Name">CodeResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="7">
         <Properties>
-          <string name="Name">PlaceBrainrot</string>
+          <string name="Name">GachaResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="8">
         <Properties>
-          <string name="Name">Rebirth</string>
+          <string name="Name">PlaceBrainrot</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="9">
         <Properties>
-          <string name="Name">RebornResult</string>
+          <string name="Name">Rebirth</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="10">
+        <Properties>
+          <string name="Name">RebornResult</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="11">
+        <Properties>
+          <string name="Name">RedeemCode</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="12">
         <Properties>
           <string name="Name">UpdateCash</string>
         </Properties>
       </Item>
     </Item>
   </Item>
-  <Item class="ServerScriptService" referent="11">
+  <Item class="ServerScriptService" referent="13">
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="ModuleScript" referent="12">
+    <Item class="ModuleScript" referent="14">
       <Properties>
         <string name="Name">BrainrotData</string>
         <string name="Source"><![CDATA[-- BrainrotData (ModuleScript-style server Script)
@@ -256,7 +266,169 @@ return BrainrotData
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="13">
+    <Item class="Script" referent="15">
+      <Properties>
+        <string name="Name">BrainrotData</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- BrainrotData (ModuleScript-style server Script)
+-- ServerScriptService/BrainrotData
+-- Central in-memory data store for all player data (server only).
+
+local BrainrotData = {}
+
+local _data = {}  -- indexed by userId
+
+-- ─── Init ────────────────────────────────────────────────────────────────────
+
+function BrainrotData.Init(userId)
+	if not _data[userId] then
+		_data[userId] = {
+			cash      = 100,   -- starting cash so player can buy first egg
+			brainrots = {},
+			rebirths  = 0,
+		}
+	end
+end
+
+-- ─── Getters ─────────────────────────────────────────────────────────────────
+
+function BrainrotData.Get(userId)
+	return _data[userId]
+end
+
+-- ─── Cash Operations ─────────────────────────────────────────────────────────
+
+function BrainrotData.AddCash(userId, amount)
+	local d = _data[userId]
+	if not d then return end
+	d.cash = d.cash + amount
+end
+
+-- Returns true if spend succeeded, false if insufficient funds.
+function BrainrotData.SpendCash(userId, amount)
+	local d = _data[userId]
+	if not d then return false end
+	if d.cash < amount then return false end
+	d.cash = d.cash - amount
+	return true
+end
+
+-- ─── Brainrot Operations ─────────────────────────────────────────────────────
+
+function BrainrotData.AddBrainrot(userId, brainrotData)
+	local d = _data[userId]
+	if not d then return end
+	table.insert(d.brainrots, brainrotData)
+end
+
+-- ─── Economy Helpers ─────────────────────────────────────────────────────────
+
+function BrainrotData.GetTotalCashPerSec(userId, RarityConfig)
+	local d = _data[userId]
+	if not d then return 0 end
+	local total = 0
+	for _, b in ipairs(d.brainrots) do
+		local cfg = RarityConfig[b.rarity]
+		if cfg then
+			total = total + cfg.cashPerSec
+		end
+	end
+	return total
+end
+
+-- ─── Rebirth ─────────────────────────────────────────────────────────────────
+
+function BrainrotData.Rebirth(userId)
+	local d = _data[userId]
+	if not d then return false end
+	if #d.brainrots < 10 then return false end
+	d.cash      = 0
+	d.brainrots = {}
+	d.rebirths  = d.rebirths + 1
+	return true
+end
+
+-- ─── Raw Restore (used by DataStoreManager) ──────────────────────────────────
+
+function BrainrotData.Restore(userId, savedData)
+	_data[userId] = {
+		cash      = savedData.cash      or 100,
+		brainrots = savedData.brainrots or {},
+		rebirths  = savedData.rebirths  or 0,
+	}
+end
+
+return BrainrotData
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="16">
+      <Properties>
+        <string name="Name">CodesServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- CodesServer (Script)
+-- ServerScriptService/CodesServer
+-- Handles promo code redemption. Each code can only be used once per player.
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players           = game:GetService("Players")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local RemoteEvents  = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RedeemCode    = RemoteEvents:WaitForChild("RedeemCode")
+local CodeResult    = RemoteEvents:WaitForChild("CodeResult")
+local UpdateCash    = RemoteEvents:WaitForChild("UpdateCash")
+
+-- ─── Code Database ────────────────────────────────────────────────────────────
+-- "used" table maps UserId → true to track redemptions per player.
+local CODES = {
+	["BRAINROT2025"] = { cash = 1000, used = {} },
+	["TRALALA"]      = { cash = 500,  used = {} },
+	["TUNGKUNG"]     = { cash = 500,  used = {} },
+	["LAUNCH"]       = { cash = 2000, used = {} },
+}
+
+-- ─── Handler ──────────────────────────────────────────────────────────────────
+RedeemCode.OnServerEvent:Connect(function(player, code)
+	-- Basic sanity check on input from client
+	if typeof(code) ~= "string" then return end
+	code = string.upper(string.gsub(code, "%s+", ""))  -- trim & uppercase
+
+	local codeData = CODES[code]
+	if not codeData then
+		CodeResult:FireClient(player, false, "❌ Código inválido")
+		return
+	end
+
+	if codeData.used[player.UserId] then
+		CodeResult:FireClient(player, false, "⚠️ Ya usaste este código")
+		return
+	end
+
+	-- Mark used and award cash
+	codeData.used[player.UserId] = true
+	BrainrotData.AddCash(player.UserId, codeData.cash)
+
+	-- Sync leaderstats
+	local data = BrainrotData.Get(player.UserId)
+	if data then
+		local ls = player:FindFirstChild("leaderstats")
+		if ls then
+			local cashVal = ls:FindFirstChild("Cash")
+			if cashVal then cashVal.Value = math.floor(data.cash) end
+		end
+		-- Notify client of new balance
+		UpdateCash:FireClient(player, math.floor(data.cash))
+	end
+
+	CodeResult:FireClient(player, true, "✅ +" .. codeData.cash .. " coins!")
+	print(("[CodesServer] %s redeemed code %s for %d cash"):format(player.Name, code, codeData.cash))
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="17">
       <Properties>
         <string name="Name">DataStoreManager</string>
         <token name="RunContext">0</token>
@@ -270,12 +442,56 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotData  = require(script.Parent.BrainrotData)
 local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
-local BrainrotList  = require(ReplicatedStorage.Modules.BrainrotList)
 
-local DATASTORE_NAME  = "BrainrotTycoon_v1"
+local DATASTORE_NAME    = "BrainrotTycoon_v1"
 local AUTOSAVE_INTERVAL = 60
 
 local playerStore = DataStoreService:GetDataStore(DATASTORE_NAME)
+
+-- ─── Player Base Platform ─────────────────────────────────────────────────────
+
+local function createPlayerBase(player)
+	local userId  = player.UserId
+	local baseX   = (userId % 20) * 60
+
+	-- Platform Part
+	local base = Instance.new("Part")
+	base.Name        = "Base_" .. player.Name
+	base.Size        = Vector3.new(30, 1, 30)
+	base.Position    = Vector3.new(baseX, 0, 0)
+	base.Anchored    = true
+	base.Color       = Color3.fromRGB(210, 210, 220)
+	base.Material    = Enum.Material.SmoothPlastic
+	base.TopSurface  = Enum.SurfaceType.Smooth
+	base:SetAttribute("OwnerId", userId)
+	base.Parent      = workspace
+
+	-- BillboardGui with player name above base
+	local billboard = Instance.new("BillboardGui")
+	billboard.Size        = UDim2.new(0, 200, 0, 50)
+	billboard.StudsOffset = Vector3.new(0, 18, 0)
+	billboard.AlwaysOnTop = false
+	billboard.ResetOnSpawn = false
+	billboard.Parent      = base
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size                   = UDim2.new(1, 0, 1, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text                   = "🏠 " .. player.Name
+	nameLabel.TextScaled             = true
+	nameLabel.Font                   = Enum.Font.GothamBold
+	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextStrokeTransparency = 0.4
+	nameLabel.Parent                 = billboard
+end
+
+local function removePlayerBase(player)
+	for _, obj in ipairs(workspace:GetChildren()) do
+		if obj.Name == "Base_" .. player.Name then
+			obj:Destroy()
+		end
+	end
+end
 
 -- ─── Re-place saved Brainrot parts in the workspace ──────────────────────────
 
@@ -421,7 +637,10 @@ local function onPlayerAdded(player)
 	rebirthsValue.Value  = data.rebirths
 	rebirthsValue.Parent = leaderstats
 
-	-- 5. Restore brainrot Parts if any saved
+	-- 5. Create visual base platform for this player
+	createPlayerBase(player)
+
+	-- 6. Restore brainrot Parts if any saved
 	if savedData and savedData.brainrots and #savedData.brainrots > 0 then
 		restoreBrainrotParts(player, data.brainrots)
 	end
@@ -432,6 +651,7 @@ end
 local function onPlayerRemoving(player)
 	savePlayer(player)
 	clearPlayerParts(player.UserId)
+	removePlayerBase(player)
 end
 
 -- ─── Bind Events ─────────────────────────────────────────────────────────────
@@ -457,7 +677,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="14">
+    <Item class="Script" referent="18">
       <Properties>
         <string name="Name">EconomyServer</string>
         <token name="RunContext">0</token>
@@ -530,7 +750,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="15">
+    <Item class="Script" referent="19">
       <Properties>
         <string name="Name">GachaServer</string>
         <token name="RunContext">0</token>
@@ -779,7 +999,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="16">
+    <Item class="Script" referent="20">
       <Properties>
         <string name="Name">RebornServer</string>
         <token name="RunContext">0</token>
@@ -856,154 +1076,403 @@ end)
       </Properties>
     </Item>
   </Item>
-  <Item class="StarterPlayer" referent="17">
+  <Item class="StarterPlayer" referent="21">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="18">
+    <Item class="StarterPlayerScripts" referent="22">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="19">
+      <Item class="LocalScript" referent="23">
         <Properties>
           <string name="Name">CashDisplay</string>
           <string name="Source"><![CDATA[-- CashDisplay (LocalScript)
 -- StarterPlayerScripts/CashDisplay
--- Shows current cash in the top-left corner with K/M/B/T formatting and a subtle scale animation.
-
-local Players           = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService      = game:GetService("TweenService")
-
-local player     = Players.LocalPlayer
-local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
-
--- ─── Number Formatter ─────────────────────────────────────────────────────────
-
-local SUFFIXES = {
-	{ 1e12, "T" },
-	{ 1e9,  "B" },
-	{ 1e6,  "M" },
-	{ 1e3,  "K" },
-}
-
-local function formatCash(n)
-	n = math.floor(n)
-	for _, entry in ipairs(SUFFIXES) do
-		local threshold, suffix = entry[1], entry[2]
-		if n >= threshold then
-			local value = n / threshold
-			-- Show one decimal if not whole number
-			if value ~= math.floor(value) then
-				return ("%.1f%s"):format(value, suffix)
-			else
-				return ("%d%s"):format(value, suffix)
-			end
-		end
-	end
-	return tostring(n)
-end
-
--- ─── Build UI ─────────────────────────────────────────────────────────────────
-
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name            = "CashDisplayGui"
-screenGui.ResetOnSpawn    = false
-screenGui.IgnoreGuiInset  = true
-screenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
-screenGui.Parent          = player.PlayerGui
-
--- Background pill
-local frame = Instance.new("Frame")
-frame.Name              = "CashFrame"
-frame.Size              = UDim2.new(0, 180, 0, 48)
-frame.Position          = UDim2.new(0, 16, 0, 16)
-frame.BackgroundColor3  = Color3.fromRGB(15, 15, 25)
-frame.BackgroundTransparency = 0.25
-frame.BorderSizePixel   = 0
-frame.Parent            = screenGui
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 24)
-corner.Parent = frame
-
-local stroke = Instance.new("UIStroke")
-stroke.Color       = Color3.fromRGB(255, 215, 0)
-stroke.Thickness   = 1.5
-stroke.Transparency = 0.4
-stroke.Parent      = frame
-
-local cashLabel = Instance.new("TextLabel")
-cashLabel.Name               = "CashLabel"
-cashLabel.Size               = UDim2.new(1, 0, 1, 0)
-cashLabel.BackgroundTransparency = 1
-cashLabel.Text               = "💰 $0"
-cashLabel.Font               = Enum.Font.GothamBold
-cashLabel.TextSize           = 22
-cashLabel.TextColor3         = Color3.fromRGB(255, 225, 80)
-cashLabel.TextXAlignment     = Enum.TextXAlignment.Center
-cashLabel.TextYAlignment     = Enum.TextYAlignment.Center
-cashLabel.Parent             = frame
-
--- ─── Update + Animation ───────────────────────────────────────────────────────
-
-local function animatePop()
-	local tweenIn = TweenService:Create(frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 196, 0, 54)
-	})
-	local tweenOut = TweenService:Create(frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Size = UDim2.new(0, 180, 0, 48)
-	})
-	tweenIn:Play()
-	tweenIn.Completed:Connect(function()
-		tweenOut:Play()
-	end)
-end
-
-local function updateDisplay(cashAmount)
-	cashLabel.Text = "💰 $" .. formatCash(cashAmount)
-	animatePop()
-end
-
--- ─── Events ───────────────────────────────────────────────────────────────────
-
-UpdateCash.OnClientEvent:Connect(updateDisplay)
-
--- Also read from leaderstats immediately if available
-local function initFromLeaderstats()
-	local ls = player:WaitForChild("leaderstats", 10)
-	if ls then
-		local cashVal = ls:WaitForChild("Cash", 5)
-		if cashVal then
-			updateDisplay(cashVal.Value)
-		end
-	end
-end
-
-task.spawn(initFromLeaderstats)
+-- DISABLED: Cash display is handled by GachaUI.client.lua to avoid duplicates.
+return
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="20">
+      <Item class="LocalScript" referent="24">
+        <Properties>
+          <string name="Name">CodesUI</string>
+          <string name="Source"><![CDATA[-- CodesUI (LocalScript)
+-- StarterPlayerScripts/CodesUI
+-- 🎁 Código button (bottom-left) + code input panel + result toast.
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+local Players           = game:GetService("Players")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RedeemCode   = RemoteEvents:WaitForChild("RedeemCode")
+local CodeResult   = RemoteEvents:WaitForChild("CodeResult")
+
+-- ── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name          = "CodesUI"
+screenGui.ResetOnSpawn  = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent        = playerGui
+
+-- ── 🎁 Código Button (bottom-left) ───────────────────────────────────────────
+local codeBtn = Instance.new("TextButton")
+codeBtn.Name             = "CodeButton"
+codeBtn.Size             = UDim2.new(0, 130, 0, 50)
+codeBtn.Position         = UDim2.new(0, 16, 1, -66)
+codeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+codeBtn.BorderSizePixel  = 0
+codeBtn.Text             = "🎁 Código"
+codeBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+codeBtn.TextScaled       = true
+codeBtn.Font             = Enum.Font.GothamBold
+codeBtn.AutoButtonColor  = false
+codeBtn.Parent           = screenGui
+Instance.new("UICorner", codeBtn).CornerRadius = UDim.new(0, 18)
+
+local codeBtnStroke = Instance.new("UIStroke")
+codeBtnStroke.Color     = Color3.fromRGB(120, 80, 255)
+codeBtnStroke.Thickness = 1.5
+codeBtnStroke.Parent    = codeBtn
+
+codeBtn.MouseEnter:Connect(function()
+	TweenService:Create(codeBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(65, 55, 100)}):Play()
+end)
+codeBtn.MouseLeave:Connect(function()
+	TweenService:Create(codeBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 40, 60)}):Play()
+end)
+
+-- ── Input Panel ───────────────────────────────────────────────────────────────
+local inputPanel = Instance.new("Frame")
+inputPanel.Name                  = "InputPanel"
+inputPanel.Size                  = UDim2.new(0, 320, 0, 160)
+inputPanel.Position              = UDim2.new(0, 16, 1, -230)
+inputPanel.BackgroundColor3      = Color3.fromRGB(15, 15, 28)
+inputPanel.BackgroundTransparency = 0.08
+inputPanel.BorderSizePixel       = 0
+inputPanel.Visible               = false
+inputPanel.ZIndex                = 20
+inputPanel.Parent                = screenGui
+Instance.new("UICorner", inputPanel).CornerRadius = UDim.new(0, 16)
+
+local inputStroke = Instance.new("UIStroke")
+inputStroke.Color     = Color3.fromRGB(120, 80, 255)
+inputStroke.Thickness = 1.5
+inputStroke.Parent    = inputPanel
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size                  = UDim2.new(1, -20, 0, 36)
+titleLabel.Position              = UDim2.new(0, 10, 0, 8)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text                  = "🎁 Canjear Código"
+titleLabel.TextColor3            = Color3.fromRGB(220, 200, 255)
+titleLabel.TextScaled            = true
+titleLabel.Font                  = Enum.Font.GothamBold
+titleLabel.ZIndex                = 21
+titleLabel.Parent                = inputPanel
+
+local textBox = Instance.new("TextBox")
+textBox.Name                   = "CodeInput"
+textBox.Size                   = UDim2.new(1, -20, 0, 42)
+textBox.Position               = UDim2.new(0, 10, 0, 52)
+textBox.BackgroundColor3       = Color3.fromRGB(30, 30, 50)
+textBox.BorderSizePixel        = 0
+textBox.Text                   = ""
+textBox.PlaceholderText        = "Ingresa tu código..."
+textBox.PlaceholderColor3      = Color3.fromRGB(120, 120, 160)
+textBox.TextColor3             = Color3.fromRGB(255, 255, 255)
+textBox.TextScaled             = true
+textBox.Font                   = Enum.Font.Gotham
+textBox.ClearTextOnFocus       = false
+textBox.ZIndex                 = 21
+textBox.Parent                 = inputPanel
+Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 10)
+
+local redeemBtn = Instance.new("TextButton")
+redeemBtn.Name             = "RedeemBtn"
+redeemBtn.Size             = UDim2.new(1, -20, 0, 42)
+redeemBtn.Position         = UDim2.new(0, 10, 0, 104)
+redeemBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 255)
+redeemBtn.BorderSizePixel  = 0
+redeemBtn.Text             = "Canjear"
+redeemBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+redeemBtn.TextScaled       = true
+redeemBtn.Font             = Enum.Font.GothamBold
+redeemBtn.AutoButtonColor  = false
+redeemBtn.ZIndex           = 21
+redeemBtn.Parent           = inputPanel
+Instance.new("UICorner", redeemBtn).CornerRadius = UDim.new(0, 10)
+
+redeemBtn.MouseEnter:Connect(function()
+	TweenService:Create(redeemBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(150, 110, 255)}):Play()
+end)
+redeemBtn.MouseLeave:Connect(function()
+	TweenService:Create(redeemBtn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(120, 80, 255)}):Play()
+end)
+
+-- ── Toggle Panel ─────────────────────────────────────────────────────────────
+local panelOpen = false
+
+codeBtn.MouseButton1Click:Connect(function()
+	panelOpen = not panelOpen
+	inputPanel.Visible = panelOpen
+	if panelOpen then
+		inputPanel.Size = UDim2.new(0, 0, 0, 0)
+		inputPanel.Position = UDim2.new(0, 16, 1, -160)
+		TweenService:Create(inputPanel, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size     = UDim2.new(0, 320, 0, 160),
+			Position = UDim2.new(0, 16, 1, -230),
+		}):Play()
+		textBox:CaptureFocus()
+	end
+end)
+
+-- ── Redeem Logic ─────────────────────────────────────────────────────────────
+local function doRedeem()
+	local code = textBox.Text
+	if code == "" then return end
+	redeemBtn.Text   = "⏳"
+	redeemBtn.Active = false
+	RedeemCode:FireServer(code)
+end
+
+redeemBtn.MouseButton1Click:Connect(doRedeem)
+
+textBox.FocusLost:Connect(function(enterPressed)
+	if enterPressed then doRedeem() end
+end)
+
+-- ── Toast Notification ────────────────────────────────────────────────────────
+local toast = Instance.new("Frame")
+toast.Name                   = "Toast"
+toast.Size                   = UDim2.new(0, 280, 0, 52)
+toast.Position               = UDim2.new(0.5, -140, 0, -60)   -- starts hidden above screen
+toast.BackgroundColor3       = Color3.fromRGB(20, 20, 30)
+toast.BackgroundTransparency = 0.1
+toast.BorderSizePixel        = 0
+toast.ZIndex                 = 30
+toast.Parent                 = screenGui
+Instance.new("UICorner", toast).CornerRadius = UDim.new(0, 14)
+
+local toastLabel = Instance.new("TextLabel")
+toastLabel.Size                  = UDim2.new(1, -16, 1, 0)
+toastLabel.Position              = UDim2.new(0, 8, 0, 0)
+toastLabel.BackgroundTransparency = 1
+toastLabel.Text                  = ""
+toastLabel.TextColor3            = Color3.fromRGB(255, 255, 255)
+toastLabel.TextScaled            = true
+toastLabel.Font                  = Enum.Font.GothamBold
+toastLabel.ZIndex                = 31
+toastLabel.Parent                = toast
+
+local toastStroke = Instance.new("UIStroke")
+toastStroke.Thickness = 1.5
+toastStroke.Parent    = toast
+
+local toastVisible = false
+
+local function showToast(success, message)
+	if toastVisible then return end
+	toastVisible       = true
+	toastLabel.Text    = message
+	toastStroke.Color  = success and Color3.fromRGB(60, 220, 100) or Color3.fromRGB(220, 60, 60)
+
+	-- Slide in from top
+	TweenService:Create(toast, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -140, 0, 14)
+	}):Play()
+
+	task.wait(3)
+
+	-- Slide out
+	TweenService:Create(toast, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		Position = UDim2.new(0.5, -140, 0, -60)
+	}):Play()
+	task.wait(0.2)
+	toastVisible = false
+end
+
+-- ── CodeResult ───────────────────────────────────────────────────────────────
+CodeResult.OnClientEvent:Connect(function(success, message)
+	redeemBtn.Text   = "Canjear"
+	redeemBtn.Active = true
+
+	if success then
+		textBox.Text   = ""
+		inputPanel.Visible = false
+		panelOpen = false
+	end
+
+	task.spawn(showToast, success, message)
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="25">
         <Properties>
           <string name="Name">GachaUI</string>
           <string name="Source"><![CDATA[-- GachaUI (LocalScript)
 -- StarterPlayerScripts/GachaUI
--- Main gameplay UI: Buy Egg button, gacha result panel, Shop button.
+-- Buy Egg button + gacha result panel + cash display (centre top).
 
-local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService      = game:GetService("TweenService")
+local Players           = game:GetService("Players")
 
-local player       = Players.LocalPlayer
-local RemoteEvents = ReplicatedStorage.RemoteEvents
-local BuyEgg       = RemoteEvents.BuyEgg
-local GachaResult  = RemoteEvents.GachaResult
-local UpdateCash   = RemoteEvents.UpdateCash
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- ─── Rarity Colors ────────────────────────────────────────────────────────────
+-- ── RemoteEvents ──────────────────────────────────────────────────────────────
+local RemoteEvents    = ReplicatedStorage:WaitForChild("RemoteEvents")
+local BuyEggEvent     = RemoteEvents:WaitForChild("BuyEgg")
+local GachaResultEvent = RemoteEvents:WaitForChild("GachaResult")
+local UpdateCashEvent = RemoteEvents:WaitForChild("UpdateCash")
 
-local RARITY_COLORS = {
+-- ── ScreenGui ────────────────────────────────────────────────────────────────
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name          = "GachaUI"
+screenGui.ResetOnSpawn  = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent        = playerGui
+
+-- ── Cash Display (centre top) ─────────────────────────────────────────────────
+local cashFrame = Instance.new("Frame")
+cashFrame.Size                  = UDim2.new(0, 200, 0, 50)
+cashFrame.Position              = UDim2.new(0.5, -100, 0, 10)
+cashFrame.BackgroundColor3      = Color3.fromRGB(0, 0, 0)
+cashFrame.BackgroundTransparency = 0.4
+cashFrame.BorderSizePixel       = 0
+cashFrame.Parent                = screenGui
+Instance.new("UICorner", cashFrame).CornerRadius = UDim.new(0, 12)
+
+local cashLabel = Instance.new("TextLabel")
+cashLabel.Size                  = UDim2.new(1, 0, 1, 0)
+cashLabel.BackgroundTransparency = 1
+cashLabel.Text                  = "💰 $0"
+cashLabel.TextColor3            = Color3.fromRGB(255, 220, 50)
+cashLabel.TextScaled            = true
+cashLabel.Font                  = Enum.Font.GothamBold
+cashLabel.Parent                = cashFrame
+
+-- ── Buy Egg Button (bottom centre) ───────────────────────────────────────────
+local buyBtn = Instance.new("TextButton")
+buyBtn.Name             = "BuyEggButton"
+buyBtn.Size             = UDim2.new(0, 220, 0, 60)
+buyBtn.Position         = UDim2.new(0.5, -110, 1, -80)
+buyBtn.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+buyBtn.BorderSizePixel  = 0
+buyBtn.Text             = "🥚 Buy Egg  $500"
+buyBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+buyBtn.TextScaled       = true
+buyBtn.Font             = Enum.Font.GothamBold
+buyBtn.AutoButtonColor  = false
+buyBtn.Parent           = screenGui
+Instance.new("UICorner", buyBtn).CornerRadius = UDim.new(0, 16)
+
+-- Hover animations
+buyBtn.MouseEnter:Connect(function()
+	TweenService:Create(buyBtn, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+	}):Play()
+end)
+buyBtn.MouseLeave:Connect(function()
+	TweenService:Create(buyBtn, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+	}):Play()
+end)
+
+-- ── BUY EGG CLICK ─────────────────────────────────────────────────────────────
+buyBtn.MouseButton1Click:Connect(function()
+	buyBtn.Text   = "⏳ Abriendo..."
+	buyBtn.Active = false
+	BuyEggEvent:FireServer()
+	task.wait(1)
+	buyBtn.Text   = "🥚 Buy Egg  $500"
+	buyBtn.Active = true
+end)
+
+-- ── Gacha Result Panel ────────────────────────────────────────────────────────
+local resultPanel = Instance.new("Frame")
+resultPanel.Name                  = "ResultPanel"
+resultPanel.Size                  = UDim2.new(0, 300, 0, 320)
+resultPanel.Position              = UDim2.new(0.5, -150, 0.5, -160)
+resultPanel.BackgroundColor3      = Color3.fromRGB(20, 20, 30)
+resultPanel.BackgroundTransparency = 0.1
+resultPanel.BorderSizePixel       = 0
+resultPanel.Visible               = false
+resultPanel.ZIndex                = 10
+resultPanel.Parent                = screenGui
+Instance.new("UICorner", resultPanel).CornerRadius = UDim.new(0, 20)
+
+local resultStroke = Instance.new("UIStroke")
+resultStroke.Thickness = 2
+resultStroke.Color     = Color3.fromRGB(255, 200, 50)
+resultStroke.Parent    = resultPanel
+
+local emojiLabel = Instance.new("TextLabel")
+emojiLabel.Size                  = UDim2.new(1, 0, 0.30, 0)
+emojiLabel.Position              = UDim2.new(0, 0, 0.05, 0)
+emojiLabel.BackgroundTransparency = 1
+emojiLabel.Text                  = "🐟"
+emojiLabel.TextScaled            = true
+emojiLabel.ZIndex                = 11
+emojiLabel.Parent                = resultPanel
+
+local nameLabel = Instance.new("TextLabel")
+nameLabel.Size                   = UDim2.new(1, -20, 0, 40)
+nameLabel.Position               = UDim2.new(0, 10, 0.38, 0)
+nameLabel.BackgroundTransparency = 1
+nameLabel.Text                   = "Tralalero Tralala"
+nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+nameLabel.TextScaled             = true
+nameLabel.Font                   = Enum.Font.GothamBold
+nameLabel.ZIndex                 = 11
+nameLabel.Parent                 = resultPanel
+
+local rarityLabel = Instance.new("TextLabel")
+rarityLabel.Size                  = UDim2.new(1, -20, 0, 30)
+rarityLabel.Position              = UDim2.new(0, 10, 0.55, 0)
+rarityLabel.BackgroundTransparency = 1
+rarityLabel.Text                  = "⭐ Common"
+rarityLabel.TextColor3            = Color3.fromRGB(180, 180, 180)
+rarityLabel.TextScaled            = true
+rarityLabel.Font                  = Enum.Font.Gotham
+rarityLabel.ZIndex                = 11
+rarityLabel.Parent                = resultPanel
+
+local cashPerSecLabel = Instance.new("TextLabel")
+cashPerSecLabel.Size                  = UDim2.new(1, -20, 0, 30)
+cashPerSecLabel.Position              = UDim2.new(0, 10, 0.68, 0)
+cashPerSecLabel.BackgroundTransparency = 1
+cashPerSecLabel.Text                  = "+$5/seg"
+cashPerSecLabel.TextColor3            = Color3.fromRGB(100, 255, 100)
+cashPerSecLabel.TextScaled            = true
+cashPerSecLabel.Font                  = Enum.Font.GothamBold
+cashPerSecLabel.ZIndex                = 11
+cashPerSecLabel.Parent                = resultPanel
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name             = "CloseResultBtn"
+closeBtn.Size             = UDim2.new(0.6, 0, 0, 44)
+closeBtn.Position         = UDim2.new(0.2, 0, 0.82, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(60, 200, 100)
+closeBtn.BorderSizePixel  = 0
+closeBtn.Text             = "¡Genial!"
+closeBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+closeBtn.TextScaled       = true
+closeBtn.Font             = Enum.Font.GothamBold
+closeBtn.ZIndex           = 12
+closeBtn.Parent           = resultPanel
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 12)
+
+-- ── Rarity colour table ───────────────────────────────────────────────────────
+local rarityColors = {
 	Common    = Color3.fromRGB(180, 180, 180),
 	Uncommon  = Color3.fromRGB(100, 160, 255),
 	Rare      = Color3.fromRGB(50,  200, 120),
@@ -1013,275 +1482,77 @@ local RARITY_COLORS = {
 	Secret    = Color3.fromRGB(255, 50,  50),
 }
 
-local function rarityColorHex(rarity)
-	local c = RARITY_COLORS[rarity] or Color3.fromRGB(200, 200, 200)
-	return ("#%02X%02X%02X"):format(
-		math.floor(c.R * 255),
-		math.floor(c.G * 255),
-		math.floor(c.B * 255)
-	)
+-- ── Number formatter ─────────────────────────────────────────────────────────
+local function formatNumber(n)
+	if n >= 1e12 then return string.format("%.1fT", n / 1e12)
+	elseif n >= 1e9  then return string.format("%.1fB", n / 1e9)
+	elseif n >= 1e6  then return string.format("%.1fM", n / 1e6)
+	elseif n >= 1e3  then return string.format("%.1fK", n / 1e3)
+	else return tostring(math.floor(n)) end
 end
 
--- ─── Build UI ─────────────────────────────────────────────────────────────────
+-- ── Show Result ───────────────────────────────────────────────────────────────
+local function showResult(data)
+	emojiLabel.Text      = data.emoji   or "🐟"
+	nameLabel.Text       = data.name    or "Brainrot"
+	rarityLabel.Text     = "⭐ " .. (data.rarity or "Common")
+	rarityLabel.TextColor3 = rarityColors[data.rarity] or rarityColors.Common
+	cashPerSecLabel.Text = "+$" .. formatNumber(data.cashPerSec or 0) .. "/seg"
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name           = "GachaUI"
-screenGui.ResetOnSpawn   = false
-screenGui.IgnoreGuiInset = true
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Parent         = player.PlayerGui
+	-- Colour stroke to match rarity
+	resultStroke.Color = rarityColors[data.rarity] or Color3.fromRGB(255, 200, 50)
 
--- ── Buy Egg Button (centre) ──────────────────────────────────────────────────
+	-- Animate: scale 0 → full size (Back easing gives the 1.1 bounce naturally)
+	resultPanel.Size     = UDim2.new(0, 0, 0, 0)
+	resultPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+	resultPanel.Visible  = true
 
-local buyButton = Instance.new("TextButton")
-buyButton.Name              = "BuyEggButton"
-buyButton.Size              = UDim2.new(0, 240, 0, 64)
-buyButton.Position          = UDim2.new(0.5, -120, 0.78, 0)
-buyButton.BackgroundColor3  = Color3.fromRGB(255, 185, 15)
-buyButton.BorderSizePixel   = 0
-buyButton.Text              = "🥚 Buy Egg  $500"
-buyButton.Font              = Enum.Font.GothamBold
-buyButton.TextSize          = 22
-buyButton.TextColor3        = Color3.fromRGB(30, 20, 0)
-buyButton.AutoButtonColor   = false
-buyButton.Parent            = screenGui
-
-local buyCorner = Instance.new("UICorner")
-buyCorner.CornerRadius = UDim.new(0, 32)
-buyCorner.Parent = buyButton
-
-local buyGradient = Instance.new("UIGradient")
-buyGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 210, 50)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 140, 0)),
-})
-buyGradient.Rotation = 90
-buyGradient.Parent = buyButton
-
--- Hover / Press animations
-local function tweenBuy(size, color)
-	TweenService:Create(buyButton, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {
-		Size = size,
-		BackgroundColor3 = color,
-	}):Play()
-end
-
-buyButton.MouseEnter:Connect(function()
-	tweenBuy(UDim2.new(0, 252, 0, 68), Color3.fromRGB(255, 200, 30))
-end)
-buyButton.MouseLeave:Connect(function()
-	tweenBuy(UDim2.new(0, 240, 0, 64), Color3.fromRGB(255, 185, 15))
-end)
-buyButton.MouseButton1Down:Connect(function()
-	tweenBuy(UDim2.new(0, 232, 0, 60), Color3.fromRGB(220, 140, 0))
-end)
-
--- ── Shop Button (bottom-right) ───────────────────────────────────────────────
-
-local shopButton = Instance.new("TextButton")
-shopButton.Name             = "ShopButton"
-shopButton.Size             = UDim2.new(0, 120, 0, 50)
-shopButton.Position         = UDim2.new(1, -136, 1, -66)
-shopButton.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-shopButton.BorderSizePixel  = 0
-shopButton.Text             = "🛒 Shop"
-shopButton.Font             = Enum.Font.GothamBold
-shopButton.TextSize         = 18
-shopButton.TextColor3       = Color3.fromRGB(255, 255, 255)
-shopButton.AutoButtonColor  = false
-shopButton.Parent           = screenGui
-
-local shopCorner = Instance.new("UICorner")
-shopCorner.CornerRadius = UDim.new(0, 20)
-shopCorner.Parent = shopButton
-
-local shopStroke = Instance.new("UIStroke")
-shopStroke.Color       = Color3.fromRGB(100, 100, 180)
-shopStroke.Thickness   = 1.5
-shopStroke.Parent      = shopButton
-
-shopButton.MouseEnter:Connect(function()
-	TweenService:Create(shopButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(60, 60, 100)}):Play()
-end)
-shopButton.MouseLeave:Connect(function()
-	TweenService:Create(shopButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 40, 60)}):Play()
-end)
-
--- ─── Gacha Result Panel ───────────────────────────────────────────────────────
-
-local function createResultPanel(resultData)
-	-- Dim overlay
-	local overlay = Instance.new("Frame")
-	overlay.Name                 = "ResultOverlay"
-	overlay.Size                 = UDim2.new(1, 0, 1, 0)
-	overlay.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
-	overlay.BackgroundTransparency = 0.45
-	overlay.BorderSizePixel      = 0
-	overlay.ZIndex               = 10
-	overlay.Parent               = screenGui
-
-	-- Panel card
-	local card = Instance.new("Frame")
-	card.Name               = "ResultCard"
-	card.Size               = UDim2.new(0, 340, 0, 380)
-	card.Position           = UDim2.new(0.5, -170, 0.5, -190)
-	card.BackgroundColor3   = Color3.fromRGB(18, 18, 30)
-	card.BorderSizePixel    = 0
-	card.ZIndex             = 11
-	card.Parent             = overlay
-
-	local cardCorner = Instance.new("UICorner")
-	cardCorner.CornerRadius = UDim.new(0, 20)
-	cardCorner.Parent = card
-
-	-- Rarity-coloured glow stroke
-	local rarityColor = RARITY_COLORS[resultData.rarity] or Color3.fromRGB(200, 200, 200)
-	local cardStroke  = Instance.new("UIStroke")
-	cardStroke.Color     = rarityColor
-	cardStroke.Thickness = 3
-	cardStroke.Parent    = card
-
-	-- Emoji label (big)
-	local emojiLabel = Instance.new("TextLabel")
-	emojiLabel.Size                    = UDim2.new(1, 0, 0, 120)
-	emojiLabel.Position                = UDim2.new(0, 0, 0, 24)
-	emojiLabel.BackgroundTransparency  = 1
-	emojiLabel.Text                    = resultData.emoji or "❓"
-	emojiLabel.TextSize                = 72
-	emojiLabel.Font                    = Enum.Font.GothamBold
-	emojiLabel.TextColor3              = Color3.fromRGB(255, 255, 255)
-	emojiLabel.ZIndex                  = 12
-	emojiLabel.Parent                  = card
-
-	-- Brainrot Name
-	local nameLabel = Instance.new("TextLabel")
-	nameLabel.Size                   = UDim2.new(1, -24, 0, 40)
-	nameLabel.Position               = UDim2.new(0, 12, 0, 150)
-	nameLabel.BackgroundTransparency = 1
-	nameLabel.Text                   = resultData.name
-	nameLabel.Font                   = Enum.Font.GothamBold
-	nameLabel.TextSize               = 24
-	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
-	nameLabel.TextXAlignment         = Enum.TextXAlignment.Center
-	nameLabel.ZIndex                  = 12
-	nameLabel.Parent                 = card
-
-	-- Rarity label
-	local rarityLabel = Instance.new("TextLabel")
-	rarityLabel.Size                  = UDim2.new(1, -24, 0, 32)
-	rarityLabel.Position              = UDim2.new(0, 12, 0, 195)
-	rarityLabel.BackgroundTransparency = 1
-	rarityLabel.Text                  = "✨ " .. (resultData.rarity or "?")
-	rarityLabel.Font                  = Enum.Font.GothamBold
-	rarityLabel.TextSize              = 20
-	rarityLabel.TextColor3            = rarityColor
-	rarityLabel.TextXAlignment        = Enum.TextXAlignment.Center
-	rarityLabel.ZIndex                 = 12
-	rarityLabel.Parent                = card
-
-	-- Cash per second label
-	local function formatNum(n)
-		if n >= 1e12 then return ("%.1fT"):format(n/1e12)
-		elseif n >= 1e9 then return ("%.1fB"):format(n/1e9)
-		elseif n >= 1e6 then return ("%.1fM"):format(n/1e6)
-		elseif n >= 1e3 then return ("%.1fK"):format(n/1e3)
-		else return tostring(math.floor(n)) end
-	end
-
-	local cpsLabel = Instance.new("TextLabel")
-	cpsLabel.Size                   = UDim2.new(1, -24, 0, 32)
-	cpsLabel.Position               = UDim2.new(0, 12, 0, 234)
-	cpsLabel.BackgroundTransparency = 1
-	cpsLabel.Text                   = "💵 $" .. formatNum(resultData.cashPerSec or 0) .. "/seg"
-	cpsLabel.Font                   = Enum.Font.Gotham
-	cpsLabel.TextSize               = 18
-	cpsLabel.TextColor3             = Color3.fromRGB(130, 230, 130)
-	cpsLabel.TextXAlignment         = Enum.TextXAlignment.Center
-	cpsLabel.ZIndex                  = 12
-	cpsLabel.Parent                 = card
-
-	-- Close button
-	local closeBtn = Instance.new("TextButton")
-	closeBtn.Name             = "CloseButton"
-	closeBtn.Size             = UDim2.new(0, 180, 0, 48)
-	closeBtn.Position         = UDim2.new(0.5, -90, 0, 306)
-	closeBtn.BackgroundColor3 = rarityColor
-	closeBtn.BorderSizePixel  = 0
-	closeBtn.Text             = "¡Genial!"
-	closeBtn.Font             = Enum.Font.GothamBold
-	closeBtn.TextSize         = 20
-	closeBtn.TextColor3       = Color3.fromRGB(10, 10, 10)
-	closeBtn.ZIndex            = 12
-	closeBtn.Parent           = card
-
-	local closeBtnCorner = Instance.new("UICorner")
-	closeBtnCorner.CornerRadius = UDim.new(0, 24)
-	closeBtnCorner.Parent = closeBtn
-
-	-- Entry animation: scale 0 → 1 → 1.1 → 1
-	card.Size = UDim2.new(0, 1, 0, 1)
-	card.Position = UDim2.new(0.5, 0, 0.5, 0)
-
-	local tweenOpen = TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		Size     = UDim2.new(0, 354, 0, 394),
-		Position = UDim2.new(0.5, -177, 0.5, -197),
-	})
-	tweenOpen:Play()
-	tweenOpen.Completed:Connect(function()
-		local tweenBounce = TweenService:Create(card, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			Size     = UDim2.new(0, 340, 0, 380),
-			Position = UDim2.new(0.5, -170, 0.5, -190),
-		})
-		tweenBounce:Play()
-	end)
-
-	local function closePanel()
-		local tweenClose = TweenService:Create(overlay, TweenInfo.new(0.2), {BackgroundTransparency = 1})
-		local tweenCardClose = TweenService:Create(card, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-			Size     = UDim2.new(0, 1, 0, 1),
-			Position = UDim2.new(0.5, 0, 0.5, 0),
-		})
-		tweenClose:Play()
-		tweenCardClose:Play()
-		tweenClose.Completed:Connect(function()
-			overlay:Destroy()
-		end)
-	end
-
-	closeBtn.MouseButton1Click:Connect(closePanel)
-	overlay.MouseButton1Click:Connect(closePanel)
+	TweenService:Create(resultPanel,
+		TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Size = UDim2.new(0, 300, 0, 320), Position = UDim2.new(0.5, -150, 0.5, -160) }
+	):Play()
 
 	-- Auto-close after 4 seconds
 	task.delay(4, function()
-		if overlay and overlay.Parent then
-			closePanel()
+		if resultPanel.Visible then
+			resultPanel.Visible = false
 		end
 	end)
 end
 
--- ─── Wire Events ──────────────────────────────────────────────────────────────
-
-buyButton.MouseButton1Up:Connect(function()
-	tweenBuy(UDim2.new(0, 240, 0, 64), Color3.fromRGB(255, 185, 15))
-	BuyEgg:FireServer()
+closeBtn.MouseButton1Click:Connect(function()
+	resultPanel.Visible = false
 end)
 
-GachaResult.OnClientEvent:Connect(function(resultData)
-	createResultPanel(resultData)
+GachaResultEvent.OnClientEvent:Connect(showResult)
+
+-- ── Update Cash ───────────────────────────────────────────────────────────────
+UpdateCashEvent.OnClientEvent:Connect(function(cash)
+	cashLabel.Text = "💰 $" .. formatNumber(cash)
+	-- Subtle flash animation
+	TweenService:Create(cashLabel, TweenInfo.new(0.15), {
+		TextColor3 = Color3.fromRGB(255, 255, 100)
+	}):Play()
+	task.wait(0.15)
+	TweenService:Create(cashLabel, TweenInfo.new(0.15), {
+		TextColor3 = Color3.fromRGB(255, 220, 50)
+	}):Play()
 end)
 
--- Shop button placeholder (ShopUI handles it separately)
-shopButton.MouseButton1Click:Connect(function()
-	local shopGui = player.PlayerGui:FindFirstChild("ShopUI")
-	if shopGui then
-		local frame = shopGui:FindFirstChildWhichIsA("Frame", true)
-		if frame then frame.Visible = not frame.Visible end
+-- Populate cash from leaderstats on first load
+task.spawn(function()
+	local ls = player:WaitForChild("leaderstats", 10)
+	if ls then
+		local cashVal = ls:WaitForChild("Cash", 5)
+		if cashVal then
+			cashLabel.Text = "💰 $" .. formatNumber(cashVal.Value)
+		end
 	end
 end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="21">
+      <Item class="LocalScript" referent="26">
         <Properties>
           <string name="Name">ShopUI</string>
           <string name="Source"><![CDATA[-- ShopUI (LocalScript)
