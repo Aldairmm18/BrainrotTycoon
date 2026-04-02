@@ -131,92 +131,99 @@ return RarityConfig
       </Item>
       <Item class="RemoteEvent" referent="6">
         <Properties>
-          <string name="Name">PlaceBrainrot</string>
+          <string name="Name">GachaResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="7">
+        <Properties>
+          <string name="Name">PlaceBrainrot</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="8">
+        <Properties>
+          <string name="Name">Rebirth</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="9">
+        <Properties>
+          <string name="Name">RebornResult</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="10">
         <Properties>
           <string name="Name">UpdateCash</string>
         </Properties>
       </Item>
     </Item>
   </Item>
-  <Item class="ServerScriptService" referent="8">
+  <Item class="ServerScriptService" referent="11">
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="Script" referent="9">
+    <Item class="Script" referent="12">
       <Properties>
         <string name="Name">BrainrotData</string>
         <token name="RunContext">0</token>
-        <string name="Source"><![CDATA[-- BrainrotData (ModuleScript)
+        <string name="Source"><![CDATA[-- BrainrotData (ModuleScript-style server Script)
 -- ServerScriptService/BrainrotData
--- Central in-memory store for all player data during the session.
+-- Central in-memory data store for all player data (server only).
 
 local BrainrotData = {}
 
--- playerData[userId] = { cash = number, brainrots = {}, rebirths = number }
-local playerData = {}
+local _data = {}  -- indexed by userId
 
-local MAX_BRAINROTS = 10
+-- ─── Init ────────────────────────────────────────────────────────────────────
 
--- Initialize a player's data table
-function BrainrotData.Init(userId, savedData)
-	savedData = savedData or {}
-	playerData[userId] = {
-		cash      = savedData.cash     or 0,
-		brainrots = savedData.brainrots or {},
-		rebirths  = savedData.rebirths  or 0,
-	}
+function BrainrotData.Init(userId)
+	if not _data[userId] then
+		_data[userId] = {
+			cash      = 100,   -- starting cash so player can buy first egg
+			brainrots = {},
+			rebirths  = 0,
+		}
+	end
 end
 
--- Get a player's full data table (reference)
+-- ─── Getters ─────────────────────────────────────────────────────────────────
+
 function BrainrotData.Get(userId)
-	return playerData[userId]
+	return _data[userId]
 end
 
--- Remove a player's data from memory on leave
-function BrainrotData.Remove(userId)
-	playerData[userId] = nil
-end
+-- ─── Cash Operations ─────────────────────────────────────────────────────────
 
--- Add cash (server-authoritative)
 function BrainrotData.AddCash(userId, amount)
-	local data = playerData[userId]
-	if not data then return end
-	data.cash = data.cash + amount
+	local d = _data[userId]
+	if not d then return end
+	d.cash = d.cash + amount
 end
 
--- Deduct cash; returns true if successful, false if insufficient
+-- Returns true if spend succeeded, false if insufficient funds.
 function BrainrotData.SpendCash(userId, amount)
-	local data = playerData[userId]
-	if not data then return false end
-	if data.cash < amount then return false end
-	data.cash = data.cash - amount
+	local d = _data[userId]
+	if not d then return false end
+	if d.cash < amount then return false end
+	d.cash = d.cash - amount
 	return true
 end
 
--- Add a Brainrot to the player's inventory
--- Returns false if inventory is full
-function BrainrotData.AddBrainrot(userId, brainrotEntry)
-	local data = playerData[userId]
-	if not data then return false end
-	if #data.brainrots >= MAX_BRAINROTS then return false, "Inventory full" end
-	table.insert(data.brainrots, {
-		name   = brainrotEntry.name,
-		rarity = brainrotEntry.rarity,
-		emoji  = brainrotEntry.emoji,
-	})
-	return true
+-- ─── Brainrot Operations ─────────────────────────────────────────────────────
+
+function BrainrotData.AddBrainrot(userId, brainrotData)
+	local d = _data[userId]
+	if not d then return end
+	table.insert(d.brainrots, brainrotData)
 end
 
--- Calculate total cashPerSec for a player from their inventory
-function BrainrotData.GetTotalCashPerSec(userId, rarityConfig)
-	local data = playerData[userId]
-	if not data then return 0 end
+-- ─── Economy Helpers ─────────────────────────────────────────────────────────
+
+-- Sums cashPerSec for all brainrots the player owns using RarityConfig.
+function BrainrotData.GetTotalCashPerSec(userId, RarityConfig)
+	local d = _data[userId]
+	if not d then return 0 end
 	local total = 0
-	for _, b in ipairs(data.brainrots) do
-		local cfg = rarityConfig[b.rarity]
+	for _, b in ipairs(d.brainrots) do
+		local cfg = RarityConfig[b.rarity]
 		if cfg then
 			total = total + cfg.cashPerSec
 		end
@@ -224,147 +231,251 @@ function BrainrotData.GetTotalCashPerSec(userId, rarityConfig)
 	return total
 end
 
+-- ─── Rebirth ─────────────────────────────────────────────────────────────────
+
+function BrainrotData.Rebirth(userId)
+	local d = _data[userId]
+	if not d then return false end
+	if #d.brainrots < 10 then return false end
+	d.cash      = 0
+	d.brainrots = {}
+	d.rebirths  = d.rebirths + 1
+	return true
+end
+
+-- ─── Raw Restore (used by DataStoreManager) ──────────────────────────────────
+
+function BrainrotData.Restore(userId, savedData)
+	_data[userId] = {
+		cash      = savedData.cash      or 100,
+		brainrots = savedData.brainrots or {},
+		rebirths  = savedData.rebirths  or 0,
+	}
+end
+
 return BrainrotData
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="10">
+    <Item class="Script" referent="13">
       <Properties>
         <string name="Name">DataStoreManager</string>
         <token name="RunContext">0</token>
         <string name="Source"><![CDATA[-- DataStoreManager (Script)
 -- ServerScriptService/DataStoreManager
--- Handles loading and saving player data via DataStoreService.
+-- Handles loading/saving player data via DataStore and creating leaderstats.
 
-local DataStoreService = game:GetService("DataStoreService")
-local Players          = game:GetService("Players")
+local Players           = game:GetService("Players")
+local DataStoreService  = game:GetService("DataStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local BrainrotData = require(script.Parent.BrainrotData)
+local BrainrotData  = require(script.Parent.BrainrotData)
+local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
+local BrainrotList  = require(ReplicatedStorage.Modules.BrainrotList)
 
-local store = DataStoreService:GetDataStore("BrainrotTycoon_v1")
+local DATASTORE_NAME  = "BrainrotTycoon_v1"
+local AUTOSAVE_INTERVAL = 60
 
-local AUTO_SAVE_INTERVAL = 60  -- seconds
+local playerStore = DataStoreService:GetDataStore(DATASTORE_NAME)
 
--- ─── Helpers ────────────────────────────────────────────────────────────────
+-- ─── Re-place saved Brainrot parts in the workspace ──────────────────────────
 
-local function getKey(player)
-	return "player_" .. tostring(player.UserId)
+local function restoreBrainrotParts(player, brainrots)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then
+		brainrotFolder = Instance.new("Folder")
+		brainrotFolder.Name   = "Brainrots"
+		brainrotFolder.Parent = workspace
+	end
+
+	local userId      = player.UserId
+	local GRID_SPACING      = 6
+	local PLAYER_AREA_WIDTH = 50
+	local BASE_Y            = 1.5
+	local MAX_BRAINROTS     = 25
+
+	local function getSlotPos(slotIndex)
+		local areaX = (userId % 20) * PLAYER_AREA_WIDTH
+		local col   = slotIndex % 5
+		local row   = math.floor(slotIndex / 5)
+		return Vector3.new(areaX + (col * GRID_SPACING) - (2 * GRID_SPACING), BASE_Y, row * GRID_SPACING)
+	end
+
+	for i, b in ipairs(brainrots) do
+		if i > MAX_BRAINROTS then break end
+		local slotIndex = i - 1
+
+		local cfg = RarityConfig[b.rarity]
+
+		local part = Instance.new("Part")
+		part.Size      = Vector3.new(3, 3, 3)
+		part.Anchored  = true
+		part.Color     = cfg and cfg.color or Color3.fromRGB(200, 200, 200)
+		part.Material  = Enum.Material.SmoothPlastic
+		part.Position  = getSlotPos(slotIndex)
+		part.Name      = b.name
+		part:SetAttribute("OwnerId",   userId)
+		part:SetAttribute("SlotIndex", slotIndex)
+		part:SetAttribute("SpawnTime", os.time() - (MAX_BRAINROTS - i))  -- preserve order
+
+		local cashVal = Instance.new("NumberValue")
+		cashVal.Name  = "CashPerSec"
+		cashVal.Value = cfg and cfg.cashPerSec or 0
+		cashVal.Parent = part
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Size         = UDim2.new(0, 120, 0, 60)
+		billboard.StudsOffset  = Vector3.new(0, 2.5, 0)
+		billboard.AlwaysOnTop  = false
+		billboard.ResetOnSpawn = false
+		billboard.Parent       = part
+
+		local emojiLabel = Instance.new("TextLabel")
+		emojiLabel.Size                     = UDim2.new(1, 0, 0.55, 0)
+		emojiLabel.BackgroundTransparency   = 1
+		emojiLabel.Text                     = b.emoji or "❓"
+		emojiLabel.TextScaled               = true
+		emojiLabel.Font                     = Enum.Font.GothamBold
+		emojiLabel.TextColor3               = Color3.fromRGB(255, 255, 255)
+		emojiLabel.Parent                   = billboard
+
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size                      = UDim2.new(1, 0, 0.45, 0)
+		nameLabel.Position                  = UDim2.new(0, 0, 0.55, 0)
+		nameLabel.BackgroundTransparency    = 1
+		nameLabel.Text                      = b.name
+		nameLabel.TextScaled                = true
+		nameLabel.Font                      = Enum.Font.Gotham
+		nameLabel.TextColor3                = Color3.fromRGB(255, 255, 255)
+		nameLabel.TextStrokeTransparency    = 0.5
+		nameLabel.Parent                    = billboard
+
+		part.Parent = brainrotFolder
+	end
 end
 
-local function createLeaderstats(player, data)
-	local leaderstats = Instance.new("Folder")
-	leaderstats.Name  = "leaderstats"
-	leaderstats.Parent = player
+-- ─── Remove all workspace Parts belonging to a player ────────────────────────
 
-	local cashVal = Instance.new("IntValue")
-	cashVal.Name   = "Cash"
-	cashVal.Value  = data.cash
-	cashVal.Parent = leaderstats
-
-	local rebirthVal = Instance.new("IntValue")
-	rebirthVal.Name   = "Rebirths"
-	rebirthVal.Value  = data.rebirths
-	rebirthVal.Parent = leaderstats
+local function clearPlayerParts(userId)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then return end
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		if part:GetAttribute("OwnerId") == userId then
+			part:Destroy()
+		end
+	end
 end
 
-local function saveData(player)
+-- ─── Save ─────────────────────────────────────────────────────────────────────
+
+local function savePlayer(player)
 	local data = BrainrotData.Get(player.UserId)
 	if not data then return end
 
-	-- Sync leaderstats from in-memory data
-	local ls = player:FindFirstChild("leaderstats")
-	if ls then
-		local cashVal    = ls:FindFirstChild("Cash")
-		local rebirthVal = ls:FindFirstChild("Rebirths")
-		if cashVal    then cashVal.Value    = data.cash     end
-		if rebirthVal then rebirthVal.Value = data.rebirths end
-	end
-
-	local key = getKey(player)
-	local success, err = pcall(function()
-		store:SetAsync(key, {
+	local ok, err = pcall(function()
+		playerStore:SetAsync(tostring(player.UserId), {
 			cash      = data.cash,
 			brainrots = data.brainrots,
 			rebirths  = data.rebirths,
 		})
 	end)
 
-	if not success then
-		warn("[DataStoreManager] Failed to save data for", player.Name, "->", err)
-	else
-		print("[DataStoreManager] Saved data for", player.Name)
+	if not ok then
+		warn(("[DataStoreManager] Failed to save data for %s: %s"):format(player.Name, tostring(err)))
 	end
 end
 
-local function loadData(player)
-	local key = getKey(player)
-	local savedData
+-- ─── Player Added ─────────────────────────────────────────────────────────────
 
-	local success, result = pcall(function()
-		savedData = store:GetAsync(key)
+local function onPlayerAdded(player)
+	-- 1. Init default data
+	BrainrotData.Init(player.UserId)
+
+	-- 2. Load from DataStore
+	local savedData
+	local ok, err = pcall(function()
+		savedData = playerStore:GetAsync(tostring(player.UserId))
 	end)
 
-	if not success then
-		warn("[DataStoreManager] Failed to load data for", player.Name, "->", result)
-		savedData = nil
+	if ok and savedData then
+		-- 3. Restore saved state
+		BrainrotData.Restore(player.UserId, savedData)
+		print(("[DataStoreManager] Loaded data for %s"):format(player.Name))
+	elseif not ok then
+		warn(("[DataStoreManager] Failed to load data for %s: %s"):format(player.Name, tostring(err)))
 	end
 
-	BrainrotData.Init(player.UserId, savedData)
 	local data = BrainrotData.Get(player.UserId)
-	createLeaderstats(player, data)
-	print("[DataStoreManager] Loaded data for", player.Name, "| Cash:", data.cash, "| Rebirths:", data.rebirths)
+
+	-- 4. Create leaderstats
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name   = "leaderstats"
+	leaderstats.Parent = player
+
+	local cashValue = Instance.new("IntValue")
+	cashValue.Name   = "Cash"
+	cashValue.Value  = math.floor(data.cash)
+	cashValue.Parent = leaderstats
+
+	local rebirthsValue = Instance.new("IntValue")
+	rebirthsValue.Name   = "Rebirths"
+	rebirthsValue.Value  = data.rebirths
+	rebirthsValue.Parent = leaderstats
+
+	-- 5. Restore brainrot Parts if any saved
+	if savedData and savedData.brainrots and #savedData.brainrots > 0 then
+		restoreBrainrotParts(player, data.brainrots)
+	end
 end
 
--- ─── Event Connections ──────────────────────────────────────────────────────
+-- ─── Player Removing ─────────────────────────────────────────────────────────
 
-Players.PlayerAdded:Connect(function(player)
-	loadData(player)
-end)
+local function onPlayerRemoving(player)
+	savePlayer(player)
+	clearPlayerParts(player.UserId)
+end
 
-Players.PlayerRemoving:Connect(function(player)
-	saveData(player)
-	BrainrotData.Remove(player.UserId)
-end)
+-- ─── Bind Events ─────────────────────────────────────────────────────────────
 
--- Handle server shutdown (game:BindToClose)
-game:BindToClose(function()
-	for _, player in ipairs(Players:GetPlayers()) do
-		saveData(player)
-	end
-end)
+Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerRemoving:Connect(onPlayerRemoving)
 
--- ─── Auto-Save Loop ─────────────────────────────────────────────────────────
+-- Handle players who joined before the script ran (Studio testing)
+for _, player in ipairs(Players:GetPlayers()) do
+	task.spawn(onPlayerAdded, player)
+end
+
+-- ─── Auto-Save Loop ──────────────────────────────────────────────────────────
 
 task.spawn(function()
 	while true do
-		task.wait(AUTO_SAVE_INTERVAL)
+		task.wait(AUTOSAVE_INTERVAL)
 		for _, player in ipairs(Players:GetPlayers()) do
-			saveData(player)
+			savePlayer(player)
 		end
 	end
 end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="11">
+    <Item class="Script" referent="14">
       <Properties>
         <string name="Name">EconomyServer</string>
         <token name="RunContext">0</token>
         <string name="Source"><![CDATA[-- EconomyServer (Script)
 -- ServerScriptService/EconomyServer
--- Distributes cashPerSec every second to all players.
+-- Distributes cashPerSec every second to all players, applying rebirth + gamepass multipliers.
 
-local Players           = game:GetService("Players")
+local Players            = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 
-local BrainrotData  = require(script.Parent.BrainrotData)
-local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
+local BrainrotData = require(script.Parent.BrainrotData)
+local RarityConfig = require(ReplicatedStorage.Modules.RarityConfig)
 
 local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
 
--- Placeholder GamePass ID for 2x multiplier
+-- Placeholder GamePass ID for 2× multiplier
 local GAMEPASS_2X_ID = 123456
 
 local function hasGamepass(player, passId)
@@ -391,19 +502,27 @@ task.spawn(function()
 		for _, player in ipairs(Players:GetPlayers()) do
 			local data = BrainrotData.Get(player.UserId)
 			if data then
-				local earned = BrainrotData.GetTotalCashPerSec(player.UserId, RarityConfig)
+				-- Base income
+				local baseCashPerSec = BrainrotData.GetTotalCashPerSec(player.UserId, RarityConfig)
 
-				-- Apply 2x gamepass multiplier
+				-- Rebirth multiplier: 1 + (rebirths * 0.5)
+				local rebirths         = data.rebirths or 0
+				local rebirthMultiplier = 1 + (rebirths * 0.5)
+
+				-- GamePass 2× multiplier
+				local gamepassMultiplier = 1
 				if hasGamepass(player, GAMEPASS_2X_ID) then
-					earned = earned * 2
+					gamepassMultiplier = 2
 				end
+
+				local earned = baseCashPerSec * rebirthMultiplier * gamepassMultiplier
 
 				BrainrotData.AddCash(player.UserId, earned)
 
 				-- Sync IntValue in leaderstats
 				syncLeaderstats(player, data.cash)
 
-				-- Notify client
+				-- Notify client with updated cash
 				UpdateCash:FireClient(player, math.floor(data.cash))
 			end
 		end
@@ -412,242 +531,357 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="12">
+    <Item class="Script" referent="15">
       <Properties>
         <string name="Name">GachaServer</string>
         <token name="RunContext">0</token>
         <string name="Source"><![CDATA[-- GachaServer (Script)
 -- ServerScriptService/GachaServer
--- Handles egg purchases, random drop resolution, inventory management,
--- and Brainrot Part placement on the player's base.
+-- Handles egg purchases, rarity rolls, and placing Brainrot Parts in the world.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace         = game:GetService("Workspace")
+local TweenService      = game:GetService("TweenService")
 
 local BrainrotData  = require(script.Parent.BrainrotData)
 local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
 local BrainrotList  = require(ReplicatedStorage.Modules.BrainrotList)
 
-local BuyEgg       = ReplicatedStorage.RemoteEvents.BuyEgg
-local PlaceBrainrot= ReplicatedStorage.RemoteEvents.PlaceBrainrot
-local UpdateCash   = ReplicatedStorage.RemoteEvents.UpdateCash
+local RemoteEvents  = ReplicatedStorage.RemoteEvents
+local BuyEgg        = RemoteEvents.BuyEgg
+local GachaResult   = RemoteEvents.GachaResult
 
-local EGG_PRICE    = 500
-local GRID_SIZE    = 3  -- studs between brainrot parts
-local BASE_HEIGHT  = 1  -- height offset above the base
+local EGG_COST      = 500
+local MAX_BRAINROTS = 25            -- 5×5 grid cap
+local GRID_SPACING  = 6             -- studs between each Part centre
+local PLAYER_AREA_WIDTH = 50        -- studs allocated per player on the X axis
+local BASE_Y        = 1.5           -- Y so the 3-stud-tall Part sits on the baseplate
 
--- ─── Gacha Roll ─────────────────────────────────────────────────────────────
+-- ─── Rarity Roll ─────────────────────────────────────────────────────────────
+-- Cumulative thresholds: Common ≤ .60, Uncommon ≤ .85, Rare ≤ .95,
+-- Epic ≤ .99, Legendary ≤ .999, Mythic ≤ .9999, Secret ≤ 1.0
+local CUMULATIVE = {
+	{ rarity = "Common",    threshold = 0.60   },
+	{ rarity = "Uncommon",  threshold = 0.85   },
+	{ rarity = "Rare",      threshold = 0.95   },
+	{ rarity = "Epic",      threshold = 0.99   },
+	{ rarity = "Legendary", threshold = 0.999  },
+	{ rarity = "Mythic",    threshold = 0.9999 },
+	{ rarity = "Secret",    threshold = 1.0    },
+}
 
--- Build a weighted pool from BrainrotList using rarity dropChances
-local function rollBrainrot()
-	-- Build cumulative table from rarities in order
-	local cumulative = {}
-	local runningSum = 0
-	for _, rarityName in ipairs(RarityConfig.Order) do
-		runningSum = runningSum + RarityConfig[rarityName].dropChance
-		table.insert(cumulative, { rarity = rarityName, threshold = runningSum })
+local function rollRarity()
+	local roll = math.random()
+	for _, entry in ipairs(CUMULATIVE) do
+		if roll <= entry.threshold then
+			return entry.rarity
+		end
+	end
+	return "Secret"   -- fallback (should never reach)
+end
+
+-- ─── Grid Slot → World Position ──────────────────────────────────────────────
+
+local function getSlotPosition(userId, slotIndex)
+	-- Player area offset: each player owns a 50-stud column on X
+	local areaX = (userId % 20) * PLAYER_AREA_WIDTH
+
+	-- Flatten slot (0-based) into row/col inside a 5×5 grid
+	local col = slotIndex % 5
+	local row = math.floor(slotIndex / 5)
+
+	local x = areaX + (col * GRID_SPACING) - (2 * GRID_SPACING)
+	local z = row * GRID_SPACING
+	return Vector3.new(x, BASE_Y, z)
+end
+
+-- ─── Remove Oldest Brainrot Part From Workspace ──────────────────────────────
+
+local function removeOldestPart(userId)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then return end
+
+	local oldest = nil
+	local oldestTime = math.huge
+
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		local owner = part:GetAttribute("OwnerId")
+		local t     = part:GetAttribute("SpawnTime") or 0
+		if owner == userId and t < oldestTime then
+			oldest    = part
+			oldestTime = t
+		end
 	end
 
-	local roll = math.random()  -- [0, 1)
-	local chosenRarity = RarityConfig.Order[#RarityConfig.Order]  -- fallback to last
+	if oldest then
+		oldest:Destroy()
+	end
+end
 
-	for _, entry in ipairs(cumulative) do
-		if roll < entry.threshold then
-			chosenRarity = entry.rarity
+-- ─── Count Player Parts ───────────────────────────────────────────────────────
+
+local function countPlayerParts(userId)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then return 0 end
+	local count = 0
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		if part:GetAttribute("OwnerId") == userId then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+-- ─── Place Brainrot Part ─────────────────────────────────────────────────────
+
+local function placeBrainrotPart(player, brainrot)
+	-- Ensure Brainrots folder exists
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then
+		brainrotFolder = Instance.new("Folder")
+		brainrotFolder.Name = "Brainrots"
+		brainrotFolder.Parent = workspace
+	end
+
+	local userId = player.UserId
+
+	-- Enforce 5×5 = 25 max; evict oldest if at cap
+	if countPlayerParts(userId) >= MAX_BRAINROTS then
+		removeOldestPart(userId)
+	end
+
+	-- Find next free slot index (0–24)
+	local usedSlots = {}
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		if part:GetAttribute("OwnerId") == userId then
+			local slot = part:GetAttribute("SlotIndex")
+			if slot then usedSlots[slot] = true end
+		end
+	end
+
+	local slotIndex = 0
+	for i = 0, MAX_BRAINROTS - 1 do
+		if not usedSlots[i] then
+			slotIndex = i
 			break
 		end
 	end
 
-	-- Pick a random Brainrot of that rarity
-	local pool = BrainrotList.GetByRarity(chosenRarity)
-	if #pool == 0 then
-		-- Fallback: pick first of any rarity
-		return BrainrotList[1]
-	end
-	return pool[math.random(1, #pool)]
-end
+	local cfg      = RarityConfig[brainrot.rarity]
+	local position = getSlotPosition(userId, slotIndex)
 
--- ─── Part Placement ─────────────────────────────────────────────────────────
-
-local function getPlayerBase(player)
-	-- Look for a BasePart named after the player in Workspace
-	local baseFolder = Workspace:FindFirstChild("PlayerBases")
-	if not baseFolder then
-		baseFolder = Instance.new("Folder")
-		baseFolder.Name   = "PlayerBases"
-		baseFolder.Parent = Workspace
-	end
-
-	local playerFolder = baseFolder:FindFirstChild(player.Name)
-	if not playerFolder then
-		playerFolder = Instance.new("Folder")
-		playerFolder.Name   = player.Name
-		playerFolder.Parent = baseFolder
-	end
-	return playerFolder
-end
-
-local function placeBrainrotPart(player, brainrot, slotIndex)
-	local rarityData = RarityConfig[brainrot.rarity]
-	if not rarityData then return end
-
-	local playerBase = getPlayerBase(player)
-
-	-- Find character HumanoidRootPart for base position origin
-	local character = player.Character
-	local origin    = Vector3.new(0, 0, 0)
-	if character then
-		local hrp = character:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			origin = hrp.Position + Vector3.new(0, -2.5, 0)
-		end
-	end
-
-	-- Arrange in a row, offsetting by slot index
-	local cols = 5
-	local col  = (slotIndex - 1) % cols
-	local row  = math.floor((slotIndex - 1) / cols)
-
+	-- Main Part
 	local part = Instance.new("Part")
-	part.Name     = brainrot.name
-	part.Size     = Vector3.new(2, 2, 2)
-	part.Color    = rarityData.color
-	part.Material = Enum.Material.SmoothPlastic
-	part.Anchored = true
-	part.Position = origin + Vector3.new(
-		col * GRID_SIZE - (cols * GRID_SIZE / 2),
-		BASE_HEIGHT,
-		row * GRID_SIZE + 3
-	)
+	part.Size      = Vector3.new(3, 3, 3)
+	part.Anchored  = true
+	part.CastShadow = true
+	part.Color     = cfg and cfg.color or Color3.fromRGB(200, 200, 200)
+	part.Material  = Enum.Material.SmoothPlastic
+	part.Position  = position
+	part.Name      = brainrot.name
+	part:SetAttribute("OwnerId",   userId)
+	part:SetAttribute("SlotIndex", slotIndex)
+	part:SetAttribute("SpawnTime", os.time())
 
-	-- Label
-	local billboardGui = Instance.new("BillboardGui")
-	billboardGui.Size          = UDim2.new(0, 80, 0, 40)
-	billboardGui.StudsOffset   = Vector3.new(0, 2, 0)
-	billboardGui.AlwaysOnTop   = false
-	billboardGui.Parent        = part
+	-- CashPerSec NumberValue
+	local cashVal = Instance.new("NumberValue")
+	cashVal.Name  = "CashPerSec"
+	cashVal.Value = cfg and cfg.cashPerSec or 0
+	cashVal.Parent = part
 
-	local label = Instance.new("TextLabel")
-	label.Size            = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Text            = brainrot.emoji .. "\n" .. brainrot.name
-	label.TextColor3      = Color3.fromRGB(255, 255, 255)
-	label.TextScaled      = true
-	label.Font            = Enum.Font.GothamBold
-	label.Parent          = billboardGui
+	-- BillboardGui – emoji + name label
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name          = "BillboardGui"
+	billboard.Size          = UDim2.new(0, 120, 0, 60)
+	billboard.StudsOffset   = Vector3.new(0, 2.5, 0)
+	billboard.AlwaysOnTop   = false
+	billboard.ResetOnSpawn  = false
+	billboard.Parent        = part
 
-	part.Parent = playerBase
+	local emojiLabel = Instance.new("TextLabel")
+	emojiLabel.Name            = "Emoji"
+	emojiLabel.Size            = UDim2.new(1, 0, 0.55, 0)
+	emojiLabel.BackgroundTransparency = 1
+	emojiLabel.Text            = brainrot.emoji or "❓"
+	emojiLabel.TextScaled      = true
+	emojiLabel.Font            = Enum.Font.GothamBold
+	emojiLabel.TextColor3      = Color3.fromRGB(255, 255, 255)
+	emojiLabel.Parent          = billboard
 
-	return part
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Name             = "Name"
+	nameLabel.Size             = UDim2.new(1, 0, 0.45, 0)
+	nameLabel.Position         = UDim2.new(0, 0, 0.55, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text             = brainrot.name
+	nameLabel.TextScaled       = true
+	nameLabel.Font             = Enum.Font.Gotham
+	nameLabel.TextColor3       = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextStrokeTransparency = 0.5
+	nameLabel.Parent           = billboard
+
+	part.Parent = brainrotFolder
 end
 
--- ─── BuyEgg Handler ─────────────────────────────────────────────────────────
+-- ─── Main Handler ─────────────────────────────────────────────────────────────
 
-BuyEgg.OnServerEvent:Connect(function(player, isDirectBuy, directBrainrotName)
-	local data = BrainrotData.Get(player.UserId)
+BuyEgg.OnServerEvent:Connect(function(player)
+	local userId = player.UserId
+	local data   = BrainrotData.Get(userId)
 	if not data then return end
 
-	local price = EGG_PRICE
-	local brainrot
-
-	if isDirectBuy and directBrainrotName then
-		-- Direct shop purchase
-		local entry = BrainrotList.FindByName(directBrainrotName)
-		if not entry then return end
-		local directPrice = RarityConfig.DirectPrice[entry.rarity]
-		if not directPrice then
-			player:Kick("Attempted to buy non-purchasable rarity directly.")
-			return
-		end
-		price    = directPrice
-		brainrot = entry
-	else
-		-- Gacha roll
-		brainrot = rollBrainrot()
-	end
-
-	-- 1. Verify funds
-	if data.cash < price then
-		-- Not enough cash - fire back with nil to signal failure
-		BuyEgg:FireClient(player, nil, "not_enough_cash")
+	-- 1. Verify funds (server-authoritative)
+	if data.cash < EGG_COST then
+		warn(("[GachaServer] %s tried to buy egg but only has %d cash"):format(player.Name, data.cash))
 		return
 	end
 
-	-- 2. Check inventory capacity
-	if #data.brainrots >= 10 then
-		BuyEgg:FireClient(player, nil, "inventory_full")
-		return
+	-- 2. Deduct cost
+	BrainrotData.SpendCash(userId, EGG_COST)
+
+	-- 3. Roll rarity
+	local rarity = rollRarity()
+
+	-- 4. Pick a random Brainrot of that rarity
+	local pool = BrainrotList.GetByRarity(rarity)
+	if #pool == 0 then
+		-- Fallback to Common if pool is empty
+		rarity = "Common"
+		pool   = BrainrotList.GetByRarity("Common")
 	end
+	local chosen = pool[math.random(1, #pool)]
 
-	-- 3. Deduct cash (server-authoritative)
-	local spent = BrainrotData.SpendCash(player.UserId, price)
-	if not spent then return end
+	-- 5. Add to player inventory
+	BrainrotData.AddBrainrot(userId, {
+		name   = chosen.name,
+		rarity = chosen.rarity,
+		emoji  = chosen.emoji,
+	})
 
-	-- 4. Add to inventory
-	BrainrotData.AddBrainrot(player.UserId, brainrot)
+	-- 6. Place the Part in the Workspace
+	placeBrainrotPart(player, chosen)
 
-	-- 5. Place Part in Workspace
-	local slotIndex = #data.brainrots  -- already updated by AddBrainrot
-	task.spawn(function()
-		placeBrainrotPart(player, brainrot, slotIndex)
-	end)
+	-- 7. Fire result back to client
+	local cfg = RarityConfig[rarity]
+	GachaResult:FireClient(player, {
+		name       = chosen.name,
+		rarity     = chosen.rarity,
+		cashPerSec = cfg and cfg.cashPerSec or 0,
+		emoji      = chosen.emoji,
+	})
 
-	-- 6. Sync leaderstats
+	-- Sync leaderstats
 	local ls = player:FindFirstChild("leaderstats")
 	if ls then
 		local cashVal = ls:FindFirstChild("Cash")
 		if cashVal then cashVal.Value = math.floor(data.cash) end
 	end
-
-	-- 7. Notify client of new cash and obtained brainrot
-	UpdateCash:FireClient(player, math.floor(data.cash))
-	BuyEgg:FireClient(player, brainrot, "success")
 end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="16">
+      <Properties>
+        <string name="Name">RebornServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- RebornServer (Script)
+-- ServerScriptService/RebornServer
+-- Handles Rebirth requests from clients.
 
--- ─── PlaceBrainrot Handler (manual re-place) ───────────────────────────────
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-PlaceBrainrot.OnServerEvent:Connect(function(player, brainrotName)
-	local data = BrainrotData.Get(player.UserId)
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local RemoteEvents  = ReplicatedStorage.RemoteEvents
+local RebirthEvent  = RemoteEvents.Rebirth
+local RebornResult  = RemoteEvents.RebornResult
+
+local MIN_BRAINROTS_FOR_REBIRTH = 10
+
+-- Remove all workspace Brainrot Parts owned by this player
+local function clearPlayerParts(userId)
+	local brainrotFolder = workspace:FindFirstChild("Brainrots")
+	if not brainrotFolder then return end
+	for _, part in ipairs(brainrotFolder:GetChildren()) do
+		if part:GetAttribute("OwnerId") == userId then
+			part:Destroy()
+		end
+	end
+end
+
+RebirthEvent.OnServerEvent:Connect(function(player)
+	local userId = player.UserId
+	local data   = BrainrotData.Get(userId)
 	if not data then return end
 
-	local entry = BrainrotList.FindByName(brainrotName)
-	if not entry then return end
+	-- Condition: must have at least 10 Brainrots
+	if #data.brainrots < MIN_BRAINROTS_FOR_REBIRTH then
+		warn(("[RebornServer] %s tried to rebirth with only %d brainrots"):format(player.Name, #data.brainrots))
+		return
+	end
 
-	local slotIndex = #data.brainrots
-	task.spawn(function()
-		placeBrainrotPart(player, entry, slotIndex)
-	end)
+	-- 1. Remove all Brainrot Parts from Workspace
+	clearPlayerParts(userId)
+
+	-- 2 & 3. Reset cash and brainrot list (handled inside BrainrotData.Rebirth)
+	BrainrotData.Rebirth(userId)
+
+	-- 4. Increment rebirths is also handled by BrainrotData.Rebirth
+	local newData = BrainrotData.Get(userId)
+
+	-- 5. Calculate new permanent multiplier
+	local rebirths          = newData.rebirths
+	local cashMultiplier    = 1 + (rebirths * 0.5)
+
+	-- 6. Update leaderstats
+	local ls = player:FindFirstChild("leaderstats")
+	if ls then
+		local cashVal = ls:FindFirstChild("Cash")
+		if cashVal then cashVal.Value = 0 end
+
+		local rebirthsVal = ls:FindFirstChild("Rebirths")
+		if rebirthsVal then rebirthsVal.Value = rebirths end
+	end
+
+	-- 7. Notify client
+	RebornResult:FireClient(player, {
+		rebirths       = rebirths,
+		cashMultiplier = cashMultiplier,
+	})
+
+	print(("[RebornServer] %s rebirthed! Now has %d rebirths (%.1fx multiplier)"):format(
+		player.Name, rebirths, cashMultiplier))
 end)
 ]]></string>
       </Properties>
     </Item>
   </Item>
-  <Item class="StarterPlayer" referent="13">
+  <Item class="StarterPlayer" referent="17">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="14">
+    <Item class="StarterPlayerScripts" referent="18">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="15">
+      <Item class="LocalScript" referent="19">
         <Properties>
           <string name="Name">CashDisplay</string>
           <string name="Source"><![CDATA[-- CashDisplay (LocalScript)
 -- StarterPlayerScripts/CashDisplay
--- Shows a floating ScreenGui HUD label with the player's formatted cash.
+-- Shows current cash in the top-left corner with K/M/B/T formatting and a subtle scale animation.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
 
-local UpdateCash = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("UpdateCash")
+local player     = Players.LocalPlayer
+local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
 
-local player = Players.LocalPlayer
+-- ─── Number Formatter ─────────────────────────────────────────────────────────
 
--- ─── Number Formatter ───────────────────────────────────────────────────────
-
-local suffixes = {
+local SUFFIXES = {
 	{ 1e12, "T" },
 	{ 1e9,  "B" },
 	{ 1e6,  "M" },
@@ -655,281 +889,400 @@ local suffixes = {
 }
 
 local function formatCash(n)
-	for _, pair in ipairs(suffixes) do
-		if n >= pair[1] then
-			local val = n / pair[1]
-			-- Show one decimal if < 10, otherwise whole number
-			if val < 10 then
-				return string.format("%.1f%s", val, pair[2])
+	n = math.floor(n)
+	for _, entry in ipairs(SUFFIXES) do
+		local threshold, suffix = entry[1], entry[2]
+		if n >= threshold then
+			local value = n / threshold
+			-- Show one decimal if not whole number
+			if value ~= math.floor(value) then
+				return ("%.1f%s"):format(value, suffix)
 			else
-				return string.format("%d%s", math.floor(val), pair[2])
+				return ("%d%s"):format(value, suffix)
 			end
 		end
 	end
-	return tostring(math.floor(n))
+	return tostring(n)
 end
 
--- ─── Build ScreenGui ────────────────────────────────────────────────────────
-
-local playerGui = player:WaitForChild("PlayerGui")
+-- ─── Build UI ─────────────────────────────────────────────────────────────────
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name            = "CashDisplay"
+screenGui.Name            = "CashDisplayGui"
 screenGui.ResetOnSpawn    = false
 screenGui.IgnoreGuiInset  = true
-screenGui.Parent          = playerGui
+screenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+screenGui.Parent          = player.PlayerGui
 
--- Background frame (top-center HUD)
+-- Background pill
 local frame = Instance.new("Frame")
 frame.Name              = "CashFrame"
-frame.Size              = UDim2.new(0, 220, 0, 54)
-frame.Position          = UDim2.new(0.5, -110, 0, 12)
-frame.BackgroundColor3  = Color3.fromRGB(20, 20, 30)
+frame.Size              = UDim2.new(0, 180, 0, 48)
+frame.Position          = UDim2.new(0, 16, 0, 16)
+frame.BackgroundColor3  = Color3.fromRGB(15, 15, 25)
 frame.BackgroundTransparency = 0.25
 frame.BorderSizePixel   = 0
 frame.Parent            = screenGui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
-corner.Parent       = frame
+corner.CornerRadius = UDim.new(0, 24)
+corner.Parent = frame
 
--- Coin icon label
-local icon = Instance.new("TextLabel")
-icon.Size                  = UDim2.new(0, 40, 1, 0)
-icon.Position              = UDim2.new(0, 0, 0, 0)
-icon.BackgroundTransparency= 1
-icon.Text                  = "💰"
-icon.TextScaled            = true
-icon.Font                  = Enum.Font.GothamBold
-icon.Parent                = frame
+local stroke = Instance.new("UIStroke")
+stroke.Color       = Color3.fromRGB(255, 215, 0)
+stroke.Thickness   = 1.5
+stroke.Transparency = 0.4
+stroke.Parent      = frame
 
--- Cash text label
 local cashLabel = Instance.new("TextLabel")
-cashLabel.Name                  = "CashLabel"
-cashLabel.Size                  = UDim2.new(1, -45, 1, 0)
-cashLabel.Position              = UDim2.new(0, 42, 0, 0)
-cashLabel.BackgroundTransparency= 1
-cashLabel.Text                  = "$0"
-cashLabel.TextColor3            = Color3.fromRGB(255, 220, 60)
-cashLabel.TextScaled            = true
-cashLabel.Font                  = Enum.Font.GothamBold
-cashLabel.TextXAlignment        = Enum.TextXAlignment.Left
-cashLabel.Parent                = frame
+cashLabel.Name               = "CashLabel"
+cashLabel.Size               = UDim2.new(1, 0, 1, 0)
+cashLabel.BackgroundTransparency = 1
+cashLabel.Text               = "💰 $0"
+cashLabel.Font               = Enum.Font.GothamBold
+cashLabel.TextSize           = 22
+cashLabel.TextColor3         = Color3.fromRGB(255, 225, 80)
+cashLabel.TextXAlignment     = Enum.TextXAlignment.Center
+cashLabel.TextYAlignment     = Enum.TextYAlignment.Center
+cashLabel.Parent             = frame
 
--- ─── Update on RemoteEvent ──────────────────────────────────────────────────
+-- ─── Update + Animation ───────────────────────────────────────────────────────
 
-UpdateCash.OnClientEvent:Connect(function(newCash)
-	cashLabel.Text = "$" .. formatCash(newCash)
-end)
+local function animatePop()
+	local tweenIn = TweenService:Create(frame, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 196, 0, 54)
+	})
+	local tweenOut = TweenService:Create(frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 180, 0, 48)
+	})
+	tweenIn:Play()
+	tweenIn.Completed:Connect(function()
+		tweenOut:Play()
+	end)
+end
+
+local function updateDisplay(cashAmount)
+	cashLabel.Text = "💰 $" .. formatCash(cashAmount)
+	animatePop()
+end
+
+-- ─── Events ───────────────────────────────────────────────────────────────────
+
+UpdateCash.OnClientEvent:Connect(updateDisplay)
+
+-- Also read from leaderstats immediately if available
+local function initFromLeaderstats()
+	local ls = player:WaitForChild("leaderstats", 10)
+	if ls then
+		local cashVal = ls:WaitForChild("Cash", 5)
+		if cashVal then
+			updateDisplay(cashVal.Value)
+		end
+	end
+end
+
+task.spawn(initFromLeaderstats)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="16">
+      <Item class="LocalScript" referent="20">
         <Properties>
           <string name="Name">GachaUI</string>
           <string name="Source"><![CDATA[-- GachaUI (LocalScript)
 -- StarterPlayerScripts/GachaUI
--- Egg buy button, opening animation, and result panel.
+-- Main gameplay UI: Buy Egg button, gacha result panel, Shop button.
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService      = game:GetService("TweenService")
 
-local BuyEgg       = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyEgg")
-local RarityConfig = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityConfig"))
+local player       = Players.LocalPlayer
+local RemoteEvents = ReplicatedStorage.RemoteEvents
+local BuyEgg       = RemoteEvents.BuyEgg
+local GachaResult  = RemoteEvents.GachaResult
+local UpdateCash   = RemoteEvents.UpdateCash
 
-local player    = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+-- ─── Rarity Colors ────────────────────────────────────────────────────────────
 
--- ─── Build ScreenGui ────────────────────────────────────────────────────────
+local RARITY_COLORS = {
+	Common    = Color3.fromRGB(180, 180, 180),
+	Uncommon  = Color3.fromRGB(100, 160, 255),
+	Rare      = Color3.fromRGB(50,  200, 120),
+	Epic      = Color3.fromRGB(160, 100, 255),
+	Legendary = Color3.fromRGB(255, 180, 0),
+	Mythic    = Color3.fromRGB(255, 80,  40),
+	Secret    = Color3.fromRGB(255, 50,  50),
+}
+
+local function rarityColorHex(rarity)
+	local c = RARITY_COLORS[rarity] or Color3.fromRGB(200, 200, 200)
+	return ("#%02X%02X%02X"):format(
+		math.floor(c.R * 255),
+		math.floor(c.G * 255),
+		math.floor(c.B * 255)
+	)
+end
+
+-- ─── Build UI ─────────────────────────────────────────────────────────────────
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name           = "GachaUI"
 screenGui.ResetOnSpawn   = false
 screenGui.IgnoreGuiInset = true
-screenGui.Parent         = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent         = player.PlayerGui
 
--- ── Buy Button ──────────────────────────────────────────────────────────────
+-- ── Buy Egg Button (centre) ──────────────────────────────────────────────────
 
-local buyBtn = Instance.new("TextButton")
-buyBtn.Name             = "BuyEggButton"
-buyBtn.Size             = UDim2.new(0, 200, 0, 60)
-buyBtn.Position         = UDim2.new(0.5, -100, 1, -82)
-buyBtn.BackgroundColor3 = Color3.fromRGB(255, 190, 30)
-buyBtn.Text             = "🥚 Buy Egg  $500"
-buyBtn.TextColor3       = Color3.fromRGB(30, 20, 0)
-buyBtn.TextScaled       = true
-buyBtn.Font             = Enum.Font.GothamBold
-buyBtn.BorderSizePixel  = 0
-buyBtn.Parent           = screenGui
+local buyButton = Instance.new("TextButton")
+buyButton.Name              = "BuyEggButton"
+buyButton.Size              = UDim2.new(0, 240, 0, 64)
+buyButton.Position          = UDim2.new(0.5, -120, 0.78, 0)
+buyButton.BackgroundColor3  = Color3.fromRGB(255, 185, 15)
+buyButton.BorderSizePixel   = 0
+buyButton.Text              = "🥚 Buy Egg  $500"
+buyButton.Font              = Enum.Font.GothamBold
+buyButton.TextSize          = 22
+buyButton.TextColor3        = Color3.fromRGB(30, 20, 0)
+buyButton.AutoButtonColor   = false
+buyButton.Parent            = screenGui
 
 local buyCorner = Instance.new("UICorner")
-buyCorner.CornerRadius = UDim.new(0, 16)
-buyCorner.Parent       = buyBtn
+buyCorner.CornerRadius = UDim.new(0, 32)
+buyCorner.Parent = buyButton
 
--- ── Result Panel (hidden by default) ────────────────────────────────────────
+local buyGradient = Instance.new("UIGradient")
+buyGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 210, 50)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 140, 0)),
+})
+buyGradient.Rotation = 90
+buyGradient.Parent = buyButton
 
-local panel = Instance.new("Frame")
-panel.Name              = "ResultPanel"
-panel.Size              = UDim2.new(0, 320, 0, 200)
-panel.Position          = UDim2.new(0.5, -160, 0.5, -100)
-panel.BackgroundColor3  = Color3.fromRGB(18, 14, 32)
-panel.BackgroundTransparency = 0.05
-panel.BorderSizePixel   = 0
-panel.Visible           = false
-panel.ZIndex            = 10
-panel.Parent            = screenGui
-
-local panelCorner = Instance.new("UICorner")
-panelCorner.CornerRadius = UDim.new(0, 22)
-panelCorner.Parent       = panel
-
-local emojiLabel = Instance.new("TextLabel")
-emojiLabel.Name                  = "EmojiLabel"
-emojiLabel.Size                  = UDim2.new(1, 0, 0, 70)
-emojiLabel.Position              = UDim2.new(0, 0, 0, 10)
-emojiLabel.BackgroundTransparency= 1
-emojiLabel.Text                  = "🥚"
-emojiLabel.TextScaled            = true
-emojiLabel.Font                  = Enum.Font.GothamBold
-emojiLabel.ZIndex                = 11
-emojiLabel.Parent                = panel
-
-local resultTitle = Instance.new("TextLabel")
-resultTitle.Name                  = "ResultTitle"
-resultTitle.Size                  = UDim2.new(1, -20, 0, 30)
-resultTitle.Position              = UDim2.new(0, 10, 0, 85)
-resultTitle.BackgroundTransparency= 1
-resultTitle.Text                  = "¡Obtuviste ?"
-resultTitle.TextColor3            = Color3.fromRGB(255, 255, 255)
-resultTitle.TextScaled            = true
-resultTitle.Font                  = Enum.Font.GothamBold
-resultTitle.ZIndex                = 11
-resultTitle.Parent                = panel
-
-local rarityLabel = Instance.new("TextLabel")
-rarityLabel.Name                  = "RarityLabel"
-rarityLabel.Size                  = UDim2.new(1, -20, 0, 28)
-rarityLabel.Position              = UDim2.new(0, 10, 0, 118)
-rarityLabel.BackgroundTransparency= 1
-rarityLabel.Text                  = "Common"
-rarityLabel.TextColor3            = Color3.fromRGB(180, 180, 180)
-rarityLabel.TextScaled            = true
-rarityLabel.Font                  = Enum.Font.Gotham
-rarityLabel.ZIndex                = 11
-rarityLabel.Parent                = panel
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Name             = "CloseButton"
-closeBtn.Size             = UDim2.new(0, 100, 0, 34)
-closeBtn.Position         = UDim2.new(0.5, -50, 1, -46)
-closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-closeBtn.Text             = "✕ Close"
-closeBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
-closeBtn.TextScaled       = true
-closeBtn.Font             = Enum.Font.GothamBold
-closeBtn.BorderSizePixel  = 0
-closeBtn.ZIndex           = 11
-closeBtn.Parent           = panel
-
-local closeBtnCorner = Instance.new("UICorner")
-closeBtnCorner.CornerRadius = UDim.new(0, 10)
-closeBtnCorner.Parent       = closeBtn
-
--- ─── Animation Helpers ───────────────────────────────────────────────────────
-
-local function punchButton(btn)
-	local tweenIn = TweenService:Create(btn,
-		TweenInfo.new(0.08, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Size = UDim2.new(0, 180, 0, 54) }
-	)
-	local tweenOut = TweenService:Create(btn,
-		TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Size = UDim2.new(0, 200, 0, 60) }
-	)
-	tweenIn:Play()
-	tweenIn.Completed:Wait()
-	tweenOut:Play()
+-- Hover / Press animations
+local function tweenBuy(size, color)
+	TweenService:Create(buyButton, TweenInfo.new(0.12, Enum.EasingStyle.Quad), {
+		Size = size,
+		BackgroundColor3 = color,
+	}):Play()
 end
 
-local function showResult(brainrot)
-	local rarData = RarityConfig[brainrot.rarity] or {}
+buyButton.MouseEnter:Connect(function()
+	tweenBuy(UDim2.new(0, 252, 0, 68), Color3.fromRGB(255, 200, 30))
+end)
+buyButton.MouseLeave:Connect(function()
+	tweenBuy(UDim2.new(0, 240, 0, 64), Color3.fromRGB(255, 185, 15))
+end)
+buyButton.MouseButton1Down:Connect(function()
+	tweenBuy(UDim2.new(0, 232, 0, 60), Color3.fromRGB(220, 140, 0))
+end)
 
-	emojiLabel.Text       = brainrot.emoji or "❓"
-	resultTitle.Text      = "¡Obtuviste " .. (brainrot.name or "?") .. "!"
-	rarityLabel.Text      = "✦ " .. (brainrot.rarity or "Unknown")
-	rarityLabel.TextColor3= rarData.color or Color3.fromRGB(255,255,255)
+-- ── Shop Button (bottom-right) ───────────────────────────────────────────────
 
-	panel.Size    = UDim2.new(0, 0, 0, 0)
-	panel.Position= UDim2.new(0.5, 0, 0.5, 0)
-	panel.Visible = true
+local shopButton = Instance.new("TextButton")
+shopButton.Name             = "ShopButton"
+shopButton.Size             = UDim2.new(0, 120, 0, 50)
+shopButton.Position         = UDim2.new(1, -136, 1, -66)
+shopButton.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+shopButton.BorderSizePixel  = 0
+shopButton.Text             = "🛒 Shop"
+shopButton.Font             = Enum.Font.GothamBold
+shopButton.TextSize         = 18
+shopButton.TextColor3       = Color3.fromRGB(255, 255, 255)
+shopButton.AutoButtonColor  = false
+shopButton.Parent           = screenGui
 
-	TweenService:Create(panel,
-		TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{
-			Size     = UDim2.new(0, 320, 0, 200),
-			Position = UDim2.new(0.5, -160, 0.5, -100),
-		}
-	):Play()
+local shopCorner = Instance.new("UICorner")
+shopCorner.CornerRadius = UDim.new(0, 20)
+shopCorner.Parent = shopButton
 
-	-- Auto-close after 3 seconds
-	task.delay(3, function()
-		if panel.Visible then
-			panel.Visible = false
+local shopStroke = Instance.new("UIStroke")
+shopStroke.Color       = Color3.fromRGB(100, 100, 180)
+shopStroke.Thickness   = 1.5
+shopStroke.Parent      = shopButton
+
+shopButton.MouseEnter:Connect(function()
+	TweenService:Create(shopButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(60, 60, 100)}):Play()
+end)
+shopButton.MouseLeave:Connect(function()
+	TweenService:Create(shopButton, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 40, 60)}):Play()
+end)
+
+-- ─── Gacha Result Panel ───────────────────────────────────────────────────────
+
+local function createResultPanel(resultData)
+	-- Dim overlay
+	local overlay = Instance.new("Frame")
+	overlay.Name                 = "ResultOverlay"
+	overlay.Size                 = UDim2.new(1, 0, 1, 0)
+	overlay.BackgroundColor3     = Color3.fromRGB(0, 0, 0)
+	overlay.BackgroundTransparency = 0.45
+	overlay.BorderSizePixel      = 0
+	overlay.ZIndex               = 10
+	overlay.Parent               = screenGui
+
+	-- Panel card
+	local card = Instance.new("Frame")
+	card.Name               = "ResultCard"
+	card.Size               = UDim2.new(0, 340, 0, 380)
+	card.Position           = UDim2.new(0.5, -170, 0.5, -190)
+	card.BackgroundColor3   = Color3.fromRGB(18, 18, 30)
+	card.BorderSizePixel    = 0
+	card.ZIndex             = 11
+	card.Parent             = overlay
+
+	local cardCorner = Instance.new("UICorner")
+	cardCorner.CornerRadius = UDim.new(0, 20)
+	cardCorner.Parent = card
+
+	-- Rarity-coloured glow stroke
+	local rarityColor = RARITY_COLORS[resultData.rarity] or Color3.fromRGB(200, 200, 200)
+	local cardStroke  = Instance.new("UIStroke")
+	cardStroke.Color     = rarityColor
+	cardStroke.Thickness = 3
+	cardStroke.Parent    = card
+
+	-- Emoji label (big)
+	local emojiLabel = Instance.new("TextLabel")
+	emojiLabel.Size                    = UDim2.new(1, 0, 0, 120)
+	emojiLabel.Position                = UDim2.new(0, 0, 0, 24)
+	emojiLabel.BackgroundTransparency  = 1
+	emojiLabel.Text                    = resultData.emoji or "❓"
+	emojiLabel.TextSize                = 72
+	emojiLabel.Font                    = Enum.Font.GothamBold
+	emojiLabel.TextColor3              = Color3.fromRGB(255, 255, 255)
+	emojiLabel.ZIndex                  = 12
+	emojiLabel.Parent                  = card
+
+	-- Brainrot Name
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size                   = UDim2.new(1, -24, 0, 40)
+	nameLabel.Position               = UDim2.new(0, 12, 0, 150)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text                   = resultData.name
+	nameLabel.Font                   = Enum.Font.GothamBold
+	nameLabel.TextSize               = 24
+	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextXAlignment         = Enum.TextXAlignment.Center
+	nameLabel.ZIndex                  = 12
+	nameLabel.Parent                 = card
+
+	-- Rarity label
+	local rarityLabel = Instance.new("TextLabel")
+	rarityLabel.Size                  = UDim2.new(1, -24, 0, 32)
+	rarityLabel.Position              = UDim2.new(0, 12, 0, 195)
+	rarityLabel.BackgroundTransparency = 1
+	rarityLabel.Text                  = "✨ " .. (resultData.rarity or "?")
+	rarityLabel.Font                  = Enum.Font.GothamBold
+	rarityLabel.TextSize              = 20
+	rarityLabel.TextColor3            = rarityColor
+	rarityLabel.TextXAlignment        = Enum.TextXAlignment.Center
+	rarityLabel.ZIndex                 = 12
+	rarityLabel.Parent                = card
+
+	-- Cash per second label
+	local function formatNum(n)
+		if n >= 1e12 then return ("%.1fT"):format(n/1e12)
+		elseif n >= 1e9 then return ("%.1fB"):format(n/1e9)
+		elseif n >= 1e6 then return ("%.1fM"):format(n/1e6)
+		elseif n >= 1e3 then return ("%.1fK"):format(n/1e3)
+		else return tostring(math.floor(n)) end
+	end
+
+	local cpsLabel = Instance.new("TextLabel")
+	cpsLabel.Size                   = UDim2.new(1, -24, 0, 32)
+	cpsLabel.Position               = UDim2.new(0, 12, 0, 234)
+	cpsLabel.BackgroundTransparency = 1
+	cpsLabel.Text                   = "💵 $" .. formatNum(resultData.cashPerSec or 0) .. "/seg"
+	cpsLabel.Font                   = Enum.Font.Gotham
+	cpsLabel.TextSize               = 18
+	cpsLabel.TextColor3             = Color3.fromRGB(130, 230, 130)
+	cpsLabel.TextXAlignment         = Enum.TextXAlignment.Center
+	cpsLabel.ZIndex                  = 12
+	cpsLabel.Parent                 = card
+
+	-- Close button
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Name             = "CloseButton"
+	closeBtn.Size             = UDim2.new(0, 180, 0, 48)
+	closeBtn.Position         = UDim2.new(0.5, -90, 0, 306)
+	closeBtn.BackgroundColor3 = rarityColor
+	closeBtn.BorderSizePixel  = 0
+	closeBtn.Text             = "¡Genial!"
+	closeBtn.Font             = Enum.Font.GothamBold
+	closeBtn.TextSize         = 20
+	closeBtn.TextColor3       = Color3.fromRGB(10, 10, 10)
+	closeBtn.ZIndex            = 12
+	closeBtn.Parent           = card
+
+	local closeBtnCorner = Instance.new("UICorner")
+	closeBtnCorner.CornerRadius = UDim.new(0, 24)
+	closeBtnCorner.Parent = closeBtn
+
+	-- Entry animation: scale 0 → 1 → 1.1 → 1
+	card.Size = UDim2.new(0, 1, 0, 1)
+	card.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+	local tweenOpen = TweenService:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size     = UDim2.new(0, 354, 0, 394),
+		Position = UDim2.new(0.5, -177, 0.5, -197),
+	})
+	tweenOpen:Play()
+	tweenOpen.Completed:Connect(function()
+		local tweenBounce = TweenService:Create(card, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size     = UDim2.new(0, 340, 0, 380),
+			Position = UDim2.new(0.5, -170, 0.5, -190),
+		})
+		tweenBounce:Play()
+	end)
+
+	local function closePanel()
+		local tweenClose = TweenService:Create(overlay, TweenInfo.new(0.2), {BackgroundTransparency = 1})
+		local tweenCardClose = TweenService:Create(card, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Size     = UDim2.new(0, 1, 0, 1),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+		})
+		tweenClose:Play()
+		tweenCardClose:Play()
+		tweenClose.Completed:Connect(function()
+			overlay:Destroy()
+		end)
+	end
+
+	closeBtn.MouseButton1Click:Connect(closePanel)
+	overlay.MouseButton1Click:Connect(closePanel)
+
+	-- Auto-close after 4 seconds
+	task.delay(4, function()
+		if overlay and overlay.Parent then
+			closePanel()
 		end
 	end)
 end
 
-local function showError(reason)
-	local msg = reason == "not_enough_cash" and "😢 Not enough cash!" or
-	            reason == "inventory_full"   and "📦 Inventory full! (max 10)" or
-	            "Something went wrong."
+-- ─── Wire Events ──────────────────────────────────────────────────────────────
 
-	emojiLabel.Text       = "❌"
-	resultTitle.Text      = msg
-	rarityLabel.Text      = ""
-	panel.Size    = UDim2.new(0, 320, 0, 200)
-	panel.Position= UDim2.new(0.5, -160, 0.5, -100)
-	panel.Visible = true
-
-	task.delay(2.5, function()
-		if panel.Visible then panel.Visible = false end
-	end)
-end
-
--- ─── Button Logic ────────────────────────────────────────────────────────────
-
-local canBuy = true
-
-buyBtn.MouseButton1Click:Connect(function()
-	if not canBuy then return end
-	canBuy = false
-
-	task.spawn(punchButton, buyBtn)
-	BuyEgg:FireServer(false, nil)  -- gacha roll
-
-	task.delay(0.5, function()
-		canBuy = true
-	end)
+buyButton.MouseButton1Up:Connect(function()
+	tweenBuy(UDim2.new(0, 240, 0, 64), Color3.fromRGB(255, 185, 15))
+	BuyEgg:FireServer()
 end)
 
-closeBtn.MouseButton1Click:Connect(function()
-	panel.Visible = false
+GachaResult.OnClientEvent:Connect(function(resultData)
+	createResultPanel(resultData)
 end)
 
--- ─── Server Response ─────────────────────────────────────────────────────────
-
-BuyEgg.OnClientEvent:Connect(function(brainrot, status)
-	if status == "success" and brainrot then
-		showResult(brainrot)
-	else
-		showError(status)
+-- Shop button placeholder (ShopUI handles it separately)
+shopButton.MouseButton1Click:Connect(function()
+	local shopGui = player.PlayerGui:FindFirstChild("ShopUI")
+	if shopGui then
+		local frame = shopGui:FindFirstChildWhichIsA("Frame", true)
+		if frame then frame.Visible = not frame.Visible end
 	end
 end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="17">
+      <Item class="LocalScript" referent="21">
         <Properties>
           <string name="Name">ShopUI</string>
           <string name="Source"><![CDATA[-- ShopUI (LocalScript)
