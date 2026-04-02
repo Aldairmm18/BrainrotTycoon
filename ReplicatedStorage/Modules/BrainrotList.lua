@@ -1,76 +1,88 @@
 -- BrainrotList (ModuleScript)
 -- ReplicatedStorage/Modules/BrainrotList
--- 50 Brainrots with name, rarity, emoji, catchphrase
+-- 30 Brainrots: 17 with real 3D models (stored in ServerStorage.BrainrotTemplates)
+-- and 13 text-only fallbacks that spawn as coloured Parts.
+-- modelName = exact name used in ServerStorage.BrainrotTemplates
+-- cashPerSec is the per-second income; RarityConfig may override visual colour.
 
 local BrainrotList = {
-	-- ═══ COMMON (15) ═══════════════════════════════════════════════════
-	{ name="Tralalero Tralala",   rarity="Common",    emoji="🐟", catchphrase="Tralalero! Tralalero!" },
-	{ name="Gatto Volante",       rarity="Common",    emoji="🐱", catchphrase="Miao miao nel cielo!" },
-	{ name="Cane Pazzino",        rarity="Common",    emoji="🐶", catchphrase="Bau bau pazzarello!" },
-	{ name="Pollo Saltarino",     rarity="Common",    emoji="🐔", catchphrase="Coccodè! Salto alto!" },
-	{ name="Topo Ballerino",      rarity="Common",    emoji="🐭", catchphrase="Ballo il formaggio!" },
-	{ name="Rana Cantante",       rarity="Common",    emoji="🐸", catchphrase="Canto nella palude!" },
-	{ name="Maiale Volante",      rarity="Common",    emoji="🐷", catchphrase="Oink! Volo libero!" },
-	{ name="Coniglio Pazzo",      rarity="Common",    emoji="🐰", catchphrase="Salto la luna!" },
-	{ name="Orso Danzante",       rarity="Common",    emoji="🐻", catchphrase="Balllo con il miele!" },
-	{ name="Pinguino Matto",      rarity="Common",    emoji="🐧", catchphrase="Scivolo sempre!" },
-	{ name="Koala Urlante",       rarity="Common",    emoji="🐨", catchphrase="Urlo lo eucalipto!" },
-	{ name="Panda Saltante",      rarity="Common",    emoji="🐼", catchphrase="Salto il bambù!" },
-	{ name="Zebra Cantante",      rarity="Common",    emoji="🦓", catchphrase="Canto le strisce!" },
-	{ name="Giraffa Pazza",       rarity="Common",    emoji="🦒", catchphrase="Vedo tutto dallalto!" },
-	{ name="Elefante Piccolo",    rarity="Common",    emoji="🐘", catchphrase="Sono piccolo ma forte!" },
 
-	-- ═══ UNCOMMON (12) ══════════════════════════════════════════════════
-	{ name="Tung Tung Sahur",     rarity="Uncommon",  emoji="🥁", catchphrase="Tung! Tung! Sahur!" },
-	{ name="Coccodrillo Pistola", rarity="Uncommon",  emoji="🐊", catchphrase="Fuoco nel pantano!" },
-	{ name="Tigre Razzo",         rarity="Uncommon",  emoji="🐯", catchphrase="Strisce e missili!" },
-	{ name="Leone Spada",         rarity="Uncommon",  emoji="🦁", catchphrase="Il re della savana spada!" },
-	{ name="Orso Carro Armato",   rarity="Uncommon",  emoji="🐻", catchphrase="Tank di miele!" },
-	{ name="Squalo Moto",         rarity="Uncommon",  emoji="🦈", catchphrase="Vroom nellocean!" },
-	{ name="Aquila Bomba",        rarity="Uncommon",  emoji="🦅", catchphrase="Cado dal cielo!" },
-	{ name="Volpe Cannone",       rarity="Uncommon",  emoji="🦊", catchphrase="Boom astuto!" },
-	{ name="Lupo Elicottero",     rarity="Uncommon",  emoji="🐺", catchphrase="Ululato volante!" },
-	{ name="Gorilla Treno",       rarity="Uncommon",  emoji="🦍", catchphrase="Pugno sul binario!" },
-	{ name="Ippopotamo Aereo",    rarity="Uncommon",  emoji="🦛", catchphrase="Peso nei cieli!" },
-	{ name="Rinoceronte Tank",    rarity="Uncommon",  emoji="🦏", catchphrase="Carica blindata!" },
+	-- ═══ COMMON (4) ══════════════════════════════════════════════════════════
+	{ name = "CakeTrap",          rarity = "Common",    emoji = "🎂",
+	  modelName = "CakeTrap",        cashPerSec = 5   },
+	{ name = "BubbleGum Machine", rarity = "Common",    emoji = "🫧",
+	  modelName = "BubbleGumMach",   cashPerSec = 5   },
+	{ name = "Tralalero Tralala", rarity = "Common",    emoji = "🐟",
+	  modelName = nil,               cashPerSec = 5   },
+	{ name = "Gatto Volante",     rarity = "Common",    emoji = "🐱",
+	  modelName = nil,               cashPerSec = 5   },
 
-	-- ═══ RARE (10) ══════════════════════════════════════════════════════
-	{ name="Cappuccino Assassino",  rarity="Rare", emoji="☕", catchphrase="Morte col caffè!" },
-	{ name="Pizzaiolo Ninja",       rarity="Rare", emoji="🍕", catchphrase="La pizza è arte letale!" },
-	{ name="Spaghetti Mostro",      rarity="Rare", emoji="🍝", catchphrase="Al dente e pericoloso!" },
-	{ name="Gelato Guerriero",      rarity="Rare", emoji="🍦", catchphrase="Freddo come lacciaio!" },
-	{ name="Tiramisu Esplosivo",    rarity="Rare", emoji="🍰", catchphrase="Esplodo di gusto!" },
-	{ name="Cannolo Volante",       rarity="Rare", emoji="🥐", catchphrase="Sicilia dal cielo!" },
-	{ name="Lasagna Robot",         rarity="Rare", emoji="🤖", catchphrase="Elaboro pasta!" },
-	{ name="Risotto Samurai",       rarity="Rare", emoji="🍚", catchphrase="Onore al riso!" },
-	{ name="Gnocchi Fantasma",      rarity="Rare", emoji="👻", catchphrase="Buo! Sono soffice!" },
-	{ name="Bruschetta Vampiro",    rarity="Rare", emoji="🧛", catchphrase="Morsico il pomodoro!" },
+	-- ═══ UNCOMMON (7) ════════════════════════════════════════════════════════
+	{ name = "Tung Tung Tung Sahur",  rarity = "Uncommon", emoji = "🥁",
+	  modelName = "Tung Tung Tung S",  cashPerSec = 100 },
+	{ name = "Burbaloni Loliloli",    rarity = "Uncommon", emoji = "🫧",
+	  modelName = "Burbaloni Lolilo", cashPerSec = 100 },
+	{ name = "Trulimero Trulicina",   rarity = "Uncommon", emoji = "🎵",
+	  modelName = "Trulimero Trulici",cashPerSec = 100 },
+	{ name = "Rainbow Machine",       rarity = "Uncommon", emoji = "🌈",
+	  modelName = "RainbowMachine",   cashPerSec = 100 },
+	{ name = "Coccodrillo Pistola",   rarity = "Uncommon", emoji = "🐊",
+	  modelName = nil,                cashPerSec = 100 },
+	{ name = "Tigre Razzo",           rarity = "Uncommon", emoji = "🐯",
+	  modelName = nil,                cashPerSec = 100 },
+	{ name = "Squalo Moto",           rarity = "Uncommon", emoji = "🦈",
+	  modelName = nil,                cashPerSec = 100 },
 
-	-- ═══ EPIC (7) ═══════════════════════════════════════════════════════
-	{ name="Bombardiro Crocodilo", rarity="Epic", emoji="🐊", catchphrase="BOMBARDIRO!!" },
-	{ name="Ballerina Cappuccina", rarity="Epic", emoji="💃", catchphrase="Danza e caffè, sempiterno!" },
-	{ name="Drago Napoletano",     rarity="Epic", emoji="🐉", catchphrase="Pizza di fuoco!" },
-	{ name="Unicorno Parmigiano",  rarity="Epic", emoji="🦄", catchphrase="Magia di formaggio!" },
-	{ name="Fenice Carbonara",     rarity="Epic", emoji="🔥", catchphrase="Rinasco nella pasta!" },
-	{ name="Centauro Barista",     rarity="Epic", emoji="☕", catchphrase="Galoppo col cappuccino!" },
-	{ name="Medusa Mozzarella",    rarity="Epic", emoji="🐍", catchphrase="Guarda la mia mozzarella!" },
+	-- ═══ RARE (9) ════════════════════════════════════════════════════════════
+	{ name = "Ballerina Cappuccina",  rarity = "Rare",  emoji = "💃",
+	  modelName = "Ballerina Cappuc", cashPerSec = 2500 },
+	{ name = "Boneca Ambalabú",       rarity = "Rare",  emoji = "🪆",
+	  modelName = "Boneca Ambalab",   cashPerSec = 2500 },
+	{ name = "Avocadini Guffo",       rarity = "Rare",  emoji = "🥑",
+	  modelName = "Avocadini Guffo",  cashPerSec = 2500 },
+	{ name = "Cacto Hipopotarri",     rarity = "Rare",  emoji = "🌵",
+	  modelName = "Cacto Hipopotar",  cashPerSec = 2500 },
+	{ name = "Rhino Toasterino",      rarity = "Rare",  emoji = "🦏",
+	  modelName = "Rhino Toasterino", cashPerSec = 2500 },
+	{ name = "Zibra Zubra Zibra",    rarity = "Rare",  emoji = "🦓",
+	  modelName = "Zibra Zubra Zibra",cashPerSec = 2500 },
+	{ name = "Pizzaiolo Ninja",       rarity = "Rare",  emoji = "🍕",
+	  modelName = nil,                cashPerSec = 2500 },
+	{ name = "Spaghetti Mostro",      rarity = "Rare",  emoji = "🍝",
+	  modelName = nil,                cashPerSec = 2500 },
+	{ name = "Gelato Guerriero",      rarity = "Rare",  emoji = "🍦",
+	  modelName = nil,                cashPerSec = 2500 },
 
-	-- ═══ LEGENDARY (4) ══════════════════════════════════════════════════
-	{ name="Frigo Camelo",        rarity="Legendary", emoji="🐪", catchphrase="Conservo il latte nel deserto!" },
-	{ name="Bombombini Gusini",   rarity="Legendary", emoji="💣", catchphrase="BOMBOMBINI!!! GUSINI!!!" },
-	{ name="Colosseo Vivente",    rarity="Legendary", emoji="🏛️", catchphrase="Sono eterno!" },
-	{ name="Vesuvio Urlante",     rarity="Legendary", emoji="🌋", catchphrase="Esplodo di storia!" },
+	-- ═══ EPIC (6) ════════════════════════════════════════════════════════════
+	{ name = "Cappuccino Assassino",  rarity = "Epic",  emoji = "☕",
+	  modelName = "Cappuccino Assa",  cashPerSec = 50000 },
+	{ name = "Chimpanzini Banana",    rarity = "Epic",  emoji = "🐒",
+	  modelName = "Chimpanzini Ban",  cashPerSec = 50000 },
+	{ name = "Pandaccini Banana",     rarity = "Epic",  emoji = "🐼",
+	  modelName = "Pandaccini Banar", cashPerSec = 50000 },
+	{ name = "Chef Crabracadabra",    rarity = "Epic",  emoji = "🦀",
+	  modelName = "Chef Crabracadat", cashPerSec = 50000 },
+	{ name = "Bombardiro Crocodilo",  rarity = "Epic",  emoji = "🐊",
+	  modelName = nil,                cashPerSec = 50000 },
+	{ name = "Drago Napoletano",      rarity = "Epic",  emoji = "🐉",
+	  modelName = nil,                cashPerSec = 50000 },
 
-	-- ═══ MYTHIC (2) ═════════════════════════════════════════════════════
-	{ name="Lirilì Larilà",       rarity="Mythic", emoji="🌋", catchphrase="Lirilì... Larilà..." },
-	{ name="Glorbo Fruttodrillo", rarity="Mythic", emoji="🦎", catchphrase="GLORBO GLORBO!" },
+	-- ═══ LEGENDARY (2) ═══════════════════════════════════════════════════════
+	{ name = "Mythic Lucky Block",    rarity = "Legendary", emoji = "🍀",
+	  modelName = "Mythic Lucky Blo", cashPerSec = 1000000 },
+	{ name = "Bombombini Gusini",     rarity = "Legendary", emoji = "💣",
+	  modelName = nil,                cashPerSec = 1000000 },
 
-	-- ═══ SECRET (1) ═════════════════════════════════════════════════════
-	{ name="La Vaca Saturno Cosmica", rarity="Secret", emoji="🪐", catchphrase="Muuu... dal cosmo!" },
+	-- ═══ MYTHIC (1) ══════════════════════════════════════════════════════════
+	{ name = "Lirilì Larilà",         rarity = "Mythic", emoji = "🌋",
+	  modelName = nil,                cashPerSec = 10000000 },
+
+	-- ═══ SECRET (1) ══════════════════════════════════════════════════════════
+	{ name = "La Vaca Saturno Cosmica", rarity = "Secret", emoji = "🪐",
+	  modelName = nil,                  cashPerSec = 100000000 },
 }
 
-
--- Helper: get all brainrots of a given rarity
+-- ─── Helper: get all brainrots of a given rarity ──────────────────────────────
 function BrainrotList.GetByRarity(rarity)
 	local result = {}
 	for _, b in ipairs(BrainrotList) do
@@ -81,7 +93,7 @@ function BrainrotList.GetByRarity(rarity)
 	return result
 end
 
--- Helper: find by name
+-- ─── Helper: find by name ─────────────────────────────────────────────────────
 function BrainrotList.FindByName(name)
 	for _, b in ipairs(BrainrotList) do
 		if b.name == name then return b end

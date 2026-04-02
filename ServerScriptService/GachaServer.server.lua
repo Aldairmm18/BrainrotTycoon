@@ -197,81 +197,163 @@ local function placeBrainrotPart(player, brainrot)
 	part.Parent = brainrotFolder
 end
 
--- ─── Spawn Brainrot Part in World (per-player folder, 5×5 grid) ──────────────
+-- ─── Spawn Brainrot in World (3D model or Neon-Ball fallback) ───────────────
 
-local TweenService = game:GetService("TweenService")
+local TweenService   = game:GetService("TweenService")
+local ServerStorage  = game:GetService("ServerStorage")
 
 local RARITY_COLORS = {
-	Common   = Color3.fromRGB(180, 180, 180),
-	Uncommon = Color3.fromRGB(100, 160, 255),
-	Rare     = Color3.fromRGB(50,  200, 120),
-	Epic     = Color3.fromRGB(160, 100, 255),
-	Legendary= Color3.fromRGB(255, 180, 0),
-	Mythic   = Color3.fromRGB(255, 80,  40),
-	Secret   = Color3.fromRGB(255, 50,  50),
+	Common    = Color3.fromRGB(180, 180, 180),
+	Uncommon  = Color3.fromRGB(100, 160, 255),
+	Rare      = Color3.fromRGB(50,  200, 120),
+	Epic      = Color3.fromRGB(160, 100, 255),
+	Legendary = Color3.fromRGB(255, 180, 0),
+	Mythic    = Color3.fromRGB(255, 80,  40),
+	Secret    = Color3.fromRGB(255, 50,  50),
 }
 
+local function attachBillboard(primaryPart, brainrot)
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name        = "BrainrotBillboard"
+	billboard.Size        = UDim2.new(0, 130, 0, 80)
+	billboard.StudsOffset = Vector3.new(0, 4, 0)
+	billboard.AlwaysOnTop = false
+	billboard.ResetOnSpawn = false
+	billboard.Parent      = primaryPart
+
+	local cfg = RarityConfig[brainrot.rarity]
+
+	local emojiL = Instance.new("TextLabel")
+	emojiL.Size                   = UDim2.new(1, 0, 0.40, 0)
+	emojiL.BackgroundTransparency = 1
+	emojiL.Text                   = brainrot.emoji or "❓"
+	emojiL.TextScaled             = true
+	emojiL.Font                   = Enum.Font.GothamBold
+	emojiL.Parent                 = billboard
+
+	local nameL = Instance.new("TextLabel")
+	nameL.Size                    = UDim2.new(1, 0, 0.32, 0)
+	nameL.Position                = UDim2.new(0, 0, 0.40, 0)
+	nameL.BackgroundTransparency  = 1
+	nameL.Text                    = brainrot.name
+	nameL.TextColor3              = Color3.fromRGB(255, 255, 255)
+	nameL.TextStrokeTransparency  = 0
+	nameL.TextScaled              = true
+	nameL.Font                    = Enum.Font.GothamBold
+	nameL.Parent                  = billboard
+
+	local cps = brainrot.cashPerSec or (cfg and cfg.cashPerSec) or 0
+	local cashL = Instance.new("TextLabel")
+	cashL.Size                    = UDim2.new(1, 0, 0.28, 0)
+	cashL.Position                = UDim2.new(0, 0, 0.72, 0)
+	cashL.BackgroundTransparency  = 1
+	cashL.Text                    = "+$" .. cps .. "/seg"
+	cashL.TextColor3              = Color3.fromRGB(100, 255, 100)
+	cashL.TextStrokeTransparency  = 0
+	cashL.TextScaled              = true
+	cashL.Font                    = Enum.Font.Gotham
+	cashL.Parent                  = billboard
+end
+
 local function spawnBrainrotInWorld(player, brainrot, index)
-	-- Per-player folder
-	local playerFolder = workspace:FindFirstChild("Brainrots_" .. player.Name)
+	-- Per-player folder in Workspace
+	local folderName   = "Brainrots_" .. player.Name
+	local playerFolder = workspace:FindFirstChild(folderName)
 	if not playerFolder then
-		playerFolder = Instance.new("Folder")
-		playerFolder.Name   = "Brainrots_" .. player.Name
+		playerFolder        = Instance.new("Folder")
+		playerFolder.Name   = folderName
 		playerFolder.Parent = workspace
 	end
 
-	-- 5×5 grid position offset by player area
-	local row   = math.floor((index - 1) / 5)
-	local col   = (index - 1) % 5
-	local baseX = (player.UserId % 100) * 60
-	local pos   = Vector3.new(baseX + col * 8, 12, row * 8)
+	-- 5×5 grid position inside the player’s personal plot
+	local safeIndex = math.max(1, index)
+	local row   = math.floor((safeIndex - 1) / 5)
+	local col   = (safeIndex - 1) % 5
+	local playerList = Players:GetPlayers()
+	local playerSlot = 0
+	for i, p in ipairs(playerList) do
+		if p == player then playerSlot = i - 1 break end
+	end
+	local baseX = playerSlot * 60
+	local pos   = Vector3.new(baseX + col * 10, 2, row * 10 - 40)
 
-	-- Neon Ball Part
-	local part = Instance.new("Part")
-	part.Name     = brainrot.name
-	part.Size     = Vector3.new(0.1, 0.1, 0.1)   -- start tiny; tweened to 4,4,4
-	part.Position = pos
-	part.Anchored = true
-	part.Shape    = Enum.PartType.Ball
-	part.Material = Enum.Material.Neon
-	part.Color    = RARITY_COLORS[brainrot.rarity] or Color3.fromRGB(180, 180, 180)
-	part:SetAttribute("OwnerId", player.UserId)
-	part:SetAttribute("Rarity",  brainrot.rarity)
+	-- ─ Try to clone 3D model from ServerStorage ─────────────────────────────
+	local model = nil
 
-	-- BillboardGui
-	local billboard = Instance.new("BillboardGui")
-	billboard.Size        = UDim2.new(0, 80, 0, 60)
-	billboard.StudsOffset = Vector3.new(0, 3, 0)
-	billboard.AlwaysOnTop = false
-	billboard.Parent      = part
+	if brainrot.modelName then
+		local templates = ServerStorage:FindFirstChild("BrainrotTemplates")
+		if templates then
+			local template = templates:FindFirstChild(brainrot.modelName, true)
+			if template then
+				model = template:Clone()
+			end
+		end
+	end
 
-	local emojiLabel = Instance.new("TextLabel")
-	emojiLabel.Size                   = UDim2.new(1, 0, 0.6, 0)
-	emojiLabel.BackgroundTransparency = 1
-	emojiLabel.Text                   = brainrot.emoji or "🐟"
-	emojiLabel.TextScaled             = true
-	emojiLabel.Parent                 = billboard
+	-- ─ Fallback: Neon Ball Part ──────────────────────────────────────────
+	if not model then
+		local part      = Instance.new("Part")
+		part.Name     = brainrot.name
+		part.Size     = Vector3.new(0.1, 0.1, 0.1)  -- starts tiny; tweened
+		part.Shape    = Enum.PartType.Ball
+		part.Material = Enum.Material.Neon
+		part.Color    = RARITY_COLORS[brainrot.rarity] or Color3.fromRGB(180,180,180)
+		part.Anchored = true
+		model = part
+	end
 
-	local nameLabel = Instance.new("TextLabel")
-	nameLabel.Size                   = UDim2.new(1, 0, 0.4, 0)
-	nameLabel.Position               = UDim2.new(0, 0, 0.6, 0)
-	nameLabel.BackgroundTransparency = 1
-	nameLabel.Text                   = brainrot.name
-	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
-	nameLabel.TextScaled             = true
-	nameLabel.Font                   = Enum.Font.GothamBold
-	nameLabel.Parent                 = billboard
+	-- ─ Position & anchor all BaseParts ───────────────────────────────────
+	if model:IsA("Model") then
+		if model.PrimaryPart then
+			model:SetPrimaryPartCFrame(CFrame.new(pos))
+		else
+			-- No PrimaryPart set — move model via its first BasePart
+			local first = model:FindFirstChildWhichIsA("BasePart", true)
+			if first then first.Position = pos end
+		end
+		for _, desc in ipairs(model:GetDescendants()) do
+			if desc:IsA("BasePart") then desc.Anchored = true end
+		end
+	else
+		-- It’s a plain Part (fallback)
+		model.Position = pos
+		model.Anchored = true
+	end
 
-	part.Parent = playerFolder
+	-- ─ BillboardGui ──────────────────────────────────────────────────
+	local primaryPart = model:IsA("Model")
+		and (model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true))
+		or model
+	if primaryPart then
+		attachBillboard(primaryPart, brainrot)
+	end
 
-	-- Pop-in animation
-	TweenService:Create(
-		part,
-		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Size = Vector3.new(4, 4, 4) }
-	):Play()
+	-- ─ Ownership attributes ───────────────────────────────────────────
+	model:SetAttribute("OwnerId",     player.UserId)
+	model:SetAttribute("BrainrotName",brainrot.name)
+	model:SetAttribute("Rarity",      brainrot.rarity)
+	model.Name   = brainrot.name .. "_" .. player.Name
+	model.Parent = playerFolder
 
-	return part
+	-- ─ Spawn animation ───────────────────────────────────────────────
+	if model:IsA("Model") and model.PrimaryPart then
+		local landCF = model.PrimaryPart.CFrame
+		model:SetPrimaryPartCFrame(CFrame.new(pos + Vector3.new(0, 20, 0)))
+		TweenService:Create(
+			model.PrimaryPart,
+			TweenInfo.new(0.6, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out),
+			{ CFrame = landCF }
+		):Play()
+	elseif not model:IsA("Model") then
+		-- Plain Part fallback: scale pop-in
+		TweenService:Create(
+			model,
+			TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{ Size = Vector3.new(4, 4, 4) }
+		):Play()
+	end
+
+	return model
 end
 
 -- ─── Main Handler ─────────────────────────────────────────────────────────────
@@ -303,11 +385,14 @@ BuyEgg.OnServerEvent:Connect(function(player)
 	end
 	local chosen = pool[math.random(1, #pool)]
 
-	-- 5. Add to player inventory
+	-- 5. Add to player inventory (include modelName + cashPerSec for restore)
+	local cfg = RarityConfig[chosen.rarity]
 	BrainrotData.AddBrainrot(userId, {
-		name   = chosen.name,
-		rarity = chosen.rarity,
-		emoji  = chosen.emoji,
+		name      = chosen.name,
+		rarity    = chosen.rarity,
+		emoji     = chosen.emoji,
+		modelName = chosen.modelName,
+		cashPerSec= chosen.cashPerSec or (cfg and cfg.cashPerSec) or 0,
 	})
 
 	-- 6. Place neon Ball in the world (new per-player folder system)

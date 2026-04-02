@@ -190,106 +190,121 @@ return RarityConfig
       </Item>
       <Item class="RemoteEvent" referent="7">
         <Properties>
-          <string name="Name">BuyPass</string>
+          <string name="Name">BuyGuardian</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="8">
         <Properties>
-          <string name="Name">BuyPetEgg</string>
+          <string name="Name">BuyPass</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="9">
         <Properties>
-          <string name="Name">ClaimMission</string>
+          <string name="Name">BuyPetEgg</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="10">
         <Properties>
-          <string name="Name">CodeResult</string>
+          <string name="Name">ClaimMission</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="11">
         <Properties>
-          <string name="Name">EquipPet</string>
+          <string name="Name">CodeResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="12">
         <Properties>
-          <string name="Name">GachaResult</string>
+          <string name="Name">EquipPet</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="13">
         <Properties>
-          <string name="Name">GetGlobalLB</string>
+          <string name="Name">GachaResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="14">
         <Properties>
-          <string name="Name">GetMissions</string>
+          <string name="Name">GetGlobalLB</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="15">
         <Properties>
-          <string name="Name">GlobalNotification</string>
+          <string name="Name">GetMissions</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="16">
         <Properties>
-          <string name="Name">MissionUpdate</string>
+          <string name="Name">GlobalNotification</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="17">
         <Properties>
-          <string name="Name">PetUpdate</string>
+          <string name="Name">MissionUpdate</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="18">
         <Properties>
-          <string name="Name">PlaceBrainrot</string>
+          <string name="Name">PetUpdate</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="19">
         <Properties>
-          <string name="Name">Rebirth</string>
+          <string name="Name">PlaceBrainrot</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="20">
         <Properties>
-          <string name="Name">RebornResult</string>
+          <string name="Name">Rebirth</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="21">
         <Properties>
-          <string name="Name">RedeemCode</string>
+          <string name="Name">RebornResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="22">
         <Properties>
-          <string name="Name">TutorialDone</string>
+          <string name="Name">RedeemCode</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="23">
         <Properties>
-          <string name="Name">TutorialStatus</string>
+          <string name="Name">StealAttempt</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="24">
         <Properties>
-          <string name="Name">UnequipPet</string>
+          <string name="Name">StealResult</string>
         </Properties>
       </Item>
       <Item class="RemoteEvent" referent="25">
+        <Properties>
+          <string name="Name">TutorialDone</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="26">
+        <Properties>
+          <string name="Name">TutorialStatus</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="27">
+        <Properties>
+          <string name="Name">UnequipPet</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="28">
         <Properties>
           <string name="Name">UpdateCash</string>
         </Properties>
       </Item>
     </Item>
   </Item>
-  <Item class="ServerScriptService" referent="26">
+  <Item class="ServerScriptService" referent="29">
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="Script" referent="27">
+    <Item class="Script" referent="30">
       <Properties>
         <string name="Name">ActivityBonusServer</string>
         <token name="RunContext">0</token>
@@ -347,7 +362,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="ModuleScript" referent="28">
+    <Item class="ModuleScript" referent="31">
       <Properties>
         <string name="Name">BrainrotData</string>
         <string name="Source"><![CDATA[-- BrainrotData (ModuleScript-style server Script)
@@ -366,6 +381,7 @@ function BrainrotData.Init(userId)
 			cash      = 100,   -- starting cash so player can buy first egg
 			brainrots = {},
 			rebirths  = 0,
+			guardians = 0,     -- 🛡️ purchased guardians (reduce steal %%)
 		}
 	end
 end
@@ -436,6 +452,7 @@ function BrainrotData.Restore(userId, savedData)
 		cash      = savedData.cash      or 100,
 		brainrots = savedData.brainrots or {},
 		rebirths  = savedData.rebirths  or 0,
+		guardians = savedData.guardians or 0,
 	}
 end
 
@@ -443,7 +460,7 @@ return BrainrotData
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="29">
+    <Item class="Script" referent="32">
       <Properties>
         <string name="Name">CodesServer</string>
         <token name="RunContext">0</token>
@@ -509,7 +526,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="30">
+    <Item class="Script" referent="33">
       <Properties>
         <string name="Name">DataStoreManager</string>
         <token name="RunContext">0</token>
@@ -698,6 +715,7 @@ local function savePlayer(player)
 			cash      = data.cash,
 			brainrots = data.brainrots,
 			rebirths  = data.rebirths,
+			guardians = data.guardians or 0,
 		})
 	end)
 
@@ -783,7 +801,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="31">
+    <Item class="Script" referent="34">
       <Properties>
         <string name="Name">EconomyServer</string>
         <token name="RunContext">0</token>
@@ -840,7 +858,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="32">
+    <Item class="Script" referent="35">
       <Properties>
         <string name="Name">GachaServer</string>
         <token name="RunContext">0</token>
@@ -1179,7 +1197,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="33">
+    <Item class="Script" referent="36">
       <Properties>
         <string name="Name">GamePassServer</string>
         <token name="RunContext">0</token>
@@ -1296,7 +1314,60 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="34">
+    <Item class="Script" referent="37">
+      <Properties>
+        <string name="Name">GuardianServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- GuardianServer (Script)
+-- ServerScriptService/GuardianServer
+-- Players can buy up to 3 guardians that each cut steal success chance by 10%.
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local RE         = game.ReplicatedStorage.RemoteEvents
+local BuyGuardian = RE:WaitForChild("BuyGuardian")
+local CodeResult  = RE:WaitForChild("CodeResult")   -- reuse for simple feedback toast
+
+local GUARDIAN_COST = 5000  -- cash per guardian
+local MAX_GUARDIANS = 3
+
+BuyGuardian.OnServerEvent:Connect(function(player)
+	local data = BrainrotData.Get(player.UserId)
+	if not data then return end
+
+	local guardians = data.guardians or 0
+
+	-- Cap check
+	if guardians >= MAX_GUARDIANS then
+		CodeResult:FireClient(player, false,
+			"Ya tienes el máximo de guardianes (" .. MAX_GUARDIANS .. "/" .. MAX_GUARDIANS .. ")")
+		return
+	end
+
+	-- Funds check (SpendCash is authoritative)
+	if not BrainrotData.SpendCash(player.UserId, GUARDIAN_COST) then
+		CodeResult:FireClient(player, false,
+			"No tienes suficiente cash ($" .. GUARDIAN_COST .. " requeridos)")
+		return
+	end
+
+	data.guardians = guardians + 1
+
+	-- Sync leaderstats cash
+	local ls = player:FindFirstChild("leaderstats")
+	if ls then
+		local cashVal = ls:FindFirstChild("Cash")
+		if cashVal then cashVal.Value = math.floor(data.cash) end
+	end
+
+	CodeResult:FireClient(player, true,
+		"🛡️ ¡Guardián comprado! (" .. data.guardians .. "/" .. MAX_GUARDIANS ..
+		") — cada guardián reduce un 10% la chance de robo")
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="38">
       <Properties>
         <string name="Name">LeaderboardGlobal</string>
         <token name="RunContext">0</token>
@@ -1396,7 +1467,7 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="35">
+    <Item class="Script" referent="39">
       <Properties>
         <string name="Name">MissionsServer</string>
         <token name="RunContext">0</token>
@@ -1592,7 +1663,7 @@ return MissionsServer
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="36">
+    <Item class="Script" referent="40">
       <Properties>
         <string name="Name">PetServer</string>
         <token name="RunContext">0</token>
@@ -1765,7 +1836,7 @@ return PetServer
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="37">
+    <Item class="Script" referent="41">
       <Properties>
         <string name="Name">RebornServer</string>
         <token name="RunContext">0</token>
@@ -1910,7 +1981,175 @@ end)
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Script" referent="38">
+    <Item class="Script" referent="42">
+      <Properties>
+        <string name="Name">StealServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- StealServer (Script)
+-- ServerScriptService/StealServer
+-- Server-authoritative player-vs-player Brainrot steal system.
+
+local Players = game:GetService("Players")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local RE                 = game.ReplicatedStorage.RemoteEvents
+local StealAttempt       = RE:WaitForChild("StealAttempt")
+local StealResult        = RE:WaitForChild("StealResult")
+local GlobalNotification = RE:WaitForChild("GlobalNotification")
+
+-- ─── Config ───────────────────────────────────────────────────────────────────
+local STEAL_COOLDOWN      = 30          -- seconds between steal attempts
+local MAX_STEALS_PER_HOUR = 5           -- hourly cap per player
+local STEAL_SUCCESS_BASE  = 0.40        -- 40 % base success chance
+local GUARDIAN_REDUCTION  = 0.10        -- each guardian reduces success by 10 %
+local REBIRTH_BONUS       = 0.05        -- +5 % per thief rebirth
+local REBIRTH_PENALTY     = 0.05        -- -5 % per victim rebirth
+
+-- ─── Rate-limit state (in-memory, resets on server restart) ───────────────────
+local cooldowns  = {}   -- [userId] = tick()  last steal attempt
+local stealCount = {}   -- [userId] = { count: number, resetTime: number }
+
+-- ─── Rate-limit check ─────────────────────────────────────────────────────────
+local function canSteal(player)
+	local uid = player.UserId
+	local now = tick()
+
+	-- Cooldown
+	if cooldowns[uid] and (now - cooldowns[uid]) < STEAL_COOLDOWN then
+		local remaining = math.ceil(STEAL_COOLDOWN - (now - cooldowns[uid]))
+		return false, "Espera " .. remaining .. "s para volver a robar"
+	end
+
+	-- Hourly cap
+	if stealCount[uid] then
+		if now > stealCount[uid].resetTime then
+			stealCount[uid] = { count = 0, resetTime = now + 3600 }
+		elseif stealCount[uid].count >= MAX_STEALS_PER_HOUR then
+			return false, "Límite de robos por hora alcanzado (" .. MAX_STEALS_PER_HOUR .. "/h)"
+		end
+	else
+		stealCount[uid] = { count = 0, resetTime = now + 3600 }
+	end
+
+	return true, "ok"
+end
+
+-- ─── Rarity order (higher = more valuable) ────────────────────────────────────
+local RARITY_ORDER = {
+	Common   = 1,
+	Uncommon = 2,
+	Rare     = 3,
+	Epic     = 4,
+	Legendary= 5,
+	Mythic   = 6,
+	Secret   = 7,
+}
+
+-- ─── Main Handler ─────────────────────────────────────────────────────────────
+
+StealAttempt.OnServerEvent:Connect(function(thief, targetName)
+	-- 1. Validate thief rate-limit
+	local canDo, msg = canSteal(thief)
+	if not canDo then
+		StealResult:FireClient(thief, false, msg, nil)
+		return
+	end
+
+	-- 2. Validate target
+	if type(targetName) ~= "string" then
+		StealResult:FireClient(thief, false, "Petición inválida", nil)
+		return
+	end
+
+	local victim = Players:FindFirstChild(targetName)
+	if not victim or victim == thief then
+		StealResult:FireClient(thief, false, "Jugador no encontrado", nil)
+		return
+	end
+
+	local victimData = BrainrotData.Get(victim.UserId)
+	local thiefData  = BrainrotData.Get(thief.UserId)
+
+	if not victimData or not thiefData then
+		StealResult:FireClient(thief, false, "Error al leer datos", nil)
+		return
+	end
+
+	-- 3. Victim must have at least 1 Brainrot
+	if #victimData.brainrots == 0 then
+		StealResult:FireClient(thief, false, targetName .. " no tiene Brainrots que robar", nil)
+		return
+	end
+
+	-- 4. Calculate success chance
+	local thiefRebirths  = thiefData.rebirths  or 0
+	local victimRebirths = victimData.rebirths or 0
+	local victimGuardians = victimData.guardians or 0
+
+	local successChance = STEAL_SUCCESS_BASE
+	successChance = successChance + (thiefRebirths  * REBIRTH_BONUS)
+	successChance = successChance - (victimRebirths * REBIRTH_PENALTY)
+	successChance = successChance - (victimGuardians * GUARDIAN_REDUCTION)
+	successChance = math.clamp(successChance, 0.05, 0.80)
+
+	-- 5. Apply cooldown + count BEFORE roll (prevents spam on error)
+	cooldowns[thief.UserId] = tick()
+	stealCount[thief.UserId].count = stealCount[thief.UserId].count + 1
+
+	-- 6. Roll
+	if math.random() <= successChance then
+		-- ── SUCCESS ──────────────────────────────────────────────────────────
+		-- Sort victim's brainrots by rarity descending
+		table.sort(victimData.brainrots, function(a, b)
+			return (RARITY_ORDER[a.rarity] or 0) > (RARITY_ORDER[b.rarity] or 0)
+		end)
+
+		-- Steal from the top 50 % (always at least 1)
+		local topHalf = math.max(1, math.ceil(#victimData.brainrots * 0.5))
+		local idx     = math.random(1, topHalf)
+		local stolen  = table.remove(victimData.brainrots, idx)
+
+		-- Give stolen Brainrot to thief
+		table.insert(thiefData.brainrots, stolen)
+
+		-- Notify thief
+		StealResult:FireClient(thief, true,
+			"¡Robaste " .. (stolen.emoji or "") .. " " .. stolen.name ..
+			" de " .. targetName .. "!",
+			stolen)
+
+		-- Notify victim (success = false so UI shows red)
+		StealResult:FireClient(victim, false,
+			"¡" .. thief.Name .. " te robó " ..
+			(stolen.emoji or "") .. " " .. stolen.name .. "!",
+			stolen)
+
+		-- Global broadcast for Rare or better
+		if (RARITY_ORDER[stolen.rarity] or 0) >= RARITY_ORDER["Rare"] then
+			local broadcast = "🚨 " .. thief.Name .. " robó " ..
+				(stolen.emoji or "") .. " " .. stolen.name ..
+				" (" .. stolen.rarity .. ") de " .. targetName .. "!"
+			for _, p in ipairs(Players:GetPlayers()) do
+				GlobalNotification:FireClient(p, broadcast)
+			end
+		end
+
+	else
+		-- ── FAIL ─────────────────────────────────────────────────────────────
+		StealResult:FireClient(thief, false,
+			"¡Fallaste el robo a " .. targetName .. "! (" ..
+			math.floor(successChance * 100) .. "% chance)", nil)
+
+		-- Tip-off the victim
+		StealResult:FireClient(victim, nil,
+			"¡" .. thief.Name .. " intentó robarte pero falló!", nil)
+	end
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="43">
       <Properties>
         <string name="Name">TutorialServer</string>
         <token name="RunContext">0</token>
@@ -1974,15 +2213,15 @@ end
       </Properties>
     </Item>
   </Item>
-  <Item class="StarterPlayer" referent="39">
+  <Item class="StarterPlayer" referent="44">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="40">
+    <Item class="StarterPlayerScripts" referent="45">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="41">
+      <Item class="LocalScript" referent="46">
         <Properties>
           <string name="Name">AntiAFK</string>
           <string name="Source"><![CDATA[-- AntiAFK (LocalScript)
@@ -2123,7 +2362,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="42">
+      <Item class="LocalScript" referent="47">
         <Properties>
           <string name="Name">CashDisplay</string>
           <string name="Source"><![CDATA[-- CashDisplay (LocalScript)
@@ -2133,7 +2372,7 @@ return
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="43">
+      <Item class="LocalScript" referent="48">
         <Properties>
           <string name="Name">CodesUI</string>
           <string name="Source"><![CDATA[-- CodesUI (LocalScript)
@@ -2352,7 +2591,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="44">
+      <Item class="LocalScript" referent="49">
         <Properties>
           <string name="Name">GachaUI</string>
           <string name="Source"><![CDATA[-- GachaUI (LocalScript)
@@ -2591,7 +2830,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="45">
+      <Item class="LocalScript" referent="50">
         <Properties>
           <string name="Name">LeaderboardUI</string>
           <string name="Source"><![CDATA[-- LeaderboardUI (LocalScript)
@@ -2877,7 +3116,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="46">
+      <Item class="LocalScript" referent="51">
         <Properties>
           <string name="Name">MissionsUI</string>
           <string name="Source"><![CDATA[-- MissionsUI (LocalScript)
@@ -3184,7 +3423,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="47">
+      <Item class="LocalScript" referent="52">
         <Properties>
           <string name="Name">MusicController</string>
           <string name="Source"><![CDATA[-- MusicController (LocalScript)
@@ -3284,7 +3523,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="48">
+      <Item class="LocalScript" referent="53">
         <Properties>
           <string name="Name">NotificationsUI</string>
           <string name="Source"><![CDATA[-- NotificationsUI (LocalScript)
@@ -3419,7 +3658,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="49">
+      <Item class="LocalScript" referent="54">
         <Properties>
           <string name="Name">PetUI</string>
           <string name="Source"><![CDATA[-- PetUI (LocalScript)
@@ -3702,7 +3941,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="50">
+      <Item class="LocalScript" referent="55">
         <Properties>
           <string name="Name">ShopPassUI</string>
           <string name="Source"><![CDATA[-- ShopPassUI (LocalScript)
@@ -3716,7 +3955,9 @@ local Players           = game:GetService("Players")
 local player    = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-local BuyPass = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyPass")
+local BuyPass     = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyPass")
+local BuyGuardian = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyGuardian")
+local CodeResult  = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("CodeResult")
 
 -- ─── Pass Definitions (IDs updated after publishing) ─────────────────────────
 local PASSES = {
@@ -3939,6 +4180,136 @@ listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 	scroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 12)
 end)
 
+-- ─── Guardian Card (in-game cash purchase) ────────────────────────────────────────
+
+local guardianSep = Instance.new("Frame")
+guardianSep.Name             = "GuardianSeparator"
+guardianSep.Size             = UDim2.new(1, 0, 0, 1)
+guardianSep.BackgroundColor3 = Color3.fromRGB(100, 80, 160)
+guardianSep.BorderSizePixel  = 0
+guardianSep.LayoutOrder      = 10
+guardianSep.ZIndex           = 17
+guardianSep.Parent           = scroll
+
+local guardianHeader = Instance.new("TextLabel")
+guardianHeader.Name                   = "GuardianHeader"
+guardianHeader.Size                   = UDim2.new(1, 0, 0, 28)
+guardianHeader.BackgroundTransparency = 1
+guardianHeader.Text                   = "🛡️  Tienda en Juego"
+guardianHeader.TextColor3             = Color3.fromRGB(180, 160, 255)
+guardianHeader.TextScaled             = true
+guardianHeader.Font                   = Enum.Font.GothamBold
+guardianHeader.TextXAlignment         = Enum.TextXAlignment.Left
+guardianHeader.LayoutOrder            = 11
+guardianHeader.ZIndex                 = 17
+guardianHeader.Parent                 = scroll
+
+local guardianCard = Instance.new("Frame")
+guardianCard.Name             = "GuardianCard"
+guardianCard.Size             = UDim2.new(1, 0, 0, CARD_H)
+guardianCard.BackgroundColor3 = Color3.fromRGB(18, 14, 40)
+guardianCard.BorderSizePixel  = 0
+guardianCard.LayoutOrder      = 12
+guardianCard.ZIndex           = 17
+guardianCard.Parent           = scroll
+Instance.new("UICorner", guardianCard).CornerRadius = UDim.new(0, 12)
+
+local gcStroke = Instance.new("UIStroke")
+gcStroke.Color     = Color3.fromRGB(100, 80, 200)
+gcStroke.Thickness = 1
+gcStroke.Parent    = guardianCard
+
+local gcEmoji = Instance.new("TextLabel")
+gcEmoji.Size                   = UDim2.new(0, 56, 1, 0)
+gcEmoji.Position               = UDim2.new(0, 6, 0, 0)
+gcEmoji.BackgroundTransparency = 1
+gcEmoji.Text                   = "🛡️"
+gcEmoji.TextScaled             = true
+gcEmoji.ZIndex                 = 18
+gcEmoji.Parent                 = guardianCard
+
+local gcName = Instance.new("TextLabel")
+gcName.Size                   = UDim2.new(0.5, -60, 0, 28)
+gcName.Position               = UDim2.new(0, 66, 0, 10)
+gcName.BackgroundTransparency = 1
+gcName.Text                   = "Guardián"
+gcName.TextColor3             = Color3.fromRGB(200, 180, 255)
+gcName.TextScaled             = true
+gcName.Font                   = Enum.Font.GothamBold
+gcName.TextXAlignment         = Enum.TextXAlignment.Left
+gcName.ZIndex                 = 18
+gcName.Parent                 = guardianCard
+
+local gcDesc = Instance.new("TextLabel")
+gcDesc.Size                   = UDim2.new(0.6, -60, 0, 22)
+gcDesc.Position               = UDim2.new(0, 66, 0, 40)
+gcDesc.BackgroundTransparency = 1
+gcDesc.Text                   = "-10% chance de robo (máx 3)"
+gcDesc.TextColor3             = Color3.fromRGB(160, 150, 200)
+gcDesc.TextScaled             = true
+gcDesc.Font                   = Enum.Font.Gotham
+gcDesc.TextXAlignment         = Enum.TextXAlignment.Left
+gcDesc.ZIndex                 = 18
+gcDesc.Parent                 = guardianCard
+
+local gcBuyBtn = Instance.new("TextButton")
+gcBuyBtn.Name             = "BuyGuardianBtn"
+gcBuyBtn.Size             = UDim2.new(0, 110, 0, 38)
+gcBuyBtn.Position         = UDim2.new(1, -118, 0.5, -19)
+gcBuyBtn.BackgroundColor3 = Color3.fromRGB(90, 60, 200)
+gcBuyBtn.BorderSizePixel  = 0
+gcBuyBtn.Text             = "🛡️ $5,000"
+gcBuyBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+gcBuyBtn.TextScaled       = true
+gcBuyBtn.Font             = Enum.Font.GothamBold
+gcBuyBtn.AutoButtonColor  = false
+gcBuyBtn.ZIndex           = 19
+gcBuyBtn.Parent           = guardianCard
+Instance.new("UICorner", gcBuyBtn).CornerRadius = UDim.new(0, 10)
+
+gcBuyBtn.MouseEnter:Connect(function()
+	TweenService:Create(gcBuyBtn, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(120, 90, 240)
+	}):Play()
+end)
+gcBuyBtn.MouseLeave:Connect(function()
+	TweenService:Create(gcBuyBtn, TweenInfo.new(0.1), {
+		BackgroundColor3 = Color3.fromRGB(90, 60, 200)
+	}):Play()
+end)
+
+gcBuyBtn.MouseButton1Click:Connect(function()
+	BuyGuardian:FireServer()
+end)
+
+-- CodeResult feedback for guardian (and codes)
+CodeResult.OnClientEvent:Connect(function(success, message)
+	-- Reuse a simple toast effect on the panel title area
+	local toastColor = success
+		and Color3.fromRGB(100, 255, 130)
+		or  Color3.fromRGB(255, 100, 100)
+	local icon = success and "✅ " or "❌ "
+
+	local flash = Instance.new("TextLabel")
+	flash.Size                   = UDim2.new(0, 320, 0, 60)
+	flash.Position               = UDim2.new(0.5, -160, 1, -80)
+	flash.BackgroundColor3       = Color3.fromRGB(16, 8, 28)
+	flash.BackgroundTransparency = 0.1
+	flash.BorderSizePixel        = 0
+	flash.Text                   = icon .. (message or "")
+	flash.TextColor3             = toastColor
+	flash.TextScaled             = true
+	flash.Font                   = Enum.Font.GothamBold
+	flash.TextWrapped            = true
+	flash.ZIndex                 = 50
+	flash.Parent                 = screenGui
+	Instance.new("UICorner", flash).CornerRadius = UDim.new(0, 14)
+
+	task.delay(3, function()
+		flash:Destroy()
+	end)
+end)
+
 -- ─── Toggle Panel ─────────────────────────────────────────────────────────────
 local panelOpen = false
 
@@ -3962,7 +4333,7 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="51">
+      <Item class="LocalScript" referent="56">
         <Properties>
           <string name="Name">ShopUI</string>
           <string name="Source"><![CDATA[-- ShopUI (LocalScript)
@@ -4200,7 +4571,326 @@ end)
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="52">
+      <Item class="LocalScript" referent="57">
+        <Properties>
+          <string name="Name">StealUI</string>
+          <string name="Source"><![CDATA[-- StealUI (LocalScript)
+-- StarterPlayerScripts/StealUI
+-- Client-side UI for the player-vs-player steal mechanic.
+-- The server decides every steal outcome — this script only displays results.
+
+local Players       = game:GetService("Players")
+local TweenService  = game:GetService("TweenService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local RE          = game.ReplicatedStorage:WaitForChild("RemoteEvents")
+local StealAttempt = RE:WaitForChild("StealAttempt")
+local StealResult  = RE:WaitForChild("StealResult")
+
+-- ─── ScreenGui ────────────────────────────────────────────────────────────────
+local gui = Instance.new("ScreenGui")
+gui.Name           = "StealUI"
+gui.ResetOnSpawn   = false
+gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent         = playerGui
+
+-- ─── Main "🗡️ Robar" Button ──────────────────────────────────────────────────
+local stealBtn = Instance.new("TextButton")
+stealBtn.Name            = "StealButton"
+stealBtn.Size            = UDim2.new(0, 120, 0, 48)
+stealBtn.Position        = UDim2.new(0, 10, 0.5, -24)
+stealBtn.BackgroundColor3= Color3.fromRGB(160, 20, 20)
+stealBtn.BorderSizePixel = 0
+stealBtn.Text            = "🗡️ Robar"
+stealBtn.TextColor3      = Color3.fromRGB(255, 220, 220)
+stealBtn.TextScaled      = true
+stealBtn.Font            = Enum.Font.GothamBold
+stealBtn.AutoButtonColor = false
+stealBtn.Parent          = gui
+Instance.new("UICorner", stealBtn).CornerRadius = UDim.new(0, 14)
+
+local btnStroke = Instance.new("UIStroke")
+btnStroke.Color     = Color3.fromRGB(255, 80, 80)
+btnStroke.Thickness = 2
+btnStroke.Parent    = stealBtn
+
+-- Hover glow
+stealBtn.MouseEnter:Connect(function()
+	TweenService:Create(stealBtn, TweenInfo.new(0.12), {
+		BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+	}):Play()
+end)
+stealBtn.MouseLeave:Connect(function()
+	TweenService:Create(stealBtn, TweenInfo.new(0.12), {
+		BackgroundColor3 = Color3.fromRGB(160, 20, 20)
+	}):Play()
+end)
+
+-- ─── Victim-selection Panel ───────────────────────────────────────────────────
+local panel = Instance.new("Frame")
+panel.Name                   = "StealPanel"
+panel.Size                   = UDim2.new(0, 270, 0, 320)
+panel.Position               = UDim2.new(0, 140, 0.5, -160)
+panel.BackgroundColor3       = Color3.fromRGB(16, 8, 8)
+panel.BackgroundTransparency = 0.06
+panel.BorderSizePixel        = 0
+panel.Visible                = false
+panel.ZIndex                 = 20
+panel.Parent                 = gui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 18)
+
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color     = Color3.fromRGB(200, 40, 40)
+panelStroke.Thickness = 2
+panelStroke.Parent    = panel
+
+-- Panel title
+local panelTitle = Instance.new("TextLabel")
+panelTitle.Size                   = UDim2.new(1, -50, 0, 42)
+panelTitle.Position               = UDim2.new(0, 10, 0, 6)
+panelTitle.BackgroundTransparency = 1
+panelTitle.Text                   = "🗡️ Elige a tu víctima"
+panelTitle.TextColor3             = Color3.fromRGB(255, 80, 80)
+panelTitle.TextScaled             = true
+panelTitle.Font                   = Enum.Font.GothamBold
+panelTitle.TextXAlignment         = Enum.TextXAlignment.Left
+panelTitle.ZIndex                 = 21
+panelTitle.Parent                 = panel
+
+-- Close button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size                   = UDim2.new(0, 32, 0, 32)
+closeBtn.Position               = UDim2.new(1, -38, 0, 6)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Text                   = "✕"
+closeBtn.TextColor3             = Color3.fromRGB(200, 150, 150)
+closeBtn.TextScaled             = true
+closeBtn.Font                   = Enum.Font.GothamBold
+closeBtn.ZIndex                 = 21
+closeBtn.Parent                 = panel
+
+-- Divider
+local divider = Instance.new("Frame")
+divider.Size             = UDim2.new(1, -20, 0, 1)
+divider.Position         = UDim2.new(0, 10, 0, 52)
+divider.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+divider.BackgroundTransparency = 0.5
+divider.BorderSizePixel  = 0
+divider.ZIndex           = 21
+divider.Parent           = panel
+
+-- Player list scroll
+local playerList = Instance.new("ScrollingFrame")
+playerList.Name                 = "PlayerList"
+playerList.Size                 = UDim2.new(1, -16, 1, -62)
+playerList.Position             = UDim2.new(0, 8, 0, 58)
+playerList.BackgroundTransparency = 1
+playerList.BorderSizePixel      = 0
+playerList.ScrollBarThickness   = 4
+playerList.ScrollBarImageColor3 = Color3.fromRGB(200, 40, 40)
+playerList.ZIndex               = 21
+playerList.Parent               = panel
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding   = UDim.new(0, 6)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent    = playerList
+
+local listPad = Instance.new("UIPadding")
+listPad.PaddingTop   = UDim.new(0, 4)
+listPad.PaddingLeft  = UDim.new(0, 2)
+listPad.PaddingRight = UDim.new(0, 2)
+listPad.Parent       = playerList
+
+-- Empty-state label
+local emptyLabel = Instance.new("TextLabel")
+emptyLabel.Name                   = "EmptyLabel"
+emptyLabel.Size                   = UDim2.new(1, 0, 0, 44)
+emptyLabel.BackgroundTransparency = 1
+emptyLabel.Text                   = "No hay otros jugadores"
+emptyLabel.TextColor3             = Color3.fromRGB(150, 100, 100)
+emptyLabel.TextScaled             = true
+emptyLabel.Font                   = Enum.Font.Gotham
+emptyLabel.ZIndex                 = 22
+emptyLabel.Visible                = false
+emptyLabel.Parent                 = playerList
+
+-- ─── Result toast ─────────────────────────────────────────────────────────────
+local toastFrame = Instance.new("Frame")
+toastFrame.Name                   = "StealToast"
+toastFrame.Size                   = UDim2.new(0, 320, 0, 110)
+toastFrame.Position               = UDim2.new(0.5, -160, 0.5, -55)
+toastFrame.BackgroundColor3       = Color3.fromRGB(16, 8, 8)
+toastFrame.BackgroundTransparency = 0.10
+toastFrame.BorderSizePixel        = 0
+toastFrame.Visible                = false
+toastFrame.ZIndex                 = 40
+toastFrame.Parent                 = gui
+Instance.new("UICorner", toastFrame).CornerRadius = UDim.new(0, 18)
+
+local toastStroke = Instance.new("UIStroke")
+toastStroke.Color     = Color3.fromRGB(255, 80, 80)
+toastStroke.Thickness = 2
+toastStroke.Parent    = toastFrame
+
+local toastLabel = Instance.new("TextLabel")
+toastLabel.Size                   = UDim2.new(1, -20, 1, -16)
+toastLabel.Position               = UDim2.new(0, 10, 0, 8)
+toastLabel.BackgroundTransparency = 1
+toastLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+toastLabel.TextScaled             = true
+toastLabel.Font                   = Enum.Font.GothamBold
+toastLabel.TextWrapped            = true
+toastLabel.ZIndex                 = 41
+toastLabel.Parent                 = toastFrame
+
+-- ─── Helpers ──────────────────────────────────────────────────────────────────
+local cooldownActive = false
+
+local function showToast(success, message)
+	toastLabel.Text      = (success and "✅ " or "❌ ") .. (message or "")
+	toastLabel.TextColor3= success
+		and Color3.fromRGB(100, 255, 130)
+		or  Color3.fromRGB(255, 100, 100)
+	toastStroke.Color    = success
+		and Color3.fromRGB(60, 220, 100)
+		or  Color3.fromRGB(255, 60, 60)
+
+	-- Pop-in
+	toastFrame.Size     = UDim2.new(0, 0, 0, 0)
+	toastFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+	toastFrame.Visible  = true
+	TweenService:Create(toastFrame,
+		TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Size = UDim2.new(0, 320, 0, 110), Position = UDim2.new(0.5, -160, 0.5, -55) }
+	):Play()
+
+	task.delay(3.5, function()
+		TweenService:Create(toastFrame,
+			TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0) }
+		):Play()
+		task.wait(0.25)
+		toastFrame.Visible = false
+	end)
+end
+
+local function refreshPlayerList()
+	-- Clear existing player buttons
+	for _, child in ipairs(playerList:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+
+	local otherPlayers = {}
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= player then
+			table.insert(otherPlayers, p)
+		end
+	end
+
+	emptyLabel.Visible = (#otherPlayers == 0)
+
+	for i, p in ipairs(otherPlayers) do
+		local btn = Instance.new("TextButton")
+		btn.Name             = "Target_" .. p.Name
+		btn.Size             = UDim2.new(1, 0, 0, 46)
+		btn.BackgroundColor3 = Color3.fromRGB(50, 16, 16)
+		btn.BorderSizePixel  = 0
+		btn.Text             = "🗡️  " .. p.Name
+		btn.TextColor3       = Color3.fromRGB(255, 200, 200)
+		btn.TextScaled       = true
+		btn.Font             = Enum.Font.Gotham
+		btn.LayoutOrder      = i
+		btn.ZIndex           = 22
+		btn.Parent           = playerList
+		Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+
+		-- Hover
+		btn.MouseEnter:Connect(function()
+			TweenService:Create(btn, TweenInfo.new(0.1), {
+				BackgroundColor3 = Color3.fromRGB(90, 24, 24)
+			}):Play()
+		end)
+		btn.MouseLeave:Connect(function()
+			TweenService:Create(btn, TweenInfo.new(0.1), {
+				BackgroundColor3 = Color3.fromRGB(50, 16, 16)
+			}):Play()
+		end)
+
+		local targetName = p.Name
+		btn.MouseButton1Click:Connect(function()
+			if cooldownActive then return end
+			panel.Visible = false
+
+			-- Fire to server (server decides the result)
+			StealAttempt:FireServer(targetName)
+
+			-- Visual cooldown on button (30 s to match server STEAL_COOLDOWN)
+			cooldownActive         = true
+			stealBtn.Text          = "⏳ 30s"
+			stealBtn.Active        = false
+
+			local countdown = 30
+			task.spawn(function()
+				while countdown > 0 do
+					task.wait(1)
+					countdown = countdown - 1
+					stealBtn.Text = "⏳ " .. countdown .. "s"
+				end
+				stealBtn.Text   = "🗡️ Robar"
+				stealBtn.Active = true
+				cooldownActive  = false
+			end)
+		end)
+	end
+
+	-- Update scroll canvas height
+	playerList.CanvasSize = UDim2.new(0, 0, 0,
+		math.max(0, #otherPlayers) * 52 + 8)
+end
+
+local panelOpen = false
+
+local function togglePanel()
+	panelOpen = not panelOpen
+	if panelOpen then
+		refreshPlayerList()
+		panel.Visible = true
+		panel.Size    = UDim2.new(0, 270, 0, 0)
+		TweenService:Create(panel,
+			TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{ Size = UDim2.new(0, 270, 0, 320) }
+		):Play()
+	else
+		TweenService:Create(panel,
+			TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ Size = UDim2.new(0, 270, 0, 0) }
+		):Play()
+		task.delay(0.2, function()
+			panel.Visible = false
+		end)
+	end
+end
+
+-- ─── Wire up controls ─────────────────────────────────────────────────────────
+stealBtn.MouseButton1Click:Connect(togglePanel)
+closeBtn.MouseButton1Click:Connect(function()
+	if panelOpen then togglePanel() end
+end)
+
+-- ─── Receive result from server ───────────────────────────────────────────────
+StealResult.OnClientEvent:Connect(function(success, message, _stolen)
+	if message then
+		showToast(success == true, message)
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="58">
         <Properties>
           <string name="Name">TutorialUI</string>
           <string name="Source"><![CDATA[-- TutorialUI (LocalScript)
@@ -4345,7 +5035,7 @@ TutorialDone:FireServer("check")
 ]]></string>
         </Properties>
       </Item>
-      <Item class="LocalScript" referent="53">
+      <Item class="LocalScript" referent="59">
         <Properties>
           <string name="Name">VFXController</string>
           <string name="Source"><![CDATA[-- VFXController (LocalScript)
@@ -4515,7 +5205,7 @@ end)
       </Item>
     </Item>
   </Item>
-  <Item class="Workspace" referent="54">
+  <Item class="Workspace" referent="60">
     <Properties>
       <string name="Name">Workspace</string>
       <bool name="NeedsPivotMigration">false</bool>

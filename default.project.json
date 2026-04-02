@@ -33,7 +33,11 @@
         "TutorialStatus":     { "$className": "RemoteEvent" },
         "StealAttempt":       { "$className": "RemoteEvent" },
         "StealResult":        { "$className": "RemoteEvent" },
-        "BuyGuardian":        { "$className": "RemoteEvent" }
+        "BuyGuardian":        { "$className": "RemoteEvent" },
+        "UpdateEvent":        { "$className": "RemoteEvent" },
+        "BuyEventEgg":        { "$className": "RemoteEvent" },
+        "FuseRequest":        { "$className": "RemoteEvent" },
+        "FuseResult":         { "$className": "RemoteEvent" }
       }
     },
     "ServerScriptService": {

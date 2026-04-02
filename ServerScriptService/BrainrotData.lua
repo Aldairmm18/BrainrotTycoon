@@ -12,9 +12,11 @@ function BrainrotData.Init(userId)
 	if not _data[userId] then
 		_data[userId] = {
 			cash      = 100,   -- starting cash so player can buy first egg
-			brainrots = {},
-			rebirths  = 0,
-			guardians = 0,     -- 🛡️ purchased guardians (reduce steal %%)
+			brainrots    = {},
+			rebirths     = 0,
+			guardians    = 0,     -- 🛡️ purchased guardians
+			streak       = 0,
+			lastLoginDay = "",
 		}
 	end
 end
@@ -82,10 +84,12 @@ end
 
 function BrainrotData.Restore(userId, savedData)
 	_data[userId] = {
-		cash      = savedData.cash      or 100,
-		brainrots = savedData.brainrots or {},
-		rebirths  = savedData.rebirths  or 0,
-		guardians = savedData.guardians or 0,
+		cash         = savedData.cash         or 100,
+		brainrots    = savedData.brainrots    or {},
+		rebirths     = savedData.rebirths     or 0,
+		guardians    = savedData.guardians    or 0,
+		streak       = savedData.streak       or 0,
+		lastLoginDay = savedData.lastLoginDay or "",
 	}
 end
 
