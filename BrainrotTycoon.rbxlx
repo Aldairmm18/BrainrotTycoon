@@ -1,0 +1,1172 @@
+<roblox version="4">
+  <Item class="ReplicatedStorage" referent="0">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Folder" referent="1">
+      <Properties>
+        <string name="Name">Modules</string>
+      </Properties>
+      <Item class="ModuleScript" referent="2">
+        <Properties>
+          <string name="Name">BrainrotList</string>
+          <string name="Source"><![CDATA[-- BrainrotList (ModuleScript)
+-- ReplicatedStorage/Modules/BrainrotList
+
+local BrainrotList = {
+	{ name = "Tralalero Tralala",    rarity = "Common",    emoji = "🐟" },
+	{ name = "Tung Tung Sahur",      rarity = "Uncommon",  emoji = "🥁" },
+	{ name = "Cappuccino Assassino", rarity = "Rare",      emoji = "☕" },
+	{ name = "Bombardiro Crocodilo", rarity = "Epic",      emoji = "🐊" },
+	{ name = "Ballerina Cappuccina", rarity = "Epic",      emoji = "💃" },
+	{ name = "Frigo Camelo",         rarity = "Legendary", emoji = "🐪" },
+	{ name = "Bombombini Gusini",    rarity = "Legendary", emoji = "💣" },
+	{ name = "Lirilì Larilà",        rarity = "Mythic",    emoji = "🌋" },
+	{ name = "Glorbo Fruttodrillo",  rarity = "Mythic",    emoji = "🦎" },
+	{ name = "La Vaca Saturno",      rarity = "Secret",    emoji = "🪐" },
+}
+
+-- Helper: get all brainrots of a given rarity
+function BrainrotList.GetByRarity(rarity)
+	local result = {}
+	for _, b in ipairs(BrainrotList) do
+		if b.rarity == rarity then
+			table.insert(result, b)
+		end
+	end
+	return result
+end
+
+-- Helper: find by name
+function BrainrotList.FindByName(name)
+	for _, b in ipairs(BrainrotList) do
+		if b.name == name then
+			return b
+		end
+	end
+	return nil
+end
+
+return BrainrotList
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="3">
+        <Properties>
+          <string name="Name">RarityConfig</string>
+          <string name="Source"><![CDATA[-- RarityConfig (ModuleScript)
+-- ReplicatedStorage/Modules/RarityConfig
+
+local RarityConfig = {
+	Common = {
+		dropChance  = 0.60,
+		cashPerSec  = 5,
+		color       = Color3.fromRGB(180, 180, 180),
+	},
+	Uncommon = {
+		dropChance  = 0.25,
+		cashPerSec  = 100,
+		color       = Color3.fromRGB(100, 160, 255),
+	},
+	Rare = {
+		dropChance  = 0.10,
+		cashPerSec  = 2500,
+		color       = Color3.fromRGB(50, 200, 120),
+	},
+	Epic = {
+		dropChance  = 0.04,
+		cashPerSec  = 50000,
+		color       = Color3.fromRGB(160, 100, 255),
+	},
+	Legendary = {
+		dropChance  = 0.009,
+		cashPerSec  = 1000000,
+		color       = Color3.fromRGB(255, 180, 0),
+	},
+	Mythic = {
+		dropChance  = 0.0009,
+		cashPerSec  = 25000000,
+		color       = Color3.fromRGB(255, 80, 40),
+	},
+	Secret = {
+		dropChance  = 0.0001,
+		cashPerSec  = 2000000000,
+		color       = Color3.fromRGB(255, 50, 50),
+	},
+}
+
+-- Ordered list for UI and gacha iteration
+RarityConfig.Order = {
+	"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Secret"
+}
+
+-- Direct purchase prices (without gacha)
+RarityConfig.DirectPrice = {
+	Common   = 200,
+	Uncommon = 2000,
+	Rare     = 25000,
+	Epic     = 500000,
+}
+
+-- Validate sum == 1.0
+local total = 0
+for _, r in pairs(RarityConfig.Order) do
+	total = total + RarityConfig[r].dropChance
+end
+assert(math.abs(total - 1.0) < 0.0001, "RarityConfig dropChances do not sum to 1.0! Got: " .. tostring(total))
+
+return RarityConfig
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Folder" referent="4">
+      <Properties>
+        <string name="Name">RemoteEvents</string>
+      </Properties>
+      <Item class="RemoteEvent" referent="5">
+        <Properties>
+          <string name="Name">BuyEgg</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="6">
+        <Properties>
+          <string name="Name">PlaceBrainrot</string>
+        </Properties>
+      </Item>
+      <Item class="RemoteEvent" referent="7">
+        <Properties>
+          <string name="Name">UpdateCash</string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="8">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Script" referent="9">
+      <Properties>
+        <string name="Name">BrainrotData</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- BrainrotData (ModuleScript)
+-- ServerScriptService/BrainrotData
+-- Central in-memory store for all player data during the session.
+
+local BrainrotData = {}
+
+-- playerData[userId] = { cash = number, brainrots = {}, rebirths = number }
+local playerData = {}
+
+local MAX_BRAINROTS = 10
+
+-- Initialize a player's data table
+function BrainrotData.Init(userId, savedData)
+	savedData = savedData or {}
+	playerData[userId] = {
+		cash      = savedData.cash     or 0,
+		brainrots = savedData.brainrots or {},
+		rebirths  = savedData.rebirths  or 0,
+	}
+end
+
+-- Get a player's full data table (reference)
+function BrainrotData.Get(userId)
+	return playerData[userId]
+end
+
+-- Remove a player's data from memory on leave
+function BrainrotData.Remove(userId)
+	playerData[userId] = nil
+end
+
+-- Add cash (server-authoritative)
+function BrainrotData.AddCash(userId, amount)
+	local data = playerData[userId]
+	if not data then return end
+	data.cash = data.cash + amount
+end
+
+-- Deduct cash; returns true if successful, false if insufficient
+function BrainrotData.SpendCash(userId, amount)
+	local data = playerData[userId]
+	if not data then return false end
+	if data.cash < amount then return false end
+	data.cash = data.cash - amount
+	return true
+end
+
+-- Add a Brainrot to the player's inventory
+-- Returns false if inventory is full
+function BrainrotData.AddBrainrot(userId, brainrotEntry)
+	local data = playerData[userId]
+	if not data then return false end
+	if #data.brainrots >= MAX_BRAINROTS then return false, "Inventory full" end
+	table.insert(data.brainrots, {
+		name   = brainrotEntry.name,
+		rarity = brainrotEntry.rarity,
+		emoji  = brainrotEntry.emoji,
+	})
+	return true
+end
+
+-- Calculate total cashPerSec for a player from their inventory
+function BrainrotData.GetTotalCashPerSec(userId, rarityConfig)
+	local data = playerData[userId]
+	if not data then return 0 end
+	local total = 0
+	for _, b in ipairs(data.brainrots) do
+		local cfg = rarityConfig[b.rarity]
+		if cfg then
+			total = total + cfg.cashPerSec
+		end
+	end
+	return total
+end
+
+return BrainrotData
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="10">
+      <Properties>
+        <string name="Name">DataStoreManager</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- DataStoreManager (Script)
+-- ServerScriptService/DataStoreManager
+-- Handles loading and saving player data via DataStoreService.
+
+local DataStoreService = game:GetService("DataStoreService")
+local Players          = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BrainrotData = require(script.Parent.BrainrotData)
+
+local store = DataStoreService:GetDataStore("BrainrotTycoon_v1")
+
+local AUTO_SAVE_INTERVAL = 60  -- seconds
+
+-- ─── Helpers ────────────────────────────────────────────────────────────────
+
+local function getKey(player)
+	return "player_" .. tostring(player.UserId)
+end
+
+local function createLeaderstats(player, data)
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name  = "leaderstats"
+	leaderstats.Parent = player
+
+	local cashVal = Instance.new("IntValue")
+	cashVal.Name   = "Cash"
+	cashVal.Value  = data.cash
+	cashVal.Parent = leaderstats
+
+	local rebirthVal = Instance.new("IntValue")
+	rebirthVal.Name   = "Rebirths"
+	rebirthVal.Value  = data.rebirths
+	rebirthVal.Parent = leaderstats
+end
+
+local function saveData(player)
+	local data = BrainrotData.Get(player.UserId)
+	if not data then return end
+
+	-- Sync leaderstats from in-memory data
+	local ls = player:FindFirstChild("leaderstats")
+	if ls then
+		local cashVal    = ls:FindFirstChild("Cash")
+		local rebirthVal = ls:FindFirstChild("Rebirths")
+		if cashVal    then cashVal.Value    = data.cash     end
+		if rebirthVal then rebirthVal.Value = data.rebirths end
+	end
+
+	local key = getKey(player)
+	local success, err = pcall(function()
+		store:SetAsync(key, {
+			cash      = data.cash,
+			brainrots = data.brainrots,
+			rebirths  = data.rebirths,
+		})
+	end)
+
+	if not success then
+		warn("[DataStoreManager] Failed to save data for", player.Name, "->", err)
+	else
+		print("[DataStoreManager] Saved data for", player.Name)
+	end
+end
+
+local function loadData(player)
+	local key = getKey(player)
+	local savedData
+
+	local success, result = pcall(function()
+		savedData = store:GetAsync(key)
+	end)
+
+	if not success then
+		warn("[DataStoreManager] Failed to load data for", player.Name, "->", result)
+		savedData = nil
+	end
+
+	BrainrotData.Init(player.UserId, savedData)
+	local data = BrainrotData.Get(player.UserId)
+	createLeaderstats(player, data)
+	print("[DataStoreManager] Loaded data for", player.Name, "| Cash:", data.cash, "| Rebirths:", data.rebirths)
+end
+
+-- ─── Event Connections ──────────────────────────────────────────────────────
+
+Players.PlayerAdded:Connect(function(player)
+	loadData(player)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	saveData(player)
+	BrainrotData.Remove(player.UserId)
+end)
+
+-- Handle server shutdown (game:BindToClose)
+game:BindToClose(function()
+	for _, player in ipairs(Players:GetPlayers()) do
+		saveData(player)
+	end
+end)
+
+-- ─── Auto-Save Loop ─────────────────────────────────────────────────────────
+
+task.spawn(function()
+	while true do
+		task.wait(AUTO_SAVE_INTERVAL)
+		for _, player in ipairs(Players:GetPlayers()) do
+			saveData(player)
+		end
+	end
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="11">
+      <Properties>
+        <string name="Name">EconomyServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- EconomyServer (Script)
+-- ServerScriptService/EconomyServer
+-- Distributes cashPerSec every second to all players.
+
+local Players           = game:GetService("Players")
+local MarketplaceService = game:GetService("MarketplaceService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BrainrotData  = require(script.Parent.BrainrotData)
+local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
+
+local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
+
+-- Placeholder GamePass ID for 2x multiplier
+local GAMEPASS_2X_ID = 123456
+
+local function hasGamepass(player, passId)
+	local success, result = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(player.UserId, passId)
+	end)
+	if success then return result end
+	return false
+end
+
+local function syncLeaderstats(player, cash)
+	local ls = player:FindFirstChild("leaderstats")
+	if not ls then return end
+	local cashVal = ls:FindFirstChild("Cash")
+	if cashVal then cashVal.Value = math.floor(cash) end
+end
+
+-- ─── Main Economy Loop ──────────────────────────────────────────────────────
+
+task.spawn(function()
+	while true do
+		task.wait(1)
+
+		for _, player in ipairs(Players:GetPlayers()) do
+			local data = BrainrotData.Get(player.UserId)
+			if data then
+				local earned = BrainrotData.GetTotalCashPerSec(player.UserId, RarityConfig)
+
+				-- Apply 2x gamepass multiplier
+				if hasGamepass(player, GAMEPASS_2X_ID) then
+					earned = earned * 2
+				end
+
+				BrainrotData.AddCash(player.UserId, earned)
+
+				-- Sync IntValue in leaderstats
+				syncLeaderstats(player, data.cash)
+
+				-- Notify client
+				UpdateCash:FireClient(player, math.floor(data.cash))
+			end
+		end
+	end
+end)
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="12">
+      <Properties>
+        <string name="Name">GachaServer</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[-- GachaServer (Script)
+-- ServerScriptService/GachaServer
+-- Handles egg purchases, random drop resolution, inventory management,
+-- and Brainrot Part placement on the player's base.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace         = game:GetService("Workspace")
+
+local BrainrotData  = require(script.Parent.BrainrotData)
+local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
+local BrainrotList  = require(ReplicatedStorage.Modules.BrainrotList)
+
+local BuyEgg       = ReplicatedStorage.RemoteEvents.BuyEgg
+local PlaceBrainrot= ReplicatedStorage.RemoteEvents.PlaceBrainrot
+local UpdateCash   = ReplicatedStorage.RemoteEvents.UpdateCash
+
+local EGG_PRICE    = 500
+local GRID_SIZE    = 3  -- studs between brainrot parts
+local BASE_HEIGHT  = 1  -- height offset above the base
+
+-- ─── Gacha Roll ─────────────────────────────────────────────────────────────
+
+-- Build a weighted pool from BrainrotList using rarity dropChances
+local function rollBrainrot()
+	-- Build cumulative table from rarities in order
+	local cumulative = {}
+	local runningSum = 0
+	for _, rarityName in ipairs(RarityConfig.Order) do
+		runningSum = runningSum + RarityConfig[rarityName].dropChance
+		table.insert(cumulative, { rarity = rarityName, threshold = runningSum })
+	end
+
+	local roll = math.random()  -- [0, 1)
+	local chosenRarity = RarityConfig.Order[#RarityConfig.Order]  -- fallback to last
+
+	for _, entry in ipairs(cumulative) do
+		if roll < entry.threshold then
+			chosenRarity = entry.rarity
+			break
+		end
+	end
+
+	-- Pick a random Brainrot of that rarity
+	local pool = BrainrotList.GetByRarity(chosenRarity)
+	if #pool == 0 then
+		-- Fallback: pick first of any rarity
+		return BrainrotList[1]
+	end
+	return pool[math.random(1, #pool)]
+end
+
+-- ─── Part Placement ─────────────────────────────────────────────────────────
+
+local function getPlayerBase(player)
+	-- Look for a BasePart named after the player in Workspace
+	local baseFolder = Workspace:FindFirstChild("PlayerBases")
+	if not baseFolder then
+		baseFolder = Instance.new("Folder")
+		baseFolder.Name   = "PlayerBases"
+		baseFolder.Parent = Workspace
+	end
+
+	local playerFolder = baseFolder:FindFirstChild(player.Name)
+	if not playerFolder then
+		playerFolder = Instance.new("Folder")
+		playerFolder.Name   = player.Name
+		playerFolder.Parent = baseFolder
+	end
+	return playerFolder
+end
+
+local function placeBrainrotPart(player, brainrot, slotIndex)
+	local rarityData = RarityConfig[brainrot.rarity]
+	if not rarityData then return end
+
+	local playerBase = getPlayerBase(player)
+
+	-- Find character HumanoidRootPart for base position origin
+	local character = player.Character
+	local origin    = Vector3.new(0, 0, 0)
+	if character then
+		local hrp = character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			origin = hrp.Position + Vector3.new(0, -2.5, 0)
+		end
+	end
+
+	-- Arrange in a row, offsetting by slot index
+	local cols = 5
+	local col  = (slotIndex - 1) % cols
+	local row  = math.floor((slotIndex - 1) / cols)
+
+	local part = Instance.new("Part")
+	part.Name     = brainrot.name
+	part.Size     = Vector3.new(2, 2, 2)
+	part.Color    = rarityData.color
+	part.Material = Enum.Material.SmoothPlastic
+	part.Anchored = true
+	part.Position = origin + Vector3.new(
+		col * GRID_SIZE - (cols * GRID_SIZE / 2),
+		BASE_HEIGHT,
+		row * GRID_SIZE + 3
+	)
+
+	-- Label
+	local billboardGui = Instance.new("BillboardGui")
+	billboardGui.Size          = UDim2.new(0, 80, 0, 40)
+	billboardGui.StudsOffset   = Vector3.new(0, 2, 0)
+	billboardGui.AlwaysOnTop   = false
+	billboardGui.Parent        = part
+
+	local label = Instance.new("TextLabel")
+	label.Size            = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.Text            = brainrot.emoji .. "\n" .. brainrot.name
+	label.TextColor3      = Color3.fromRGB(255, 255, 255)
+	label.TextScaled      = true
+	label.Font            = Enum.Font.GothamBold
+	label.Parent          = billboardGui
+
+	part.Parent = playerBase
+
+	return part
+end
+
+-- ─── BuyEgg Handler ─────────────────────────────────────────────────────────
+
+BuyEgg.OnServerEvent:Connect(function(player, isDirectBuy, directBrainrotName)
+	local data = BrainrotData.Get(player.UserId)
+	if not data then return end
+
+	local price = EGG_PRICE
+	local brainrot
+
+	if isDirectBuy and directBrainrotName then
+		-- Direct shop purchase
+		local entry = BrainrotList.FindByName(directBrainrotName)
+		if not entry then return end
+		local directPrice = RarityConfig.DirectPrice[entry.rarity]
+		if not directPrice then
+			player:Kick("Attempted to buy non-purchasable rarity directly.")
+			return
+		end
+		price    = directPrice
+		brainrot = entry
+	else
+		-- Gacha roll
+		brainrot = rollBrainrot()
+	end
+
+	-- 1. Verify funds
+	if data.cash < price then
+		-- Not enough cash - fire back with nil to signal failure
+		BuyEgg:FireClient(player, nil, "not_enough_cash")
+		return
+	end
+
+	-- 2. Check inventory capacity
+	if #data.brainrots >= 10 then
+		BuyEgg:FireClient(player, nil, "inventory_full")
+		return
+	end
+
+	-- 3. Deduct cash (server-authoritative)
+	local spent = BrainrotData.SpendCash(player.UserId, price)
+	if not spent then return end
+
+	-- 4. Add to inventory
+	BrainrotData.AddBrainrot(player.UserId, brainrot)
+
+	-- 5. Place Part in Workspace
+	local slotIndex = #data.brainrots  -- already updated by AddBrainrot
+	task.spawn(function()
+		placeBrainrotPart(player, brainrot, slotIndex)
+	end)
+
+	-- 6. Sync leaderstats
+	local ls = player:FindFirstChild("leaderstats")
+	if ls then
+		local cashVal = ls:FindFirstChild("Cash")
+		if cashVal then cashVal.Value = math.floor(data.cash) end
+	end
+
+	-- 7. Notify client of new cash and obtained brainrot
+	UpdateCash:FireClient(player, math.floor(data.cash))
+	BuyEgg:FireClient(player, brainrot, "success")
+end)
+
+-- ─── PlaceBrainrot Handler (manual re-place) ───────────────────────────────
+
+PlaceBrainrot.OnServerEvent:Connect(function(player, brainrotName)
+	local data = BrainrotData.Get(player.UserId)
+	if not data then return end
+
+	local entry = BrainrotList.FindByName(brainrotName)
+	if not entry then return end
+
+	local slotIndex = #data.brainrots
+	task.spawn(function()
+		placeBrainrotPart(player, entry, slotIndex)
+	end)
+end)
+]]></string>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="13">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="14">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="15">
+        <Properties>
+          <string name="Name">CashDisplay</string>
+          <string name="Source"><![CDATA[-- CashDisplay (LocalScript)
+-- StarterPlayerScripts/CashDisplay
+-- Shows a floating ScreenGui HUD label with the player's formatted cash.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local UpdateCash = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("UpdateCash")
+
+local player = Players.LocalPlayer
+
+-- ─── Number Formatter ───────────────────────────────────────────────────────
+
+local suffixes = {
+	{ 1e12, "T" },
+	{ 1e9,  "B" },
+	{ 1e6,  "M" },
+	{ 1e3,  "K" },
+}
+
+local function formatCash(n)
+	for _, pair in ipairs(suffixes) do
+		if n >= pair[1] then
+			local val = n / pair[1]
+			-- Show one decimal if < 10, otherwise whole number
+			if val < 10 then
+				return string.format("%.1f%s", val, pair[2])
+			else
+				return string.format("%d%s", math.floor(val), pair[2])
+			end
+		end
+	end
+	return tostring(math.floor(n))
+end
+
+-- ─── Build ScreenGui ────────────────────────────────────────────────────────
+
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name            = "CashDisplay"
+screenGui.ResetOnSpawn    = false
+screenGui.IgnoreGuiInset  = true
+screenGui.Parent          = playerGui
+
+-- Background frame (top-center HUD)
+local frame = Instance.new("Frame")
+frame.Name              = "CashFrame"
+frame.Size              = UDim2.new(0, 220, 0, 54)
+frame.Position          = UDim2.new(0.5, -110, 0, 12)
+frame.BackgroundColor3  = Color3.fromRGB(20, 20, 30)
+frame.BackgroundTransparency = 0.25
+frame.BorderSizePixel   = 0
+frame.Parent            = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 14)
+corner.Parent       = frame
+
+-- Coin icon label
+local icon = Instance.new("TextLabel")
+icon.Size                  = UDim2.new(0, 40, 1, 0)
+icon.Position              = UDim2.new(0, 0, 0, 0)
+icon.BackgroundTransparency= 1
+icon.Text                  = "💰"
+icon.TextScaled            = true
+icon.Font                  = Enum.Font.GothamBold
+icon.Parent                = frame
+
+-- Cash text label
+local cashLabel = Instance.new("TextLabel")
+cashLabel.Name                  = "CashLabel"
+cashLabel.Size                  = UDim2.new(1, -45, 1, 0)
+cashLabel.Position              = UDim2.new(0, 42, 0, 0)
+cashLabel.BackgroundTransparency= 1
+cashLabel.Text                  = "$0"
+cashLabel.TextColor3            = Color3.fromRGB(255, 220, 60)
+cashLabel.TextScaled            = true
+cashLabel.Font                  = Enum.Font.GothamBold
+cashLabel.TextXAlignment        = Enum.TextXAlignment.Left
+cashLabel.Parent                = frame
+
+-- ─── Update on RemoteEvent ──────────────────────────────────────────────────
+
+UpdateCash.OnClientEvent:Connect(function(newCash)
+	cashLabel.Text = "$" .. formatCash(newCash)
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="16">
+        <Properties>
+          <string name="Name">GachaUI</string>
+          <string name="Source"><![CDATA[-- GachaUI (LocalScript)
+-- StarterPlayerScripts/GachaUI
+-- Egg buy button, opening animation, and result panel.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+
+local BuyEgg       = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyEgg")
+local RarityConfig = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityConfig"))
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ─── Build ScreenGui ────────────────────────────────────────────────────────
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "GachaUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent         = playerGui
+
+-- ── Buy Button ──────────────────────────────────────────────────────────────
+
+local buyBtn = Instance.new("TextButton")
+buyBtn.Name             = "BuyEggButton"
+buyBtn.Size             = UDim2.new(0, 200, 0, 60)
+buyBtn.Position         = UDim2.new(0.5, -100, 1, -82)
+buyBtn.BackgroundColor3 = Color3.fromRGB(255, 190, 30)
+buyBtn.Text             = "🥚 Buy Egg  $500"
+buyBtn.TextColor3       = Color3.fromRGB(30, 20, 0)
+buyBtn.TextScaled       = true
+buyBtn.Font             = Enum.Font.GothamBold
+buyBtn.BorderSizePixel  = 0
+buyBtn.Parent           = screenGui
+
+local buyCorner = Instance.new("UICorner")
+buyCorner.CornerRadius = UDim.new(0, 16)
+buyCorner.Parent       = buyBtn
+
+-- ── Result Panel (hidden by default) ────────────────────────────────────────
+
+local panel = Instance.new("Frame")
+panel.Name              = "ResultPanel"
+panel.Size              = UDim2.new(0, 320, 0, 200)
+panel.Position          = UDim2.new(0.5, -160, 0.5, -100)
+panel.BackgroundColor3  = Color3.fromRGB(18, 14, 32)
+panel.BackgroundTransparency = 0.05
+panel.BorderSizePixel   = 0
+panel.Visible           = false
+panel.ZIndex            = 10
+panel.Parent            = screenGui
+
+local panelCorner = Instance.new("UICorner")
+panelCorner.CornerRadius = UDim.new(0, 22)
+panelCorner.Parent       = panel
+
+local emojiLabel = Instance.new("TextLabel")
+emojiLabel.Name                  = "EmojiLabel"
+emojiLabel.Size                  = UDim2.new(1, 0, 0, 70)
+emojiLabel.Position              = UDim2.new(0, 0, 0, 10)
+emojiLabel.BackgroundTransparency= 1
+emojiLabel.Text                  = "🥚"
+emojiLabel.TextScaled            = true
+emojiLabel.Font                  = Enum.Font.GothamBold
+emojiLabel.ZIndex                = 11
+emojiLabel.Parent                = panel
+
+local resultTitle = Instance.new("TextLabel")
+resultTitle.Name                  = "ResultTitle"
+resultTitle.Size                  = UDim2.new(1, -20, 0, 30)
+resultTitle.Position              = UDim2.new(0, 10, 0, 85)
+resultTitle.BackgroundTransparency= 1
+resultTitle.Text                  = "¡Obtuviste ?"
+resultTitle.TextColor3            = Color3.fromRGB(255, 255, 255)
+resultTitle.TextScaled            = true
+resultTitle.Font                  = Enum.Font.GothamBold
+resultTitle.ZIndex                = 11
+resultTitle.Parent                = panel
+
+local rarityLabel = Instance.new("TextLabel")
+rarityLabel.Name                  = "RarityLabel"
+rarityLabel.Size                  = UDim2.new(1, -20, 0, 28)
+rarityLabel.Position              = UDim2.new(0, 10, 0, 118)
+rarityLabel.BackgroundTransparency= 1
+rarityLabel.Text                  = "Common"
+rarityLabel.TextColor3            = Color3.fromRGB(180, 180, 180)
+rarityLabel.TextScaled            = true
+rarityLabel.Font                  = Enum.Font.Gotham
+rarityLabel.ZIndex                = 11
+rarityLabel.Parent                = panel
+
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name             = "CloseButton"
+closeBtn.Size             = UDim2.new(0, 100, 0, 34)
+closeBtn.Position         = UDim2.new(0.5, -50, 1, -46)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+closeBtn.Text             = "✕ Close"
+closeBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+closeBtn.TextScaled       = true
+closeBtn.Font             = Enum.Font.GothamBold
+closeBtn.BorderSizePixel  = 0
+closeBtn.ZIndex           = 11
+closeBtn.Parent           = panel
+
+local closeBtnCorner = Instance.new("UICorner")
+closeBtnCorner.CornerRadius = UDim.new(0, 10)
+closeBtnCorner.Parent       = closeBtn
+
+-- ─── Animation Helpers ───────────────────────────────────────────────────────
+
+local function punchButton(btn)
+	local tweenIn = TweenService:Create(btn,
+		TweenInfo.new(0.08, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Size = UDim2.new(0, 180, 0, 54) }
+	)
+	local tweenOut = TweenService:Create(btn,
+		TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Size = UDim2.new(0, 200, 0, 60) }
+	)
+	tweenIn:Play()
+	tweenIn.Completed:Wait()
+	tweenOut:Play()
+end
+
+local function showResult(brainrot)
+	local rarData = RarityConfig[brainrot.rarity] or {}
+
+	emojiLabel.Text       = brainrot.emoji or "❓"
+	resultTitle.Text      = "¡Obtuviste " .. (brainrot.name or "?") .. "!"
+	rarityLabel.Text      = "✦ " .. (brainrot.rarity or "Unknown")
+	rarityLabel.TextColor3= rarData.color or Color3.fromRGB(255,255,255)
+
+	panel.Size    = UDim2.new(0, 0, 0, 0)
+	panel.Position= UDim2.new(0.5, 0, 0.5, 0)
+	panel.Visible = true
+
+	TweenService:Create(panel,
+		TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{
+			Size     = UDim2.new(0, 320, 0, 200),
+			Position = UDim2.new(0.5, -160, 0.5, -100),
+		}
+	):Play()
+
+	-- Auto-close after 3 seconds
+	task.delay(3, function()
+		if panel.Visible then
+			panel.Visible = false
+		end
+	end)
+end
+
+local function showError(reason)
+	local msg = reason == "not_enough_cash" and "😢 Not enough cash!" or
+	            reason == "inventory_full"   and "📦 Inventory full! (max 10)" or
+	            "Something went wrong."
+
+	emojiLabel.Text       = "❌"
+	resultTitle.Text      = msg
+	rarityLabel.Text      = ""
+	panel.Size    = UDim2.new(0, 320, 0, 200)
+	panel.Position= UDim2.new(0.5, -160, 0.5, -100)
+	panel.Visible = true
+
+	task.delay(2.5, function()
+		if panel.Visible then panel.Visible = false end
+	end)
+end
+
+-- ─── Button Logic ────────────────────────────────────────────────────────────
+
+local canBuy = true
+
+buyBtn.MouseButton1Click:Connect(function()
+	if not canBuy then return end
+	canBuy = false
+
+	task.spawn(punchButton, buyBtn)
+	BuyEgg:FireServer(false, nil)  -- gacha roll
+
+	task.delay(0.5, function()
+		canBuy = true
+	end)
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	panel.Visible = false
+end)
+
+-- ─── Server Response ─────────────────────────────────────────────────────────
+
+BuyEgg.OnClientEvent:Connect(function(brainrot, status)
+	if status == "success" and brainrot then
+		showResult(brainrot)
+	else
+		showError(status)
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="17">
+        <Properties>
+          <string name="Name">ShopUI</string>
+          <string name="Source"><![CDATA[-- ShopUI (LocalScript)
+-- StarterPlayerScripts/ShopUI
+-- Lateral shop panel listing directly-purchasable Brainrots.
+
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService      = game:GetService("TweenService")
+
+local BuyEgg       = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyEgg")
+local RarityConfig = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityConfig"))
+local BrainrotList = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("BrainrotList"))
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ─── Build ScreenGui ────────────────────────────────────────────────────────
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "ShopUI"
+screenGui.ResetOnSpawn   = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.Parent         = playerGui
+
+-- ── Toggle Button ────────────────────────────────────────────────────────────
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name             = "ShopToggle"
+toggleBtn.Size             = UDim2.new(0, 60, 0, 140)
+toggleBtn.Position         = UDim2.new(1, -64, 0.5, -70)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 120)
+toggleBtn.Text             = "🛒\nShop"
+toggleBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+toggleBtn.TextScaled       = true
+toggleBtn.Font             = Enum.Font.GothamBold
+toggleBtn.BorderSizePixel  = 0
+toggleBtn.ZIndex           = 5
+toggleBtn.Parent           = screenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 14)
+toggleCorner.Parent       = toggleBtn
+
+-- ── Shop Panel ───────────────────────────────────────────────────────────────
+
+local panelWidth = 300
+
+local panel = Instance.new("Frame")
+panel.Name              = "ShopPanel"
+panel.Size              = UDim2.new(0, panelWidth, 1, -20)
+panel.Position          = UDim2.new(1, 10, 0, 10)   -- hidden off-screen
+panel.BackgroundColor3  = Color3.fromRGB(16, 12, 28)
+panel.BackgroundTransparency = 0.08
+panel.BorderSizePixel   = 0
+panel.ZIndex            = 4
+panel.Parent            = screenGui
+
+local panelCorner = Instance.new("UICorner")
+panelCorner.CornerRadius = UDim.new(0, 18)
+panelCorner.Parent       = panel
+
+-- Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size                  = UDim2.new(1, 0, 0, 50)
+titleLabel.Position              = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundTransparency= 1
+titleLabel.Text                  = "🛒 Direct Shop"
+titleLabel.TextColor3            = Color3.fromRGB(255, 255, 255)
+titleLabel.TextScaled            = true
+titleLabel.Font                  = Enum.Font.GothamBold
+titleLabel.ZIndex                = 5
+titleLabel.Parent                = panel
+
+-- Scroll frame for items
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Name              = "ItemList"
+scrollFrame.Size              = UDim2.new(1, -10, 1, -60)
+scrollFrame.Position          = UDim2.new(0, 5, 0, 55)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness= 4
+scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
+scrollFrame.ZIndex            = 5
+scrollFrame.Parent            = panel
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.SortOrder    = Enum.SortOrder.LayoutOrder
+listLayout.Padding      = UDim.new(0, 6)
+listLayout.Parent       = scrollFrame
+
+-- ─── Populate Items ──────────────────────────────────────────────────────────
+
+local purchasableRarities = { "Common", "Uncommon", "Rare", "Epic" }
+local purchasableSet = {}
+for _, r in ipairs(purchasableRarities) do purchasableSet[r] = true end
+
+local itemHeight  = 64
+local itemPadding = 6
+local count       = 0
+
+for _, brainrot in ipairs(BrainrotList) do
+	if purchasableSet[brainrot.rarity] then
+		count = count + 1
+		local price     = RarityConfig.DirectPrice[brainrot.rarity]
+		local rarData   = RarityConfig[brainrot.rarity]
+
+		-- Item frame
+		local itemFrame = Instance.new("Frame")
+		itemFrame.Name              = "Item_" .. brainrot.name
+		itemFrame.Size              = UDim2.new(1, -8, 0, itemHeight)
+		itemFrame.BackgroundColor3  = Color3.fromRGB(28, 22, 44)
+		itemFrame.BackgroundTransparency = 0.2
+		itemFrame.BorderSizePixel   = 0
+		itemFrame.LayoutOrder       = count
+		itemFrame.ZIndex            = 6
+		itemFrame.Parent            = scrollFrame
+
+		local itemCorner = Instance.new("UICorner")
+		itemCorner.CornerRadius = UDim.new(0, 12)
+		itemCorner.Parent       = itemFrame
+
+		-- Emoji
+		local emojiLbl = Instance.new("TextLabel")
+		emojiLbl.Size                  = UDim2.new(0, 50, 1, 0)
+		emojiLbl.Position              = UDim2.new(0, 4, 0, 0)
+		emojiLbl.BackgroundTransparency= 1
+		emojiLbl.Text                  = brainrot.emoji
+		emojiLbl.TextScaled            = true
+		emojiLbl.Font                  = Enum.Font.GothamBold
+		emojiLbl.ZIndex                = 7
+		emojiLbl.Parent                = itemFrame
+
+		-- Name + rarity
+		local nameLbl = Instance.new("TextLabel")
+		nameLbl.Size                  = UDim2.new(1, -120, 0, 32)
+		nameLbl.Position              = UDim2.new(0, 56, 0, 6)
+		nameLbl.BackgroundTransparency= 1
+		nameLbl.Text                  = brainrot.name
+		nameLbl.TextColor3            = Color3.fromRGB(240, 240, 255)
+		nameLbl.TextScaled            = true
+		nameLbl.Font                  = Enum.Font.GothamBold
+		nameLbl.TextXAlignment        = Enum.TextXAlignment.Left
+		nameLbl.ZIndex                = 7
+		nameLbl.Parent                = itemFrame
+
+		local rarityLbl = Instance.new("TextLabel")
+		rarityLbl.Size                  = UDim2.new(1, -120, 0, 20)
+		rarityLbl.Position              = UDim2.new(0, 56, 0, 38)
+		rarityLbl.BackgroundTransparency= 1
+		rarityLbl.Text                  = "✦ " .. brainrot.rarity
+		rarityLbl.TextColor3            = rarData.color
+		rarityLbl.TextScaled            = true
+		rarityLbl.Font                  = Enum.Font.Gotham
+		rarityLbl.TextXAlignment        = Enum.TextXAlignment.Left
+		rarityLbl.ZIndex                = 7
+		rarityLbl.Parent                = itemFrame
+
+		-- Buy button
+		local buyBtn = Instance.new("TextButton")
+		buyBtn.Name             = "BuyDirect"
+		buyBtn.Size             = UDim2.new(0, 80, 0, 36)
+		buyBtn.Position         = UDim2.new(1, -90, 0.5, -18)
+		buyBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 120)
+		buyBtn.Text             = "$" .. tostring(price)
+		buyBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
+		buyBtn.TextScaled       = true
+		buyBtn.Font             = Enum.Font.GothamBold
+		buyBtn.BorderSizePixel  = 0
+		buyBtn.ZIndex           = 7
+		buyBtn.Parent           = itemFrame
+
+		local btnCorner = Instance.new("UICorner")
+		btnCorner.CornerRadius = UDim.new(0, 10)
+		btnCorner.Parent       = buyBtn
+
+		-- Capture for closure
+		local capturedBrainrot = brainrot
+
+		buyBtn.MouseButton1Click:Connect(function()
+			-- Animate button
+			local tweenIn = TweenService:Create(buyBtn,
+				TweenInfo.new(0.06, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{ BackgroundColor3 = Color3.fromRGB(20, 150, 80) }
+			)
+			local tweenOut = TweenService:Create(buyBtn,
+				TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{ BackgroundColor3 = Color3.fromRGB(40, 200, 120) }
+			)
+			tweenIn:Play()
+			tweenIn.Completed:Wait()
+			tweenOut:Play()
+
+			-- Fire server: direct buy with specific brainrot name
+			BuyEgg:FireServer(true, capturedBrainrot.name)
+		end)
+	end
+end
+
+-- Set canvas size based on item count
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, count * (itemHeight + itemPadding) + 10)
+
+-- ─── Toggle Animation ────────────────────────────────────────────────────────
+
+local panelOpen = false
+
+local function openPanel()
+	panel.Visible = true
+	TweenService:Create(panel,
+		TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+		{ Position = UDim2.new(1, -(panelWidth + 72), 0, 10) }
+	):Play()
+	panelOpen = true
+end
+
+local function closePanel()
+	local tween = TweenService:Create(panel,
+		TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+		{ Position = UDim2.new(1, 10, 0, 10) }
+	)
+	tween:Play()
+	tween.Completed:Connect(function()
+		panel.Visible = false
+	end)
+	panelOpen = false
+end
+
+toggleBtn.MouseButton1Click:Connect(function()
+	if panelOpen then
+		closePanel()
+	else
+		openPanel()
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+</roblox>
