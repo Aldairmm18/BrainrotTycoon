@@ -197,6 +197,83 @@ local function placeBrainrotPart(player, brainrot)
 	part.Parent = brainrotFolder
 end
 
+-- ─── Spawn Brainrot Part in World (per-player folder, 5×5 grid) ──────────────
+
+local TweenService = game:GetService("TweenService")
+
+local RARITY_COLORS = {
+	Common   = Color3.fromRGB(180, 180, 180),
+	Uncommon = Color3.fromRGB(100, 160, 255),
+	Rare     = Color3.fromRGB(50,  200, 120),
+	Epic     = Color3.fromRGB(160, 100, 255),
+	Legendary= Color3.fromRGB(255, 180, 0),
+	Mythic   = Color3.fromRGB(255, 80,  40),
+	Secret   = Color3.fromRGB(255, 50,  50),
+}
+
+local function spawnBrainrotInWorld(player, brainrot, index)
+	-- Per-player folder
+	local playerFolder = workspace:FindFirstChild("Brainrots_" .. player.Name)
+	if not playerFolder then
+		playerFolder = Instance.new("Folder")
+		playerFolder.Name   = "Brainrots_" .. player.Name
+		playerFolder.Parent = workspace
+	end
+
+	-- 5×5 grid position offset by player area
+	local row   = math.floor((index - 1) / 5)
+	local col   = (index - 1) % 5
+	local baseX = (player.UserId % 100) * 60
+	local pos   = Vector3.new(baseX + col * 8, 12, row * 8)
+
+	-- Neon Ball Part
+	local part = Instance.new("Part")
+	part.Name     = brainrot.name
+	part.Size     = Vector3.new(0.1, 0.1, 0.1)   -- start tiny; tweened to 4,4,4
+	part.Position = pos
+	part.Anchored = true
+	part.Shape    = Enum.PartType.Ball
+	part.Material = Enum.Material.Neon
+	part.Color    = RARITY_COLORS[brainrot.rarity] or Color3.fromRGB(180, 180, 180)
+	part:SetAttribute("OwnerId", player.UserId)
+	part:SetAttribute("Rarity",  brainrot.rarity)
+
+	-- BillboardGui
+	local billboard = Instance.new("BillboardGui")
+	billboard.Size        = UDim2.new(0, 80, 0, 60)
+	billboard.StudsOffset = Vector3.new(0, 3, 0)
+	billboard.AlwaysOnTop = false
+	billboard.Parent      = part
+
+	local emojiLabel = Instance.new("TextLabel")
+	emojiLabel.Size                   = UDim2.new(1, 0, 0.6, 0)
+	emojiLabel.BackgroundTransparency = 1
+	emojiLabel.Text                   = brainrot.emoji or "🐟"
+	emojiLabel.TextScaled             = true
+	emojiLabel.Parent                 = billboard
+
+	local nameLabel = Instance.new("TextLabel")
+	nameLabel.Size                   = UDim2.new(1, 0, 0.4, 0)
+	nameLabel.Position               = UDim2.new(0, 0, 0.6, 0)
+	nameLabel.BackgroundTransparency = 1
+	nameLabel.Text                   = brainrot.name
+	nameLabel.TextColor3             = Color3.fromRGB(255, 255, 255)
+	nameLabel.TextScaled             = true
+	nameLabel.Font                   = Enum.Font.GothamBold
+	nameLabel.Parent                 = billboard
+
+	part.Parent = playerFolder
+
+	-- Pop-in animation
+	TweenService:Create(
+		part,
+		TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Size = Vector3.new(4, 4, 4) }
+	):Play()
+
+	return part
+end
+
 -- ─── Main Handler ─────────────────────────────────────────────────────────────
 
 BuyEgg.OnServerEvent:Connect(function(player)
@@ -233,8 +310,9 @@ BuyEgg.OnServerEvent:Connect(function(player)
 		emoji  = chosen.emoji,
 	})
 
-	-- 6. Place the Part in the Workspace
-	placeBrainrotPart(player, chosen)
+	-- 6. Place neon Ball in the world (new per-player folder system)
+	local brainrotCount = #BrainrotData.Get(userId).brainrots
+	spawnBrainrotInWorld(player, chosen, brainrotCount)
 
 	-- 7. Fire result back to client
 	local cfg = RarityConfig[rarity]

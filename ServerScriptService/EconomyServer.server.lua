@@ -7,7 +7,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BrainrotData = require(script.Parent.BrainrotData)
 local RarityConfig = require(ReplicatedStorage.Modules.RarityConfig)
-local PetServer    = require(script.Parent.PetServer)
 
 local UpdateCash = ReplicatedStorage.RemoteEvents.UpdateCash
 
@@ -38,8 +37,7 @@ task.spawn(function()
 					multiplier = multiplier * 2
 				end
 
-				-- Pet multiplier
-				multiplier = multiplier * PetServer.GetMultiplier(player.UserId)
+				-- Pet multiplier (handled by PetServer independently)
 
 				local earned = baseCashPerSec * multiplier
 				BrainrotData.AddCash(player.UserId, earned)

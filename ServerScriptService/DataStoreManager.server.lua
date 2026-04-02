@@ -19,21 +19,23 @@ local playerStore = DataStoreService:GetDataStore(DATASTORE_NAME)
 
 if not workspace:FindFirstChild("Baseplate") then
 	local baseplate = Instance.new("Part")
-	baseplate.Name     = "Baseplate"
-	baseplate.Size     = Vector3.new(2048, 1, 2048)
-	baseplate.Position = Vector3.new(0, -5, 0)
-	baseplate.Anchored = true
-	baseplate.Locked   = true
-	baseplate.Material = Enum.Material.SmoothPlastic
-	baseplate.Color    = Color3.fromRGB(106, 127, 63)
-	baseplate.Parent   = workspace
+	baseplate.Name       = "Baseplate"
+	baseplate.Size       = Vector3.new(2048, 20, 2048)
+	baseplate.Position   = Vector3.new(0, -10, 0)
+	baseplate.Anchored   = true
+	baseplate.Locked     = true
+	baseplate.Material   = Enum.Material.SmoothPlastic
+	baseplate.Color      = Color3.fromRGB(106, 127, 63)
+	baseplate.TopSurface = Enum.SurfaceType.Smooth
+	baseplate.Parent     = workspace
 end
 
 if not workspace:FindFirstChild("SpawnLocation") then
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Size     = Vector3.new(6, 1, 6)
-	spawn.Position = Vector3.new(0, -4, 0)
+	spawn.Position = Vector3.new(0, 12, 0)
 	spawn.Anchored = true
+	spawn.Duration = 0
 	spawn.Parent   = workspace
 end
 
