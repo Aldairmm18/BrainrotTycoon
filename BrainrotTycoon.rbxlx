@@ -160,10 +160,9 @@ return RarityConfig
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="Script" referent="12">
+    <Item class="ModuleScript" referent="12">
       <Properties>
         <string name="Name">BrainrotData</string>
-        <token name="RunContext">0</token>
         <string name="Source"><![CDATA[-- BrainrotData (ModuleScript-style server Script)
 -- ServerScriptService/BrainrotData
 -- Central in-memory data store for all player data (server only).
