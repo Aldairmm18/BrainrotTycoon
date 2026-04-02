@@ -4,7 +4,6 @@
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService      = game:GetService("TweenService")
 
 local BrainrotData  = require(script.Parent.BrainrotData)
 local RarityConfig  = require(ReplicatedStorage.Modules.RarityConfig)
@@ -21,9 +20,8 @@ local PLAYER_AREA_WIDTH = 50        -- studs allocated per player on the X axis
 local BASE_Y        = 1.5           -- Y so the 3-stud-tall Part sits on the baseplate
 
 -- ─── Rarity Roll ─────────────────────────────────────────────────────────────
--- Cumulative thresholds: Common ≤ .60, Uncommon ≤ .85, Rare ≤ .95,
--- Epic ≤ .99, Legendary ≤ .999, Mythic ≤ .9999, Secret ≤ 1.0
-local CUMULATIVE = {
+-- Standard cumulative thresholds
+local CUMULATIVE_NORMAL = {
 	{ rarity = "Common",    threshold = 0.60   },
 	{ rarity = "Uncommon",  threshold = 0.85   },
 	{ rarity = "Rare",      threshold = 0.95   },
@@ -33,14 +31,27 @@ local CUMULATIVE = {
 	{ rarity = "Secret",    threshold = 1.0    },
 }
 
-local function rollRarity()
+-- Lucky Egg cumulative thresholds (higher Rare+ chances)
+local CUMULATIVE_LUCKY = {
+	{ rarity = "Common",    threshold = 0.40   },
+	{ rarity = "Uncommon",  threshold = 0.65   },
+	{ rarity = "Rare",      threshold = 0.85   },
+	{ rarity = "Epic",      threshold = 0.95   },
+	{ rarity = "Legendary", threshold = 0.99   },
+	{ rarity = "Mythic",    threshold = 0.999  },
+	{ rarity = "Secret",    threshold = 1.0    },
+}
+
+-- Pass lucky=true when the player owns GP_LUCKY_EGG
+local function rollRarity(lucky)
+	local table_ = lucky and CUMULATIVE_LUCKY or CUMULATIVE_NORMAL
 	local roll = math.random()
-	for _, entry in ipairs(CUMULATIVE) do
+	for _, entry in ipairs(table_) do
 		if roll <= entry.threshold then
 			return entry.rarity
 		end
 	end
-	return "Secret"   -- fallback (should never reach)
+	return "Secret"   -- fallback
 end
 
 -- ─── Grid Slot → World Position ──────────────────────────────────────────────
@@ -202,8 +213,9 @@ BuyEgg.OnServerEvent:Connect(function(player)
 	-- 2. Deduct cost
 	BrainrotData.SpendCash(userId, EGG_COST)
 
-	-- 3. Roll rarity
-	local rarity = rollRarity()
+	-- 3. Roll rarity (Lucky Egg boosts Rare+ chances)
+	local isLucky = player:FindFirstChild("GP_LUCKY_EGG") ~= nil
+	local rarity = rollRarity(isLucky)
 
 	-- 4. Pick a random Brainrot of that rarity
 	local pool = BrainrotList.GetByRarity(rarity)

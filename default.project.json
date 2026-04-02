@@ -18,7 +18,8 @@
         "Rebirth":       { "$className": "RemoteEvent" },
         "RebornResult":  { "$className": "RemoteEvent" },
         "RedeemCode":    { "$className": "RemoteEvent" },
-        "CodeResult":    { "$className": "RemoteEvent" }
+        "CodeResult":    { "$className": "RemoteEvent" },
+        "BuyPass":       { "$className": "RemoteEvent" }
       }
     },
 
