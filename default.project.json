@@ -2,6 +2,7 @@
   "name": "BrainrotTycoon",
   "tree": {
     "$className": "DataModel",
+
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "Modules": {
@@ -10,13 +11,17 @@
       },
       "RemoteEvents": {
         "$className": "Folder",
-        "$path": "ReplicatedStorage/RemoteEvents"
+        "UpdateCash": { "$className": "RemoteEvent" },
+        "BuyEgg": { "$className": "RemoteEvent" },
+        "PlaceBrainrot": { "$className": "RemoteEvent" }
       }
     },
+
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "$path": "ServerScriptService"
     },
+
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
