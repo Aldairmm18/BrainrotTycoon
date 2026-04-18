@@ -1,232 +1,233 @@
--- ShopUI (LocalScript)
--- StarterPlayerScripts/ShopUI
--- Lateral shop panel listing directly-purchasable Brainrots.
+-- StarterPlayerScripts/ShopUI.client.lua
+-- Panel de tienda: armas filtradas por zona, compra/venta
 
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService      = game:GetService("TweenService")
-
-local BuyEgg       = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("BuyEgg")
-local RarityConfig = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("RarityConfig"))
-local BrainrotList = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("BrainrotList"))
 
 local player    = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- ─── Build ScreenGui ────────────────────────────────────────────────────────
+local WeaponConfig = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("WeaponConfig"))
 
+local RemoteEvents  = ReplicatedStorage:WaitForChild("RemoteEvents")
+local BuyWeapon     = RemoteEvents:WaitForChild("BuyWeapon")
+local WeaponBought  = RemoteEvents:WaitForChild("WeaponBought")
+local SellWeapon    = RemoteEvents:WaitForChild("SellWeapon")
+local UpdateCoins   = RemoteEvents:WaitForChild("UpdateCoins")
+
+local playerCoins     = 0
+local unlockedZones   = {1}
+local ownedWeaponKeys = {}
+local shopOpen        = false
+
+-- ── Crear UI ──────────────────────────────────────────────────────────────────
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name           = "ShopUI"
+screenGui.Name           = "ShopGui"
 screenGui.ResetOnSpawn   = false
-screenGui.IgnoreGuiInset = true
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.Enabled        = false
 screenGui.Parent         = playerGui
 
--- ── Toggle Button ────────────────────────────────────────────────────────────
-
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Name             = "ShopToggle"
-toggleBtn.Size             = UDim2.new(0, 60, 0, 140)
-toggleBtn.Position         = UDim2.new(1, -64, 0.5, -70)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 120)
-toggleBtn.Text             = "🛒\nShop"
-toggleBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
-toggleBtn.TextScaled       = true
-toggleBtn.Font             = Enum.Font.GothamBold
-toggleBtn.BorderSizePixel  = 0
-toggleBtn.ZIndex           = 5
-toggleBtn.Parent           = screenGui
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0, 14)
-toggleCorner.Parent       = toggleBtn
-
--- ── Shop Panel ───────────────────────────────────────────────────────────────
-
-local panelWidth = 300
-
 local panel = Instance.new("Frame")
-panel.Name              = "ShopPanel"
-panel.Size              = UDim2.new(0, panelWidth, 1, -20)
-panel.Position          = UDim2.new(1, 10, 0, 10)   -- hidden off-screen
-panel.BackgroundColor3  = Color3.fromRGB(16, 12, 28)
-panel.BackgroundTransparency = 0.08
+panel.Size              = UDim2.new(0, 600, 0, 500)
+panel.Position          = UDim2.new(0.5, -300, 0.5, -250)
+panel.BackgroundColor3  = Color3.fromRGB(15, 15, 30)
 panel.BorderSizePixel   = 0
-panel.ZIndex            = 4
 panel.Parent            = screenGui
+Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 16)
 
-local panelCorner = Instance.new("UICorner")
-panelCorner.CornerRadius = UDim.new(0, 18)
-panelCorner.Parent       = panel
+local header = Instance.new("TextLabel")
+header.Size   = UDim2.new(1, 0, 0, 50)
+header.Text   = "🗡️ TIENDA DE ARMAS"
+header.TextColor3 = Color3.fromRGB(255, 200, 50)
+header.TextScaled = true
+header.Font   = Enum.Font.GothamBold
+header.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
+header.BorderSizePixel = 0
+header.Parent = panel
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 16)
 
--- Title
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size                  = UDim2.new(1, 0, 0, 50)
-titleLabel.Position              = UDim2.new(0, 0, 0, 0)
-titleLabel.BackgroundTransparency= 1
-titleLabel.Text                  = "🛒 Direct Shop"
-titleLabel.TextColor3            = Color3.fromRGB(255, 255, 255)
-titleLabel.TextScaled            = true
-titleLabel.Font                  = Enum.Font.GothamBold
-titleLabel.ZIndex                = 5
-titleLabel.Parent                = panel
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size   = UDim2.new(0, 40, 0, 40)
+closeBtn.Position = UDim2.new(1, -50, 0, 5)
+closeBtn.Text   = "✕"
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.TextScaled = true
+closeBtn.Font   = Enum.Font.GothamBold
+closeBtn.BackgroundColor3 = Color3.fromRGB(180, 30, 30)
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = panel
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
+closeBtn.MouseButton1Click:Connect(function()
+	screenGui.Enabled = false
+	shopOpen = false
+end)
 
--- Scroll frame for items
-local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Name              = "ItemList"
-scrollFrame.Size              = UDim2.new(1, -10, 1, -60)
-scrollFrame.Position          = UDim2.new(0, 5, 0, 55)
-scrollFrame.BackgroundTransparency = 1
-scrollFrame.ScrollBarThickness= 4
-scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120)
-scrollFrame.ZIndex            = 5
-scrollFrame.Parent            = panel
+-- ScrollingFrame para items
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size              = UDim2.new(1, -20, 1, -60)
+scroll.Position          = UDim2.new(0, 10, 0, 55)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel   = 0
+scroll.ScrollBarThickness = 6
+scroll.CanvasSize        = UDim2.new(0, 0, 0, 0)
+scroll.Parent            = panel
 
-local listLayout = Instance.new("UIListLayout")
-listLayout.SortOrder    = Enum.SortOrder.LayoutOrder
-listLayout.Padding      = UDim.new(0, 6)
-listLayout.Parent       = scrollFrame
+local gridLayout = Instance.new("UIGridLayout")
+gridLayout.CellSize    = UDim2.new(0, 170, 0, 130)
+gridLayout.CellPaddingX = UDim.new(0, 10)
+gridLayout.CellPaddingY = UDim.new(0, 10)
+gridLayout.Parent      = scroll
 
--- ─── Populate Items ──────────────────────────────────────────────────────────
+-- ── Construir items del shop ───────────────────────────────────────────────────
+local function buildShop()
+	-- Limpiar
+	for _, child in ipairs(scroll:GetChildren()) do
+		if child:IsA("Frame") then child:Destroy() end
+	end
 
-local purchasableRarities = { "Common", "Uncommon", "Rare", "Epic" }
-local purchasableSet = {}
-for _, r in ipairs(purchasableRarities) do purchasableSet[r] = true end
+	local count = 0
+	for _, key in ipairs(WeaponConfig.ORDER) do
+		local wData = WeaponConfig[key]
+		if not wData then continue end
 
-local itemHeight  = 64
-local itemPadding = 6
-local count       = 0
+		-- Filtrar por zona desbloqueada
+		local zoneOk = table.find(unlockedZones, wData.zoneReq or 1) ~= nil
+		if not zoneOk then continue end
 
-for _, brainrot in ipairs(BrainrotList) do
-	if purchasableSet[brainrot.rarity] then
 		count = count + 1
-		local price     = RarityConfig.DirectPrice[brainrot.rarity]
-		local rarData   = RarityConfig[brainrot.rarity]
+		local owned = table.find(ownedWeaponKeys, key) ~= nil
 
-		-- Item frame
-		local itemFrame = Instance.new("Frame")
-		itemFrame.Name              = "Item_" .. brainrot.name
-		itemFrame.Size              = UDim2.new(1, -8, 0, itemHeight)
-		itemFrame.BackgroundColor3  = Color3.fromRGB(28, 22, 44)
-		itemFrame.BackgroundTransparency = 0.2
-		itemFrame.BorderSizePixel   = 0
-		itemFrame.LayoutOrder       = count
-		itemFrame.ZIndex            = 6
-		itemFrame.Parent            = scrollFrame
+		local card = Instance.new("Frame")
+		card.BackgroundColor3 = owned
+			and Color3.fromRGB(30, 80, 30)
+			or  Color3.fromRGB(30, 40, 70)
+		card.BorderSizePixel  = 0
+		card.Parent           = scroll
+		Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
 
-		local itemCorner = Instance.new("UICorner")
-		itemCorner.CornerRadius = UDim.new(0, 12)
-		itemCorner.Parent       = itemFrame
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size   = UDim2.new(1, 0, 0, 35)
+		nameLabel.Text   = wData.name or key
+		nameLabel.TextColor3 = Color3.fromRGB(255,255,255)
+		nameLabel.TextScaled = true
+		nameLabel.Font   = Enum.Font.GothamBold
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.Parent = card
 
-		-- Emoji
-		local emojiLbl = Instance.new("TextLabel")
-		emojiLbl.Size                  = UDim2.new(0, 50, 1, 0)
-		emojiLbl.Position              = UDim2.new(0, 4, 0, 0)
-		emojiLbl.BackgroundTransparency= 1
-		emojiLbl.Text                  = brainrot.emoji
-		emojiLbl.TextScaled            = true
-		emojiLbl.Font                  = Enum.Font.GothamBold
-		emojiLbl.ZIndex                = 7
-		emojiLbl.Parent                = itemFrame
+		local priceLabel = Instance.new("TextLabel")
+		priceLabel.Size   = UDim2.new(1, 0, 0, 25)
+		priceLabel.Position = UDim2.new(0, 0, 0, 35)
+		priceLabel.Text   = wData.isFree and "GRATIS" or ("💰 " .. tostring(wData.price))
+		priceLabel.TextColor3 = Color3.fromRGB(255, 220, 50)
+		priceLabel.TextScaled = true
+		priceLabel.Font   = Enum.Font.Gotham
+		priceLabel.BackgroundTransparency = 1
+		priceLabel.Parent = card
 
-		-- Name + rarity
-		local nameLbl = Instance.new("TextLabel")
-		nameLbl.Size                  = UDim2.new(1, -120, 0, 32)
-		nameLbl.Position              = UDim2.new(0, 56, 0, 6)
-		nameLbl.BackgroundTransparency= 1
-		nameLbl.Text                  = brainrot.name
-		nameLbl.TextColor3            = Color3.fromRGB(240, 240, 255)
-		nameLbl.TextScaled            = true
-		nameLbl.Font                  = Enum.Font.GothamBold
-		nameLbl.TextXAlignment        = Enum.TextXAlignment.Left
-		nameLbl.ZIndex                = 7
-		nameLbl.Parent                = itemFrame
+		local dmgLabel = Instance.new("TextLabel")
+		dmgLabel.Size   = UDim2.new(1, 0, 0, 20)
+		dmgLabel.Position = UDim2.new(0, 0, 0, 60)
+		dmgLabel.Text   = "⚔ " .. wData.damage .. " dmg | " .. (wData.type or "Melee")
+		dmgLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
+		dmgLabel.TextScaled = true
+		dmgLabel.Font   = Enum.Font.Gotham
+		dmgLabel.BackgroundTransparency = 1
+		dmgLabel.Parent = card
 
-		local rarityLbl = Instance.new("TextLabel")
-		rarityLbl.Size                  = UDim2.new(1, -120, 0, 20)
-		rarityLbl.Position              = UDim2.new(0, 56, 0, 38)
-		rarityLbl.BackgroundTransparency= 1
-		rarityLbl.Text                  = "✦ " .. brainrot.rarity
-		rarityLbl.TextColor3            = rarData.color
-		rarityLbl.TextScaled            = true
-		rarityLbl.Font                  = Enum.Font.Gotham
-		rarityLbl.TextXAlignment        = Enum.TextXAlignment.Left
-		rarityLbl.ZIndex                = 7
-		rarityLbl.Parent                = itemFrame
+		-- Botones comprar / vender
+		if owned then
+			local sellBtn = Instance.new("TextButton")
+			sellBtn.Name  = "SellBtn_" .. key
+			sellBtn.Size  = UDim2.new(0.8, 0, 0, 30)
+			sellBtn.Position = UDim2.new(0.1, 0, 1, -35)
+			sellBtn.Text  = "Vender (50%)"
+			sellBtn.TextColor3 = Color3.fromRGB(255,255,255)
+			sellBtn.TextScaled = true
+			sellBtn.Font  = Enum.Font.Gotham
+			sellBtn.BackgroundColor3 = Color3.fromRGB(160, 60, 30)
+			sellBtn.BorderSizePixel = 0
+			sellBtn.Parent = card
+			Instance.new("UICorner", sellBtn).CornerRadius = UDim.new(0, 8)
 
-		-- Buy button
-		local buyBtn = Instance.new("TextButton")
-		buyBtn.Name             = "BuyDirect"
-		buyBtn.Size             = UDim2.new(0, 80, 0, 36)
-		buyBtn.Position         = UDim2.new(1, -90, 0.5, -18)
-		buyBtn.BackgroundColor3 = Color3.fromRGB(40, 200, 120)
-		buyBtn.Text             = "$" .. tostring(price)
-		buyBtn.TextColor3       = Color3.fromRGB(255, 255, 255)
-		buyBtn.TextScaled       = true
-		buyBtn.Font             = Enum.Font.GothamBold
-		buyBtn.BorderSizePixel  = 0
-		buyBtn.ZIndex           = 7
-		buyBtn.Parent           = itemFrame
+			if sellBtn then
+				sellBtn.MouseButton1Click:Connect(function()
+					SellWeapon:FireServer(key)
+				end)
+			end
+		else
+			local affordText = (wData.isFree or playerCoins >= (wData.price or 0)) and "Comprar" or "Sin monedas"
+			local buyBtn = Instance.new("TextButton")
+			buyBtn.Name  = "BuyBtn_" .. key
+			buyBtn.Size  = UDim2.new(0.8, 0, 0, 30)
+			buyBtn.Position = UDim2.new(0.1, 0, 1, -35)
+			buyBtn.Text  = affordText
+			buyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+			buyBtn.TextScaled = true
+			buyBtn.Font  = Enum.Font.Gotham
+			buyBtn.BackgroundColor3 = Color3.fromRGB(40, 140, 80)
+			buyBtn.BorderSizePixel = 0
+			buyBtn.Parent = card
+			Instance.new("UICorner", buyBtn).CornerRadius = UDim.new(0, 8)
 
-		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 10)
-		btnCorner.Parent       = buyBtn
-
-		-- Capture for closure
-		local capturedBrainrot = brainrot
-
-		buyBtn.MouseButton1Click:Connect(function()
-			-- Animate button
-			local tweenIn = TweenService:Create(buyBtn,
-				TweenInfo.new(0.06, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-				{ BackgroundColor3 = Color3.fromRGB(20, 150, 80) }
-			)
-			local tweenOut = TweenService:Create(buyBtn,
-				TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-				{ BackgroundColor3 = Color3.fromRGB(40, 200, 120) }
-			)
-			tweenIn:Play()
-			tweenIn.Completed:Wait()
-			tweenOut:Play()
-
-			-- Fire server: direct buy with specific brainrot name
-			BuyEgg:FireServer(true, capturedBrainrot.name)
-		end)
+			if buyBtn then
+				buyBtn.MouseButton1Click:Connect(function()
+					BuyWeapon:FireServer(key)
+				end)
+			end
+		end
 	end
+
+	-- Actualizar canvas
+	local rows = math.ceil(count / 3)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, rows * 145)
 end
 
--- Set canvas size based on item count
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, count * (itemHeight + itemPadding) + 10)
-
--- ─── Toggle Animation ────────────────────────────────────────────────────────
-
-local panelOpen = false
-
-local function openPanel()
-	panel.Visible = true
-	TweenService:Create(panel,
-		TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-		{ Position = UDim2.new(1, -(panelWidth + 72), 0, 10) }
-	):Play()
-	panelOpen = true
-end
-
-local function closePanel()
-	local tween = TweenService:Create(panel,
-		TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
-		{ Position = UDim2.new(1, 10, 0, 10) }
-	)
-	tween:Play()
-	tween.Completed:Connect(function()
-		panel.Visible = false
-	end)
-	panelOpen = false
-end
-
-toggleBtn.MouseButton1Click:Connect(function()
-	if panelOpen then
-		closePanel()
-	else
-		openPanel()
+-- Actualizar lista al comprar/vender
+WeaponBought.OnClientEvent:Connect(function(newWeaponKey, allOwned)
+	ownedWeaponKeys = {}
+	if allOwned then
+		for k, _ in pairs(allOwned) do
+			table.insert(ownedWeaponKeys, k)
+		end
 	end
+	if screenGui.Enabled then buildShop() end
+
+	if newWeaponKey then
+		-- Mostrar confirmación breve
+		local notifGui = playerGui:FindFirstChild("HudGui")
+		local notifFrame = notifGui and notifGui:FindFirstChild("NotifFrame", true)
+		local notifLabel = notifFrame and notifFrame:FindFirstChild("NotifLabel")
+		if notifLabel and notifFrame then
+			notifLabel.Text     = "✅ Comprado: " .. tostring(newWeaponKey)
+			notifFrame.Visible  = true
+			task.delay(2, function()
+				if notifFrame then notifFrame.Visible = false end
+			end)
+		end
+	end
+end)
+
+UpdateCoins.OnClientEvent:Connect(function(coins)
+	playerCoins = coins or 0
+end)
+
+-- ── Botón de apertura ─────────────────────────────────────────────────────────
+local openBtn = Instance.new("TextButton")
+openBtn.Name  = "ShopOpenButton"
+openBtn.Size  = UDim2.new(0, 90, 0, 40)
+openBtn.Position = UDim2.new(0, 10, 1, -60)
+openBtn.Text  = "🛒 Tienda"
+openBtn.TextColor3 = Color3.fromRGB(255,255,255)
+openBtn.TextScaled = true
+openBtn.Font  = Enum.Font.GothamBold
+openBtn.BackgroundColor3 = Color3.fromRGB(40, 100, 200)
+openBtn.BorderSizePixel = 0
+openBtn.ZIndex = 5
+openBtn.Parent = playerGui
+Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 10)
+
+openBtn.MouseButton1Click:Connect(function()
+	shopOpen = not shopOpen
+	screenGui.Enabled = shopOpen
+	if shopOpen then buildShop() end
 end)

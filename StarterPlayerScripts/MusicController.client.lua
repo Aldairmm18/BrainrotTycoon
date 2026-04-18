@@ -1,94 +1,132 @@
--- MusicController (LocalScript)
--- StarterPlayerScripts/MusicController
--- Background music with 🎵 toggle button.
+-- StarterPlayerScripts/MusicController.client.lua
+-- Música de fondo por zona con transición suave y toggle
 
-local Players      = game:GetService("Players")
-local SoundService = game:GetService("SoundService")
-local TweenService = game:GetService("TweenService")
+local Players           = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService      = game:GetService("SoundService")
 
 local player    = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- ─── ScreenGui ────────────────────────────────────────────────────────────────
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name           = "MusicUI"
-screenGui.ResetOnSpawn   = false
-screenGui.IgnoreGuiInset = true
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Parent         = playerGui
+local RemoteEvents  = ReplicatedStorage:WaitForChild("RemoteEvents")
+local ZoneUnlocked  = RemoteEvents:WaitForChild("ZoneUnlocked")
+local GlobalNotif   = RemoteEvents:WaitForChild("GlobalNotif")
 
--- ─── Music Tracks ────────────────────────────────────────────────────────────
-local TRACKS = {
-	{ id = 142376088,  name = "Zona Italiana" },      -- Roblox: Regroup (free-to-use)
-	{ id = 1843827228, name = "Volcan Romano" },
-	{ id = 1842388270, name = "Cosmos Brainrot" },
+-- IDs de música por zona (reemplazar con IDs reales de Roblox)
+local MUSIC_IDS = {
+	[0]   = 0,   -- Base (sin música o música suave)
+	[1]   = 0,   -- Zona 1: Aventura
+	[2]   = 0,   -- Zona 2: Tensión
+	[3]   = 0,   -- Zona 3: Intensa
+	[4]   = 0,   -- Zona 4: Épica
+	blood = 0,   -- Blood Moon: Dramática
 }
 
--- ─── Sound Instance ───────────────────────────────────────────────────────────
-local bgSound = Instance.new("Sound")
-bgSound.SoundId  = "rbxassetid://" .. tostring(TRACKS[1].id)
-bgSound.Volume   = 0.3
-bgSound.Looped   = true
-bgSound.Parent   = SoundService
-bgSound:Play()
+local musicEnabled  = true
+local currentSound  = nil
+local currentZone   = 1
+local isBloodMoon   = false
 
--- ─── 🎵 Toggle Button ────────────────────────────────────────────────────────
-local musicBtn = Instance.new("TextButton")
-musicBtn.Name             = "MusicBtn"
-musicBtn.Size             = UDim2.new(0, 52, 0, 44)
-musicBtn.Position         = UDim2.new(1, -68, 1, -66)
-musicBtn.BackgroundColor3 = Color3.fromRGB(20, 18, 40)
-musicBtn.BorderSizePixel  = 0
-musicBtn.Text             = "🎵"
-musicBtn.TextScaled       = true
-musicBtn.Font             = Enum.Font.GothamBold
-musicBtn.AutoButtonColor  = false
-musicBtn.Parent           = screenGui
-Instance.new("UICorner", musicBtn).CornerRadius = UDim.new(0, 14)
-
-local musicStroke = Instance.new("UIStroke")
-musicStroke.Color     = Color3.fromRGB(80, 60, 160)
-musicStroke.Thickness = 1.5
-musicStroke.Parent    = musicBtn
-
-local musicEnabled = true
-
-musicBtn.MouseButton1Click:Connect(function()
-	musicEnabled = not musicEnabled
-	if musicEnabled then
-		bgSound:Play()
-		musicBtn.Text = "🎵"
-		musicStroke.Color = Color3.fromRGB(80, 60, 160)
-	else
-		bgSound:Stop()
-		musicBtn.Text = "🔇"
-		musicStroke.Color = Color3.fromRGB(100, 40, 40)
-	end
-end)
-
--- Zone-based track switch (poll position every 5 seconds)
-task.spawn(function()
-	while true do
-		task.wait(5)
-		local char = player.Character
-		if char then
-			local hrp = char:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				local x = hrp.Position.X
-				local trackIndex
-				if x >= 600 then trackIndex = 3
-				elseif x >= 300 then trackIndex = 2
-				else trackIndex = 1 end
-
-				local newId = "rbxassetid://" .. tostring(TRACKS[trackIndex].id)
-				if bgSound.SoundId ~= newId and musicEnabled then
-					TweenService:Create(bgSound, TweenInfo.new(1), {Volume = 0}):Play()
-					task.wait(1)
-					bgSound.SoundId = newId
-					bgSound:Play()
-					TweenService:Create(bgSound, TweenInfo.new(1), {Volume = 0.3}):Play()
+-- ── Reproducir música ─────────────────────────────────────────────────────────
+local function playMusic(zoneIndex)
+	-- Fade out música anterior
+	if currentSound then
+		local prevSound = currentSound
+		local startVol  = prevSound.Volume
+		task.spawn(function()
+			local steps = 20
+			for i = 1, steps do
+				task.wait(0.05)
+				if prevSound and prevSound.Parent then
+					prevSound.Volume = startVol * (1 - i/steps)
 				end
 			end
+			if prevSound and prevSound.Parent then
+				prevSound:Stop()
+				prevSound:Destroy()
+			end
+		end)
+	end
+
+	if not musicEnabled then return end
+
+	local id = isBloodMoon and MUSIC_IDS.blood or (MUSIC_IDS[zoneIndex] or 0)
+	if id == 0 then return end  -- Sin ID configurado
+
+	local sound = Instance.new("Sound")
+	sound.SoundId    = "rbxassetid://" .. tostring(id)
+	sound.Volume     = 0
+	sound.Looped     = true
+	sound.Parent     = SoundService
+
+	currentSound = sound
+	sound:Play()
+
+	-- Fade in
+	task.spawn(function()
+		for i = 1, 20 do
+			task.wait(0.05)
+			if sound and sound.Parent then
+				sound.Volume = 0.5 * (i/20)
+			end
 		end
+	end)
+end
+
+-- ── Toggle de música ──────────────────────────────────────────────────────────
+local function toggleMusic()
+	musicEnabled = not musicEnabled
+	if musicEnabled then
+		playMusic(currentZone)
+		return true
+	else
+		if currentSound then
+			currentSound:Stop()
+		end
+		return false
+	end
+end
+
+-- ── Blood Moon event ──────────────────────────────────────────────────────────
+GlobalNotif.OnClientEvent:Connect(function(msg)
+	if msg and msg:find("BLOOD MOON") then
+		isBloodMoon = true
+		playMusic(currentZone)  -- Cambiar a música de Blood Moon
 	end
 end)
+
+-- ── Detectar zona del jugador (basado en posición) ────────────────────────────
+-- Simplificado: cambiar música cuando ZoneUnlocked se dispara
+ZoneUnlocked.OnClientEvent:Connect(function(zoneIndex)
+	currentZone = zoneIndex
+	playMusic(zoneIndex)
+end)
+
+-- ── Botón toggle ──────────────────────────────────────────────────────────────
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name   = "MusicToggleBtn"
+toggleBtn.Size   = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(1, -50, 0, 60)
+toggleBtn.Text   = "🎵"
+toggleBtn.TextScaled = true
+toggleBtn.Font   = Enum.Font.GothamBold
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+toggleBtn.BackgroundTransparency = 0.3
+toggleBtn.BorderSizePixel = 0
+toggleBtn.ZIndex = 5
+toggleBtn.Parent = playerGui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 10)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	local isOn = toggleMusic()
+	if toggleBtn then
+		toggleBtn.Text            = isOn and "🎵" or "🔇"
+		toggleBtn.BackgroundColor3 = isOn
+			and Color3.fromRGB(30, 30, 50)
+			or  Color3.fromRGB(80, 20, 20)
+	end
+end)
+
+-- Iniciar música de la zona base al cargar
+task.wait(2)
+playMusic(1)

@@ -1,45 +1,7 @@
 {
-  "name": "BrainrotTycoon",
+  "name": "SurvivalRush",
   "tree": {
     "$className": "DataModel",
-    "ReplicatedStorage": {
-      "$className": "ReplicatedStorage",
-      "Modules": {
-        "$className": "Folder",
-        "$path": "ReplicatedStorage/Modules"
-      },
-      "RemoteEvents": {
-        "$className": "Folder",
-        "UpdateCash":        { "$className": "RemoteEvent" },
-        "BuyEgg":            { "$className": "RemoteEvent" },
-        "PlaceBrainrot":     { "$className": "RemoteEvent" },
-        "GachaResult":       { "$className": "RemoteEvent" },
-        "Rebirth":           { "$className": "RemoteEvent" },
-        "RebornResult":      { "$className": "RemoteEvent" },
-        "RedeemCode":        { "$className": "RemoteEvent" },
-        "CodeResult":        { "$className": "RemoteEvent" },
-        "BuyPass":           { "$className": "RemoteEvent" },
-        "GetMissions":       { "$className": "RemoteEvent" },
-        "MissionUpdate":     { "$className": "RemoteEvent" },
-        "ClaimMission":      { "$className": "RemoteEvent" },
-        "EquipPet":          { "$className": "RemoteEvent" },
-        "UnequipPet":        { "$className": "RemoteEvent" },
-        "PetUpdate":         { "$className": "RemoteEvent" },
-        "BuyPetEgg":         { "$className": "RemoteEvent" },
-        "GlobalNotification":{ "$className": "RemoteEvent" },
-        "ActivityBonus":     { "$className": "RemoteEvent" },
-        "GetGlobalLB":       { "$className": "RemoteEvent" },
-        "TutorialDone":      { "$className": "RemoteEvent" },
-        "TutorialStatus":    { "$className": "RemoteEvent" },
-        "StealAttempt":      { "$className": "RemoteEvent" },
-        "StealResult":       { "$className": "RemoteEvent" },
-        "BuyGuardian":       { "$className": "RemoteEvent" },
-        "UpdateEvent":       { "$className": "RemoteEvent" },
-        "BuyEventEgg":       { "$className": "RemoteEvent" },
-        "FuseRequest":       { "$className": "RemoteEvent" },
-        "FuseResult":        { "$className": "RemoteEvent" }
-      }
-    },
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "$path": "ServerScriptService"
@@ -51,8 +13,55 @@
         "$path": "StarterPlayerScripts"
       }
     },
-    "Workspace": {
-      "$className": "Workspace"
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Modules": {
+        "$className": "Folder",
+        "$path": "ReplicatedStorage/Modules"
+      },
+      "RemoteEvents": {
+        "$className": "Folder",
+        "AttackEnemy":     { "$className": "RemoteEvent" },
+        "TakeDamage":      { "$className": "RemoteEvent" },
+        "EnemyDied":       { "$className": "RemoteEvent" },
+        "PlayerDied":      { "$className": "RemoteEvent" },
+        "UpdateXP":        { "$className": "RemoteEvent" },
+        "LevelUp":         { "$className": "RemoteEvent" },
+        "ZoneUnlocked":    { "$className": "RemoteEvent" },
+        "BuyWeapon":       { "$className": "RemoteEvent" },
+        "WeaponBought":    { "$className": "RemoteEvent" },
+        "UpgradeWeapon":   { "$className": "RemoteEvent" },
+        "WeaponUpgraded":  { "$className": "RemoteEvent" },
+        "EquipWeapon":     { "$className": "RemoteEvent" },
+        "UpdateCoins":     { "$className": "RemoteEvent" },
+        "SellWeapon":      { "$className": "RemoteEvent" },
+        "TimerUpdate":     { "$className": "RemoteEvent" },
+        "SessionEnd":      { "$className": "RemoteEvent" },
+        "RedeemTime":      { "$className": "RemoteEvent" },
+        "TimeRedeemed":    { "$className": "RemoteEvent" },
+        "GetMissions":     { "$className": "RemoteEvent" },
+        "MissionsData":    { "$className": "RemoteEvent" },
+        "MissionProgress": { "$className": "RemoteEvent" },
+        "ClaimMission":    { "$className": "RemoteEvent" },
+        "MissionClaimed":  { "$className": "RemoteEvent" },
+        "ClaimDailyGift":  { "$className": "RemoteEvent" },
+        "DailyGiftResult": { "$className": "RemoteEvent" },
+        "SelectClass":     { "$className": "RemoteEvent" },
+        "ClassSelected":   { "$className": "RemoteEvent" },
+        "RequestRebirth":  { "$className": "RemoteEvent" },
+        "RebirthResult":   { "$className": "RemoteEvent" },
+        "BuySkin":         { "$className": "RemoteEvent" },
+        "SkinBought":      { "$className": "RemoteEvent" },
+        "EquipSkin":       { "$className": "RemoteEvent" },
+        "SelectGameMode":  { "$className": "RemoteEvent" },
+        "GameModeStarted": { "$className": "RemoteEvent" },
+        "GetLeaderboard":  { "$className": "RemoteEvent" },
+        "LeaderboardData": { "$className": "RemoteEvent" },
+        "UseAbility":      { "$className": "RemoteEvent" },
+        "AbilityUsed":     { "$className": "RemoteEvent" },
+        "GlobalNotif":     { "$className": "RemoteEvent" },
+        "TutorialComplete":{ "$className": "RemoteEvent" }
+      }
     }
   }
 }
